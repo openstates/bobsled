@@ -1,0 +1,3 @@
+name: WA
+entrypoint: billy-update wa --mongo_host ec2-54-208-83-243.compute-1.amazonaws.com
+memory_soft: 128

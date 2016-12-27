@@ -1,23 +1,24 @@
+import glob
 import boto3
+import yaml
 
 ecs = boto3.client('ecs', region_name='us-east-1')
 ec2 = boto3.client('ec2', region_name='us-east-1')
 
-# Amazon's us-east-1 ecs optimized AMI (2016.09)
-ECS_IMAGE_ID = 'ami-6df8fe7a'
-ECS_USER_DATA = '#!/bin/bash\necho ECS_CLUSTER={} >> /etc/ecs/ecs.config'.format(ECS_CLUSTER)
 
 # OS specific (not secret, but not useful to anyone outside OS)
 ECS_CLUSTER = 'openstates-scrapers'
 KEY_NAME = 'openstates-master'
 SECURITY_GROUP_IDS = ['sg-74350609']
 
+# Amazon's us-east-1 ecs optimized AMI (2016.09)
+ECS_IMAGE_ID = 'ami-6df8fe7a'
+ECS_USER_DATA = '#!/bin/bash\necho ECS_CLUSTER={} >> /etc/ecs/ecs.config'.format(ECS_CLUSTER)
+
 
 def make_scraper_task(family,
                       entrypoint,
-                      *,
                       memory_soft=128,
-                      log_stream_prefix=None,
                       name='openstates-scraper',
                       image='openstates/openstates'
                       #cpu=None,
@@ -112,7 +113,15 @@ def create_instance(instance_type):
     return response
 
 
-create_cluster()
-create_instance('t2.medium')
-make_scraper_task('NC', ['billy-update', 'nc', '--bills'], memory_soft=128)
-run_task('scraper-pool', 'NC', 'os runbot')
+def load_tasks():
+    files = glob.glob('tasks/*.yml')
+    for fn in files:
+        with open(fn) as f:
+            task = yaml.load(f)
+            make_scraper_task(task['name'],
+                              task['entrypoint'].split(),
+                              memory_soft=task.get('memory_soft', 128)
+                              )
+
+#create_cluster()
+#create_instance('t2.medium')
