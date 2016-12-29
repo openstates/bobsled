@@ -1,0 +1,5 @@
+ec2:
+    ecs_cluster: openstates-scrapers
+    key_name: openstates-master
+    ecs_image_id: ami-6df8fe7a
+    security_group_id: sg-12345678
