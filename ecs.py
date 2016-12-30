@@ -1,9 +1,12 @@
+from __future__ import print_function
 import glob
+import datetime
 import boto3
 import yaml
 
 ecs = boto3.client('ecs', region_name='us-east-1')
 ec2 = boto3.client('ec2', region_name='us-east-1')
+logs = boto3.client('logs', 'us-east-1')
 
 
 def load_config():
@@ -113,3 +116,46 @@ def load_tasks():
                               memory_soft=task.get('memory_soft', 128),
                               environment=task.get('environment')
                               )
+
+def run_all_tasks(started_by):
+    files = glob.glob('tasks/*.yml')
+    for fn in files:
+        with open(fn) as f:
+            task = yaml.load(f)
+            print('running', task['name'])
+            run_task(task['name'], started_by)
+
+
+def _get_log_streams(prefix=None):
+    params = dict(logGroupName='openstates-scrapers',
+                  #orderBy='LastEventTime',
+                  )
+    if prefix:
+        params['logStreamNamePrefix'] = prefix
+    streams = logs.describe_log_streams(**params)
+    for s in streams['logStreams']:
+        yield s
+
+def print_streams(prefix=None):
+    for s in _get_log_streams(prefix):
+        print(s['logStreamName'],
+              datetime.datetime.fromtimestamp(s['firstEventTimestamp']/1000).strftime('%Y-%m-%d %H:%M'))
+
+
+def print_log(streamname):
+    events = logs.get_log_events(logGroupName='openstates-scrapers',
+                                 logStreamName=streamname)
+    next = events['nextForwardToken']
+    for event in events['events']:
+        print(event['message'])
+
+def print_latest_log(prefix):
+    latest = None
+    for s in _get_log_streams(prefix):
+        print(s['logStreamName'],
+              datetime.datetime.fromtimestamp(s['firstEventTimestamp']/1000).strftime('%Y-%m-%d %H:%M'))
+        if latest is None or s['firstEventTimestamp'] > latest['firstEventTimestamp']:
+            latest = s
+    print('chose', latest['logStreamName'],
+          datetime.datetime.fromtimestamp(latest['firstEventTimestamp']/1000).strftime('%Y-%m-%d %H:%M'))
+    print_log(latest['logStreamName'])
