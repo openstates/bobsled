@@ -3,6 +3,7 @@ import glob
 import json
 import datetime
 import boto3
+from botocore.exceptions import ClientError
 import yaml
 
 ecs = boto3.client('ecs', region_name='us-east-1')
@@ -59,13 +60,34 @@ def make_scraper_task(family,
         main_container['environment'] = [{'name': k, 'value': v}
                                          for k, v in environment.items()]
 
-    response = ecs.register_task_definition(
-        family=family,
-        containerDefinitions=[
-            main_container
-        ],
-    )
-    return response
+    create = False
+    existing = None
+    try:
+        resp = ecs.describe_task_definition(taskDefinition=family)
+        existing = resp['taskDefinition']
+        for key in ('entryPoint', 'environment', 'image', 'name',
+                    'memoryReservation', 'essential', 'logConfiguration'):
+            if existing['containerDefinitions'][0][key] != main_container[key]:
+                create = True
+                print('changing', key,
+                      existing['containerDefinitions'][0][key],
+                      main_container[key],
+                      )
+    except ClientError:
+        create = True
+
+    if create:
+        response = ecs.register_task_definition(
+            family=family,
+            containerDefinitions=[
+                main_container
+            ],
+        )
+        return response
+    elif existing:
+        print('definition matches {family}:{revision}'.format(**existing))
+    else:
+        print('creating new task', family)
 
 
 def run_task(task_definition, started_by):
@@ -117,13 +139,19 @@ def create_instance(instance_type):
     return response
 
 
-def upload_task_definitions():
+def upload_task_definitions(only=None):
     for task in config['tasks']:
+        entrypoint = task['entrypoint']
+        if not isinstance(entrypoint, list):
+            entrypoint = entrypoint.split()
+        if only and task['name'] != only:
+            continue
+        print('uploading', task['name'])
         make_scraper_task(task['name'],
-                            task['entrypoint'].split(),
-                            memory_soft=task.get('memory_soft', 128),
-                            environment=task.get('environment')
-                            )
+                          entrypoint,
+                          memory_soft=task.get('memory_soft', 128),
+                          environment=task.get('environment')
+                          )
 
 
 def upload_schedules():
