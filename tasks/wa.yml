@@ -1,5 +1,6 @@
 name: WA
 entrypoint: billy-update wa
 memory_soft: 128
+cron: 0 4 * * ? *
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
