@@ -1,6 +1,6 @@
-name: GA
-entrypoint: billy-update ga --bills --legislators
+name: SD
+entrypoint: billy-update sd
 memory_soft: 128
-cron: 0 5 * * ? *
+cron: 0 7 * * ? *
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
