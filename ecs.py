@@ -1,17 +1,28 @@
 from __future__ import print_function
 import glob
+import json
 import datetime
 import boto3
 import yaml
 
 ecs = boto3.client('ecs', region_name='us-east-1')
 ec2 = boto3.client('ec2', region_name='us-east-1')
-logs = boto3.client('logs', 'us-east-1')
+logs = boto3.client('logs', region_name='us-east-1')
 
 
 def load_config():
     config = yaml.load(open('config.yaml'))
+
+    config['tasks'] = []
+
+    files = glob.glob('tasks/*.yml')
+    for fn in files:
+        with open(fn) as f:
+            task = yaml.load(f)
+            config['tasks'].append(task)
+
     return config
+
 
 config = load_config()
 
@@ -106,24 +117,28 @@ def create_instance(instance_type):
     return response
 
 
-def load_tasks():
-    files = glob.glob('tasks/*.yml')
-    for fn in files:
-        with open(fn) as f:
-            task = yaml.load(f)
-            make_scraper_task(task['name'],
-                              task['entrypoint'].split(),
-                              memory_soft=task.get('memory_soft', 128),
-                              environment=task.get('environment')
-                              )
+def upload_task_definitions():
+    for task in config['tasks']:
+        make_scraper_task(task['name'],
+                            task['entrypoint'].split(),
+                            memory_soft=task.get('memory_soft', 128),
+                            environment=task.get('environment')
+                            )
+
+
+def upload_schedules():
+    for task in config['tasks']:
+        if task['cron']:
+            make_cron_rule(task['name'],
+                           'cron({})'.format(task['cron']),
+                           task.get('enabled', True)
+                           )
+
 
 def run_all_tasks(started_by):
-    files = glob.glob('tasks/*.yml')
-    for fn in files:
-        with open(fn) as f:
-            task = yaml.load(f)
-            print('running', task['name'])
-            run_task(task['name'], started_by)
+    for task in config['tasks']:
+        print('running', task['name'])
+        run_task(task['name'], started_by)
 
 
 def _get_log_streams(prefix=None):
@@ -135,6 +150,7 @@ def _get_log_streams(prefix=None):
     streams = logs.describe_log_streams(**params)
     for s in streams['logStreams']:
         yield s
+
 
 def print_streams(prefix=None):
     for s in _get_log_streams(prefix):
@@ -149,6 +165,7 @@ def print_log(streamname):
     for event in events['events']:
         print(event['message'])
 
+
 def print_latest_log(prefix):
     latest = None
     for s in _get_log_streams(prefix):
@@ -159,3 +176,23 @@ def print_latest_log(prefix):
     print('chose', latest['logStreamName'],
           datetime.datetime.fromtimestamp(latest['firstEventTimestamp']/1000).strftime('%Y-%m-%d %H:%M'))
     print_log(latest['logStreamName'])
+
+
+def make_cron_rule(name, schedule, enabled):
+    events = boto3.client('events', region_name='us-east-1')
+    response = events.put_rule(
+        Name=name,
+        ScheduleExpression=schedule,
+        State='ENABLED' if enabled else 'DISABLED',
+        Description='run {} at {}'.format(name, schedule),
+    )
+    response = events.put_targets(
+        Rule=name,
+        Targets=[
+            {
+                'Id': name + '-scrape',
+                'Arn': config['ec2']['lambda_arn'],
+                'Input': json.dumps({'job': name})
+            }
+        ]
+    )
