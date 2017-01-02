@@ -208,13 +208,14 @@ def print_latest_log(prefix):
 
 def make_cron_rule(name, schedule, enabled):
     events = boto3.client('events', region_name='us-east-1')
-    response = events.put_rule(
+    lamb = boto3.client('lambda', region_name='us-east-1')
+    rule = events.put_rule(
         Name=name,
         ScheduleExpression=schedule,
         State='ENABLED' if enabled else 'DISABLED',
         Description='run {} at {}'.format(name, schedule),
     )
-    response = events.put_targets(
+    target = events.put_targets(
         Rule=name,
         Targets=[
             {
@@ -224,3 +225,19 @@ def make_cron_rule(name, schedule, enabled):
             }
         ]
     )
+    perm_statement_id = name + '-scrape-permission'
+    try:
+        perm = lamb.add_permission(
+            FunctionName=config['ec2']['lambda_arn'],
+            StatementId=perm_statement_id,
+            Action='lambda:InvokeFunction',
+            Principal='events.amazonaws.com',
+            SourceArn=rule['RuleArn'],
+        )
+    except ClientError:
+        # don't recreate permission if it is already there
+        # could also
+        # lamb.remove_permission(FunctionName=config['ec2']['lambda_arn'],
+        #                     StatementId=perm_statement_id)
+        # and recreate each time, but no value?
+        pass
