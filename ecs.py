@@ -71,6 +71,7 @@ def make_scraper_task(family,
                 create = True
                 print('changing', key,
                       existing['containerDefinitions'][0][key],
+                      'to',
                       main_container[key],
                       )
     except ClientError:
@@ -141,21 +142,21 @@ def create_instance(instance_type):
 
 def upload_task_definitions(only=None):
     for task in config['tasks']:
+        # convert entrypoint to list, break on spaces if needed
         entrypoint = task['entrypoint']
         if not isinstance(entrypoint, list):
             entrypoint = entrypoint.split()
+
+        # shortcut for only adding certain task definitions
         if only and task['name'] != only:
             continue
-        print('uploading', task['name'])
+
+        print('==', task['name'], '===========')
         make_scraper_task(task['name'],
                           entrypoint,
                           memory_soft=task.get('memory_soft', 128),
                           environment=task.get('environment')
                           )
-
-
-def upload_schedules():
-    for task in config['tasks']:
         if task.get('cron'):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),
@@ -209,35 +210,56 @@ def print_latest_log(prefix):
 def make_cron_rule(name, schedule, enabled):
     events = boto3.client('events', region_name='us-east-1')
     lamb = boto3.client('lambda', region_name='us-east-1')
-    rule = events.put_rule(
-        Name=name,
-        ScheduleExpression=schedule,
-        State='ENABLED' if enabled else 'DISABLED',
-        Description='run {} at {}'.format(name, schedule),
-    )
-    target = events.put_targets(
-        Rule=name,
-        Targets=[
-            {
-                'Id': name + '-scrape',
-                'Arn': config['ec2']['lambda_arn'],
-                'Input': json.dumps({'job': name})
-            }
-        ]
-    )
-    perm_statement_id = name + '-scrape-permission'
+
+    enabled = 'ENABLED' if enabled else 'DISABLED'
+    create = False
+
     try:
-        perm = lamb.add_permission(
-            FunctionName=config['ec2']['lambda_arn'],
-            StatementId=perm_statement_id,
-            Action='lambda:InvokeFunction',
-            Principal='events.amazonaws.com',
-            SourceArn=rule['RuleArn'],
-        )
+        old_rule = events.describe_rule(Name=name)
+        updating = []
+        if schedule != old_rule['ScheduleExpression']:
+            updating.append('schedule')
+        if enabled != old_rule['State']:
+            updating.append('enabled')
+        if updating:
+            print('updating rule', name, ' '.join(updating))
+            create = True
     except ClientError:
-        # don't recreate permission if it is already there
-        # could also
-        # lamb.remove_permission(FunctionName=config['ec2']['lambda_arn'],
-        #                     StatementId=perm_statement_id)
-        # and recreate each time, but no value?
-        pass
+        print('creating new cron rule', name, schedule)
+        create = True
+
+    if create:
+        rule = events.put_rule(
+            Name=name,
+            ScheduleExpression=schedule,
+            State=enabled,
+            Description='run {} at {}'.format(name, schedule),
+        )
+        target = events.put_targets(
+            Rule=name,
+            Targets=[
+                {
+                    'Id': name + '-scrape',
+                    'Arn': config['ec2']['lambda_arn'],
+                    'Input': json.dumps({'job': name})
+                }
+            ]
+        )
+        perm_statement_id = name + '-scrape-permission'
+        try:
+            perm = lamb.add_permission(
+                FunctionName=config['ec2']['lambda_arn'],
+                StatementId=perm_statement_id,
+                Action='lambda:InvokeFunction',
+                Principal='events.amazonaws.com',
+                SourceArn=rule['RuleArn'],
+            )
+        except ClientError:
+            # don't recreate permission if it is already there
+            # could also
+            # lamb.remove_permission(FunctionName=config['ec2']['lambda_arn'],
+            #                     StatementId=perm_statement_id)
+            # and recreate each time, but no value?
+            pass
+    else:
+        print('no schedule change')
