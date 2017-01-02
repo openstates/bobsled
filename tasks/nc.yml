@@ -1,5 +1,6 @@
 name: NC
-entrypoint: billy-update nc --bills --votes --session 2015E1 --session 2015E2 --session 2015E3 --session 2015E4 --session 2015E5
+entrypoint: billy-update nc --legislators
 memory_soft: 128
+cron: 0 5 * * ? *
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
