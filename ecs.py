@@ -156,7 +156,7 @@ def upload_task_definitions(only=None):
 
 def upload_schedules():
     for task in config['tasks']:
-        if task['cron']:
+        if task.get('cron'):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),
                            task.get('enabled', True)
