@@ -1,5 +1,5 @@
 name: WY
-entrypoint: billy-update wy
+entrypoint: billy-update wy --legislators --bills
 memory_soft: 128
 cron: 0 8 * * ? *
 environment:
