@@ -5,6 +5,7 @@ import datetime
 import boto3
 from botocore.exceptions import ClientError
 import yaml
+import click
 
 ecs = boto3.client('ecs', region_name='us-east-1')
 ec2 = boto3.client('ec2', region_name='us-east-1')
@@ -67,13 +68,18 @@ def make_scraper_task(family,
         existing = resp['taskDefinition']
         for key in ('entryPoint', 'environment', 'image', 'name',
                     'memoryReservation', 'essential', 'logConfiguration'):
-            if existing['containerDefinitions'][0][key] != main_container[key]:
+
+            # check if values differ for this key
+            oldval = existing['containerDefinitions'][0][key]
+            newval = main_container[key]
+            if key == 'environment':
+                differ = (sorted(oldval) != sorted(newval))
+            else:
+                differ = (oldval != newval)
+
+            if differ:
                 create = True
-                print('changing', key,
-                      existing['containerDefinitions'][0][key],
-                      'to',
-                      main_container[key],
-                      )
+                print('changing {}: {} => {}'.format(key, oldval, newval))
     except ClientError:
         create = True
 
@@ -140,7 +146,7 @@ def create_instance(instance_type):
     return response
 
 
-def upload_task_definitions(only=None):
+def publish_task_definitions(only=None):
     for task in config['tasks']:
         # convert entrypoint to list, break on spaces if needed
         entrypoint = task['entrypoint']
@@ -148,7 +154,7 @@ def upload_task_definitions(only=None):
             entrypoint = entrypoint.split()
 
         # shortcut for only adding certain task definitions
-        if only and task['name'] != only:
+        if only and task['name'] not in only:
             continue
 
         print('==', task['name'], '===========')
@@ -263,3 +269,18 @@ def make_cron_rule(name, schedule, enabled):
             pass
     else:
         print('no schedule change')
+
+
+@click.group()
+def cli():
+    pass
+
+@cli.command()
+@click.argument('only', nargs=-1)
+def publish(only):
+    click.echo('publishing {} to AWS'.format(', '.join(only)
+                                             if only else 'tasks'))
+    publish_task_definitions(only)
+
+if __name__ == '__main__':
+    cli()
