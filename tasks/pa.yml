@@ -1,5 +1,5 @@
 name: PA
-entrypoint: billy-update pa --legislators
+entrypoint: billy-update pa 
 memory_soft: 128
 cron: 0 5 * * ? *
 environment:
