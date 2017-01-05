@@ -1,3 +1,4 @@
+import getpass
 import click
 from .logs import print_latest_log, get_log_streams
 from .tasks import publish_task_definitions, run_task, run_all_tasks
@@ -25,6 +26,17 @@ def logs(prefix):
     else:
         print_latest_log(prefix)
 
+
+@cli.command()
+@click.argument('jobs', nargs=-1)
+def run(jobs):
+    who = getpass.getuser()
+    if jobs:
+        for job in jobs:
+            run_task(job, who)
+    else:
+        click.secho('must include job name', fg='red')
+    #    run_all_tasks(job, who)
 
 if __name__ == '__main__':
     cli()

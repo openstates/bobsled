@@ -36,7 +36,7 @@ def print_log(streamname):
 
 def print_latest_log(prefix):
     latest = None
-    for s in get_log_streams(prefix):
+    for s in get_log_streams(prefix.lower()):
         print(s['logStreamName'], _fmt_time(s['firstEventTimestamp']))
         if (latest is None or
                 s['firstEventTimestamp'] > latest['firstEventTimestamp']):

@@ -162,7 +162,9 @@ def publish_task_definitions(only=None):
                            )
 
 
-def run_task(task_definition, started_by, config):
+def run_task(task_definition, started_by, config=None):
+    if not config:
+        config = load_config()
     ecs = boto3.client('ecs', region_name='us-east-1')
 
     print('running', task_definition)
