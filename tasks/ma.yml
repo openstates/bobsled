@@ -2,6 +2,6 @@ name: MA
 entrypoint: billy-update ma
 memory_soft: 128
 cron: 0 5 * * ? *
-enabled: false
+enabled: true
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
