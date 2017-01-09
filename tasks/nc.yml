@@ -1,5 +1,6 @@
 name: NC
-entrypoint: billy-update nc --legislators
+#entrypoint: billy-update nc --legislators
+entrypoint: billy-update nc --bills --session 2015E1 --session 2015E2 --session 2015E3 --session 2015E4 --session 2015E5
 memory_soft: 128
 cron: 0 4 * * ? *
 environment:
