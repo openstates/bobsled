@@ -1,6 +1,7 @@
-name: NC
-entrypoint: billy-update nc --legislators
+name: KS
+entrypoint: billy-update ks
 memory_soft: 128
-cron: 0 4 * * ? *
+cron: 0 6 * * ? *
+enabled: true
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com

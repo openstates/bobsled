@@ -1,5 +1,5 @@
 name: MA
-entrypoint: billy-update ma
+entrypoint: billy-update ma --bills --legislators
 memory_soft: 128
 cron: 0 5 * * ? *
 enabled: true

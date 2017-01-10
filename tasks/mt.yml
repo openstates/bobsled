@@ -1,5 +1,5 @@
 name: MT
-entrypoint: billy-update mt --bills --committees
+entrypoint: billy-update mt --bills --legislators
 memory_soft: 128
 cron: 0 7 * * ? *
 enabled: true
