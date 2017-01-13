@@ -1,5 +1,5 @@
 name: KS
-entrypoint: billy-update ks
+entrypoint: billy-update ks --legislators --bills --rpm 20
 memory_soft: 128
 cron: 0 6 * * ? *
 enabled: true
