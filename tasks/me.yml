@@ -1,5 +1,5 @@
 name: ME
-entrypoint: billy-update me
+entrypoint: billy-update me --bills --legislators
 memory_soft: 128
 cron: 0 4 * * ? *
 environment:
