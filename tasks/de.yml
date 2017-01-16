@@ -1,7 +1,7 @@
-name: ID
-entrypoint: billy-update id --bills --legislators
+name: DE
+entrypoint: billy-update de --bills --legislators
 memory_soft: 128
-cron: 0 7 * * ? *
+cron: 0 5 * * ? *
 enabled: true
 environment:
     BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
