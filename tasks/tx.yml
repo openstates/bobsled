@@ -1,5 +1,5 @@
 name: TX
-entrypoint: billy-update tx
+entrypoint: billy-update tx --bills --legislators
 memory_soft: 128
 cron: 0 5 * * ? *
 environment:
