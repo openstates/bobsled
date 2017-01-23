@@ -1,5 +1,5 @@
 name: NY
-entrypoint: billy-update ny
+entrypoint: billy-update ny --bills --committees --legislators
 memory_soft: 128
 cron: 0 5 * * ? *
 environment:
