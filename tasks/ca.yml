@@ -2,5 +2,4 @@ name: CA
 entrypoint: [bash, -c, "mysqld_safe & sleep 10 && python /srv/openstates-web/openstates/ca/download.py && billy-update ca --bills --legislators"]
 memory_soft: 128
 cron: 0 8 * * ? *
-environment:
-    BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
+environment: openstates

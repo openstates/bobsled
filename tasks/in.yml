@@ -2,6 +2,4 @@ name: IN
 entrypoint: billy-update in
 memory_soft: 128
 cron: 0 6 * * ? *
-environment:
-    BILLY_MONGO_HOST: ec2-54-208-83-243.compute-1.amazonaws.com
-    INDIANA_API_KEY: "Token a62cb5ec0dcb321f9ac33802160911556c6cbb19"
+environment: openstates-in
