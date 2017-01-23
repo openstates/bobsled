@@ -12,6 +12,8 @@ def load_config():
     for fn in files:
         with open(fn) as f:
             task = yaml.load(f)
+            if isinstance(task['environment'], str):
+                task['environment'] = config['environments'][task['environment']]
             config['tasks'].append(task)
 
     return config
