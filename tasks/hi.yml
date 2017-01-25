@@ -1,5 +1,5 @@
 name: HI
-entrypoint: billy-update hi --legislators
+entrypoint: billy-update hi --legislators --bills
 memory_soft: 128
 cron: 0 9 * * ? *
 environment: openstates
