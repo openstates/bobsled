@@ -1,5 +1,5 @@
 name: NC
-entrypoint: billy-update nc --legislators --bills
+entrypoint: billy-update nc 
 memory_soft: 128
 cron: 0 4 * * ? *
 environment: openstates
