@@ -1,0 +1,6 @@
+name: LA
+entrypoint: billy-update la --bills
+memory_soft: 128
+cron: 0 6 * * ? *
+enabled: true
+environment: openstates
