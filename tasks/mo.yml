@@ -1,5 +1,5 @@
 name: MO
-entrypoint: billy-update mo --bills --legislators
+entrypoint: billy-update mo --bills --legislators --committees
 memory_soft: 128
 cron: 0 6 * * ? *
 enabled: true

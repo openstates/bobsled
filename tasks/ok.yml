@@ -1,5 +1,6 @@
 name: OK
 entrypoint: billy-update ok
 memory_soft: 128
-cron: 0 6 * * ? *
+enabled: true
+cron: 1 6 * * ? *
 environment: openstates

@@ -1,5 +1,5 @@
 name: NH
-entrypoint: billy-update nh --legislators --bills
+entrypoint: billy-update nh 
 memory_soft: 128
 cron: 0 5 * * ? *
 environment: openstates
