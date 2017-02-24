@@ -1,0 +1,76 @@
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* runs */
+table {
+  border-collapse: collapse;
+}
+
+tr.head {
+  height: 100px;
+}
+
+tr.head th {
+  height: 100px;
+  width: 35px;
+  border-right: 1px solid black;
+}
+
+tbody tr {
+  height: 25px;
+}
+
+tbody td {
+    border: 1px solid white;
+}
+
+tr.head th div {
+  transform: rotate(-90deg);
+  max-width: 100%;
+}
+
+td.bad {
+  background: #aa0000;
+}
+
+td.good {
+  background: #00aa00;
+}
+
+td.empty {
+  background: #aaaaaa;
+}
+
+td.other {
+  background: #aaaa00;
+  text-align: center;
+}
+
+td a {
+    display:block;
+    text-decoration:none;
+    color: white;
+}
+
+
+/* run */
+.failure {
+    background-color: #aa0000;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+.success {
+    background-color: #00aa00;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+}
+table.import td, table.import th {
+    border: 1px solid black;
+    text-align: center;
+    padding: 1em;
+}

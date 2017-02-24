@@ -1,0 +1,63 @@
+<html>
+  <title>
+    Open States Run {{run._id}}
+  </title>
+  <head>
+    <link rel="stylesheet" href="/main.css">
+  </head>
+<body>
+  <h1>{{run.abbr|upper}} run {{run._id}}</h1>
+  {% if run.failure %}
+  <span class="failure"> failure </span>
+  {% else %}
+  <span class="success"> success </span>
+  {% endif %}
+
+  {% if run.scraped %}
+  <div class="scraped">
+    <h2>scrape</h2>
+    <pre>
+{% for arg in run.scraped.args %} {{ arg }} {% endfor %}
+    </pre>
+
+    <span class="time">
+      {{ run.scraped.started|time }} - {{ run.scraped.ended|time }}
+    </span>
+
+    {% for rr in run.scraped.run_record %}
+    <div class="scrape-run">
+      <h3> {{ rr.type }} </h3>
+      {% if rr.start_time %}
+      <span class="time"> {{ rr.start_time|time }} - {{ rr.end_time|time }} </span>
+      {% endif %}
+      {% if rr.exception %}
+      <pre>
+<b>{{rr.exception.message}}</b>
+{{rr.exception.traceback}}
+      </pre>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if run.imported %}
+  <div class="imported">
+    <h2>import</h2>
+    <table class="import">
+      <tr>
+        <th>&nbsp;</th><th>inserted</th><th>updated</th><th>total</th>
+      </tr>
+      {% for type, vals in run.imported.items() %}
+      <tr>
+        <td>{{type}}</td>
+        <td>{{vals.insert}}</td>
+        <td>{{vals.update}}</td>
+        <td>{{vals.total}}</td>
+      </tr>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</body>
+</html>

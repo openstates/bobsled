@@ -1,0 +1,51 @@
+<html>
+  <title>
+    Open States Run Log
+  </title>
+  <head>
+    <link rel="stylesheet" href="/main.css">
+  </head>
+<body>
+<table>
+  <tr class="head">
+    <th></th>
+    {% for day in days %}
+    <th>
+      <div>{{day.month}}-{{day.day}}</div>
+    </th>
+    {% endfor %}
+  </tr>
+  <tbody>
+  {% for state, state_runs in runs.items() %}
+  <tr>
+    <td>{{state|upper}}</td>
+    {% for day in days %}
+      {% if state_runs[day]|length == 0 %}
+        {% set tdclass = 'empty' %}
+      {% elif state_runs[day]|length == 1 %}
+        {% if state_runs[day][0].failure %}
+          {% set tdclass = 'bad' %}
+        {% else %}
+          {% set tdclass = 'good' %}
+        {% endif %}
+      {% else %}
+        {% set tdclass = 'other' %}
+      {% endif %}
+      <td class="{{tdclass}}">
+        {% if state_runs[day]|length == 1 %}
+          <a href="/run{{state_runs[day][0]._id}}.html">
+            {% if tdclass == 'other' %}
+              {{state_runs[day]|length}}
+            {% else %}
+              &nbsp;
+            {% endif %}
+          </a>
+        {% endif %}
+      </td>
+    {% endfor %}
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</body>
+</html>
