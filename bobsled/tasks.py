@@ -152,7 +152,8 @@ def publish_task_definitions(only=None):
         make_scraper_task(task['name'],
                           entrypoint,
                           memory_soft=task.get('memory_soft', 128),
-                          environment=task.get('environment')
+                          environment=task.get('environment'),
+                          image=task.get('image', 'openstates/openstates'),
                           )
         if task.get('cron'):
             make_cron_rule(task['name'],
