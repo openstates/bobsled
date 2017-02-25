@@ -101,7 +101,3 @@ def check_status():
 
     write_html(runs, output_dir, days=CHART_DAYS)
     upload(output_dir)
-
-
-if __name__ == '__main__':
-    check_status()
