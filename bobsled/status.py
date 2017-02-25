@@ -9,19 +9,46 @@ from .utils import all_files
 from .config import load_config
 
 
+class RunList(object):
+
+    def __init__(self):
+        self.runs = []
+
+    def add(self, run):
+        self.runs.append(run)
+
+    @property
+    def style(self):
+        has_success = False
+        has_failure = False
+        for r in self.runs:
+            if r.get('failure', False):
+                has_failure = True
+            else:
+                has_success = True
+        if has_success and has_failure:
+            return 'other'
+        elif has_success:
+            return 'good'
+        elif has_failure:
+            return 'bad'
+        else:
+            return 'empty'
+
+
 def get_last_runs(days=14):
     mc = pymongo.MongoClient(os.environ.get('BILLY_MONGO_HOST', 'localhost'))
     runs = mc.fiftystates.billy_runs.find(
         {'scraped.started':
          {'$gt': datetime.datetime.today() - datetime.timedelta(days=days)}
          }
-    )
+    ).sort([('scraped.started', -1)])
 
-    state_runs = defaultdict(lambda: defaultdict(list))
+    state_runs = defaultdict(lambda: defaultdict(RunList))
 
     for run in runs:
         rundate = run['scraped']['started'].date()
-        state_runs[run['abbr']][rundate].append(run)
+        state_runs[run['abbr']][rundate].add(run)
 
     return state_runs
 
@@ -49,8 +76,8 @@ def render_runs(days, runs):
     return render_jinja_template('runs.html', runs=runs, days=days)
 
 
-def render_run(run):
-    return render_jinja_template('run.html', run=run)
+def render_run(runlist, date):
+    return render_jinja_template('run.html', runlist=runlist, date=date)
 
 
 def write_html(runs, output_dir, days=14):
@@ -64,10 +91,10 @@ def write_html(runs, output_dir, days=14):
         out.write(render_runs(days, runs))
 
     for state, state_runs in runs.items():
-        for date, runs in state_runs.items():
-            for run in runs:
-                with open(os.path.join(output_dir, 'run{}.html'.format(run['_id'])), 'w') as out:
-                    out.write(render_run(run))
+        for date, rl in state_runs.items():
+            if rl.runs:
+                with open(os.path.join(output_dir, 'run-{}-{}.html'.format(state, date)), 'w') as out:
+                    out.write(render_run(rl, date))
 
     shutil.copy(os.path.join(os.path.dirname(__file__), '../css/main.css'), output_dir)
 
@@ -91,7 +118,7 @@ def upload(dirname):
         )
 
 
-def check_status():
+def check_status(do_upload=False):
     WARNING_THRESHOLD = 2
     CRITICAL_THRESHOLD = 5
     CHART_DAYS = 14
@@ -100,4 +127,6 @@ def check_status():
     runs = get_last_runs(CHART_DAYS)
 
     write_html(runs, output_dir, days=CHART_DAYS)
-    upload(output_dir)
+
+    if do_upload:
+        upload(output_dir)
