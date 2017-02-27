@@ -1,24 +1,35 @@
 import os
-import glob
+import shutil
 import zipfile
+import tempfile
+
 import boto3
 
 
-def bobsled_to_zip():
-    # TODO: pip install module-name -t /path/to/project-dir
-    basedir = os.path.basename(os.path.dirname(__file__))
-    with zipfile.ZipFile('/tmp/bobsled.zip', 'w') as zf:
-        filenames = glob.glob(basedir + '/*') + glob.glob(basedir + '/*/*')
+def bobsled_to_zip(zipfilename):
+    tmpdir = tempfile.mkdtemp()
+    dirname = os.path.dirname(os.path.dirname(__file__))
+    os.system('pip install {} -t {}'.format(dirname, tmpdir))
+
+    with zipfile.ZipFile(zipfilename, 'w') as zf:
+        filenames = reduce(lambda x, y: x+y,
+                           ([os.path.join(d, f) for f in files]
+                           for d, _, files in os.walk(tmpdir)))
         for filename in filenames:
             if not filename.endswith('.pyc'):
-                print(filename)
-                zf.write(filename, 'bobsled/' + filename)
+                afilename = filename.replace(tmpdir + '/', '')
+                print(afilename)
+                zf.write(filename, afilename)
+
+    shutil.rmtree(tmpdir)
 
 
 def publish_function(name, description, timeout=3, delete_first=False):
     lamb = boto3.client('lambda', region_name='us-east-1')
 
-    bobsled_to_zip()
+    zipfilename = '/tmp/bobsled.zip'
+
+    bobsled_to_zip(zipfilename)
 
     if delete_first:
         lamb.delete_function(FunctionName=name)
@@ -26,9 +37,10 @@ def publish_function(name, description, timeout=3, delete_first=False):
                          Runtime='python2.7',
                          Role='arn:aws:iam::189670762819:role/lambda-ecs-cron',
                          Handler='bobsled.lambda_handlers.test',
-                         Code={'ZipFile': open('/tmp/bobsled.zip', 'rb').read()},
+                         Code={'ZipFile': open(zipfilename, 'rb').read()},
                          Description=description,
                          Timeout=timeout,
                          Publish=True)
 
-publish_function('test', 'lambda zip test', delete_first=True)
+if __name__ == '__main__':
+    publish_function('bobsled', 'bobsled lambda zip test', delete_first=True)
