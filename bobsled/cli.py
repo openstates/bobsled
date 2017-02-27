@@ -2,6 +2,7 @@ import getpass
 import click
 from .logs import print_latest_log, get_log_streams
 from .tasks import publish_task_definitions, run_task, run_all_tasks
+from .status import check_status
 
 
 @click.group()
@@ -36,7 +37,13 @@ def run(jobs):
             run_task(job, who)
     else:
         click.secho('must include job name', fg='red')
-    #    run_all_tasks(job, who)
+
+
+@cli.command()
+def status():
+    check_status()
+    click.echo('uploaded to S3')
+
 
 if __name__ == '__main__':
     cli()
