@@ -2,8 +2,9 @@ import os
 import shutil
 import zipfile
 import tempfile
-
 import boto3
+import botocore
+from .config import load_config
 
 
 def bobsled_to_zip(zipfilename):
@@ -24,23 +25,31 @@ def bobsled_to_zip(zipfilename):
     shutil.rmtree(tmpdir)
 
 
-def publish_function(name, description, timeout=3, delete_first=False):
+def publish_function(name, handler, description, timeout=3,
+                     delete_first=False):
     lamb = boto3.client('lambda', region_name='us-east-1')
+    config = load_config()
 
     zipfilename = '/tmp/bobsled.zip'
 
     bobsled_to_zip(zipfilename)
 
     if delete_first:
-        lamb.delete_function(FunctionName=name)
+        try:
+            lamb.delete_function(FunctionName=name)
+        except botocore.exceptions.ClientError:
+            pass
     lamb.create_function(FunctionName=name,
                          Runtime='python2.7',
-                         Role='arn:aws:iam::189670762819:role/lambda-ecs-cron',
-                         Handler='bobsled.lambda_handlers.test',
+                         Role=config['aws']['lambda_role'],
+                         Handler=handler,
                          Code={'ZipFile': open(zipfilename, 'rb').read()},
                          Description=description,
                          Timeout=timeout,
                          Publish=True)
 
 if __name__ == '__main__':
-    publish_function('bobsled', 'bobsled lambda zip test', delete_first=True)
+    funcs = ('bobsled.lambda_handlers.echo',
+             'bobsled.lambda_handlers.check_status_handler')
+    for func in funcs:
+        publish_function(func.replace('.', '-'), func, func, timeout=30, delete_first=True)

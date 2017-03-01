@@ -10,4 +10,11 @@ setup(name='bobsled',
       url='https://github.com/openstates/bobsled',
       packages=find_packages(),
       include_package_data=True,
+      install_requires=[
+          'boto3',
+          'PyYAML',
+          'PyGithub==1.32',
+          'pymongo==3.4.0',
+          'Jinja2==2.9.5',
+      ]
 )
