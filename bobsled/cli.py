@@ -40,9 +40,11 @@ def run(jobs):
 
 
 @cli.command()
-def status():
-    check_status()
-    click.echo('uploaded to S3')
+@click.option('--upload/--no-upload', default=False)
+def status(upload):
+    check_status(upload)
+    if upload:
+        click.echo('uploaded to S3')
 
 
 if __name__ == '__main__':

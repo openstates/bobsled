@@ -35,7 +35,7 @@
         {% endif %}
         {% if rr.exception %}
         <pre>
-  <b>{{rr.exception.message}}</b>
+  <b>{{rr.exception.type}}: {{rr.exception.message}}</b>
   {{rr.exception.traceback}}
         </pre>
         {% endif %}

@@ -20,7 +20,7 @@
   <tr>
     <td>{{state|upper}}</td>
     {% for day in days %}
-      {% set tdclass = state_runs[day].style %}
+      {% set tdclass = state_runs[day].status %}
       <td class="{{tdclass}}">
         {% if state_runs[day].runs %}
           <a href="/run-{{state}}-{{day}}.html">
