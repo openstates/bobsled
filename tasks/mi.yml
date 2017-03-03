@@ -1,5 +1,5 @@
 name: MI
-entrypoint: billy-update mi --legislators --bills
+entrypoint: billy-update mi
 memory_soft: 128
 cron: 0 6 * * ? *
 environment: openstates
