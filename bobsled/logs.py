@@ -29,7 +29,7 @@ def print_log(streamname):
 
     events = logs.get_log_events(logGroupName='openstates-scrapers',
                                  logStreamName=streamname)
-    next = events['nextForwardToken']
+    # next = events['nextForwardToken']
     for event in events['events']:
         print(event['message'])
 
@@ -37,8 +37,8 @@ def print_log(streamname):
 def print_latest_log(prefix):
     latest = None
     for s in get_log_streams(prefix.lower()):
-        print(s['logStreamName'], _fmt_time(s['firstEventTimestamp']))
         if (latest is None or
                 s['firstEventTimestamp'] > latest['firstEventTimestamp']):
             latest = s
+    print(_fmt_time(latest['firstEventTimestamp']))
     print_log(latest['logStreamName'])
