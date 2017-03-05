@@ -7,4 +7,4 @@ def echo(event, context):
 
 
 def check_status_handler(event, context):
-    check_status(upload=True)
+    check_status(do_upload=True)

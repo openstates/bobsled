@@ -3,9 +3,9 @@ import os
 import shutil
 import datetime
 from collections import defaultdict, OrderedDict
-from github import Github, UnknownObjectException
 from jinja2 import Environment, PackageLoader
 import boto3
+import github3
 import pymongo
 from .utils import all_files
 from .config import load_config
@@ -83,7 +83,6 @@ def render_run(runlist, date):
 
 
 def write_html(runs, output_dir, days=14):
-
     try:
         os.makedirs(output_dir)
     except OSError:
@@ -95,7 +94,8 @@ def write_html(runs, output_dir, days=14):
     for state, state_runs in runs.items():
         for date, rl in state_runs.items():
             if rl.runs:
-                with open(os.path.join(output_dir, 'run-{}-{}.html'.format(state, date)), 'w') as out:
+                with open(os.path.join(output_dir,
+                                       'run-{}-{}.html'.format(state, date)), 'w') as out:
                     out.write(render_run(rl, date))
 
     shutil.copy(os.path.join(os.path.dirname(__file__), '../css/main.css'), output_dir)
@@ -123,6 +123,8 @@ def state_status(runs):
     CRITICAL = 2
     WARNING = 1
 
+    today = datetime.date.today()
+
     for state, state_runs in runs.items():
         bad_in_a_row = 0
         exception = None
@@ -130,6 +132,9 @@ def state_status(runs):
         scraper = None
 
         for date, rl in sorted(state_runs.items(), reverse=True):
+            if rl.status == 'empty' and date == today:
+                # don't count a missing run today against scraper
+                continue
             if rl.status == 'good':
                 break
             bad_in_a_row += 1
@@ -141,11 +146,10 @@ def state_status(runs):
                         scraper = rr['type']
                         exception = rr['exception']
 
-        if bad_in_a_row > CRITICAL:
-            make_issue(state, bad_in_a_row, scraper, args, exception)
-        elif bad_in_a_row > WARNING:
-            print('warning for', state, bad_in_a_row, args, exception)
-
+        if bad_in_a_row >= WARNING:
+            print('warning for', state, bad_in_a_row)
+            if exception and bad_in_a_row >= CRITICAL:
+                make_issue(state, bad_in_a_row, scraper, args, exception)
 
 
 def check_status(do_upload=False):
@@ -163,13 +167,13 @@ def check_status(do_upload=False):
 
 def make_issue(state, days, scraper_type, args, exception):
     config = load_config()
-    g = Github(config['github']['key'])
-    r = g.get_repo('openstates/openstates')
+    gh = github3.login(token=config['github']['key'])
+    r = gh.repository('openstates', 'openstates')
 
     # ensure upper case
     state = state.upper()
 
-    existing_issues = r.get_issues(creator='openstates-bot')
+    existing_issues = r.iter_issues(labels='automatic', state='open')
     for issue in existing_issues:
         if issue.title.startswith(state):
             print('issue already exists: #{}- {}'.format(
@@ -177,13 +181,7 @@ def make_issue(state, days, scraper_type, args, exception):
             )
             return
 
-    ready = r.get_label('ready')
-    try:
-        automatic = r.get_label('automatic')
-    except UnknownObjectException:
-        automatic = r.create_label('automatic', '333333')
-
-    since = datetime.date.today() - datetime.timedelta(days=days)
+    since = datetime.date.today() - datetime.timedelta(days=days-1)
 
     body = '''State: {state} - scraper has been failing since {since}
 
@@ -197,6 +195,6 @@ Based on automated runs it appears that {state} has not run successfully in {day
 
 Visit http://bobsled.openstates.org/ for more info.
 '''.format(state=state, since=since, days=days, scraper_type=scraper_type, args=args, **exception)
-    title='{} scraper failing since at least {}'.format(state, since)
-    issue = r.create_issue(title=title, body=body, labels=[automatic, ready])
+    title = '{} scraper failing since at least {}'.format(state, since)
+    issue = r.create_issue(title=title, body=body, labels=['automatic', 'ready'])
     print('created issue: #{} - {}'.format(issue.number, title))
