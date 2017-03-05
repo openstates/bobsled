@@ -1,5 +1,5 @@
 name: IA
-entrypoint: billy-update ia
+entrypoint: billy-update ia --bills --legislators --committees
 memory_soft: 128
 cron: 0 6 * * ? *
 enabled: true
