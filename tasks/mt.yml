@@ -1,6 +1,7 @@
 name: MT
-entrypoint: billy-update mt --bills --legislators
+entrypoint: ./pupa-scrape.sh mt
 memory_soft: 128
 cron: 0 7 * * ? *
 enabled: true
-environment: openstates
+environment: openstates-pupa
+image: openstates/openstates-pupa

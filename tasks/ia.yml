@@ -1,6 +1,6 @@
 name: IA
-entrypoint: billy-update ia
+entrypoint: billy-update ia 
 memory_soft: 128
-cron: 0 6 * * ? *
+cron: 1 6 * * ? *
 enabled: true
 environment: openstates
