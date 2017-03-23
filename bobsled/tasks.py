@@ -5,6 +5,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from .config import load_config
+from .dynamo import Run
 
 
 def make_scraper_task(family,
@@ -163,17 +164,21 @@ def publish_task_definitions(only=None):
                            )
 
 
-def run_task(task_definition, started_by, config=None):
+def run_task(task_name, started_by, config=None):
     if not config:
         config = load_config()
     ecs = boto3.client('ecs', region_name='us-east-1')
 
-    print('running', task_definition)
+    for task_def in config['tasks']:
+        if task_def['name'] == task_name:
+            task_json = task_def
+
+    print('running', task_name)
 
     response = ecs.run_task(
         cluster=config['ec2']['ecs_cluster'],
         count=1,
-        taskDefinition=task_definition,
+        taskDefinition=task_name,
         startedBy=started_by,
         #overrides={
         #    'containerOverrides': [
@@ -192,6 +197,11 @@ def run_task(task_definition, started_by, config=None):
         #    ],
         #},
     )
+
+    Run(task_name,
+        task_definition=task_json,
+        task_arn=response['tasks'][0]['taskArn'],
+        ).save()
     return response
 
 
