@@ -1,7 +1,8 @@
 import getpass
 import click
 from .logs import print_latest_log, get_log_streams
-from .tasks import publish_task_definitions, run_task, run_all_tasks
+from .tasks import publish_task_definitions, run_task
+from .awslambda import publish_function
 from .status import check_status
 
 
@@ -46,6 +47,14 @@ def status(upload):
     if upload:
         click.echo('uploaded to S3')
 
+@cli.command()
+def init_lambda():
+    funcs = ('bobsled.handlers.echo',
+             'bobsled.handlers.check_status_handler',
+             'bobsled.handlers.run_task_handler',
+             )
+    for func in funcs:
+        publish_function(func.replace('.', '-'), func, func, timeout=30, delete_first=True)
 
 if __name__ == '__main__':
     cli()

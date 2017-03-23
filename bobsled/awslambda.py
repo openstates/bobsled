@@ -47,9 +47,3 @@ def publish_function(name, handler, description, timeout=3,
                          Description=description,
                          Timeout=timeout,
                          Publish=True)
-
-if __name__ == '__main__':
-    funcs = ('bobsled.lambda_handlers.echo',
-             'bobsled.lambda_handlers.check_status_handler')
-    for func in funcs:
-        publish_function(func.replace('.', '-'), func, func, timeout=30, delete_first=True)
