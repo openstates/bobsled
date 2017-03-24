@@ -1,6 +1,6 @@
 *.pyc
 __pycache__
-config.yaml
+env.sh
 MANIFEST
 dist/
 bobsled.egg-info

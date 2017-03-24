@@ -13,10 +13,9 @@ def cli():
 
 @cli.command()
 @click.argument('only', nargs=-1)
-def publish(only):
-    click.echo('publishing {} to AWS'.format(', '.join(only)
-                                             if only else 'tasks'))
-    publish_task_definitions(only)
+@click.option('-v', count=True)
+def publish(only, v):
+    publish_task_definitions(only, v > 0)
 
 
 @cli.command()

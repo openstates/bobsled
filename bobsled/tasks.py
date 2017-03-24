@@ -33,6 +33,7 @@ def make_scraper_task(family,
                       memory_soft=128,
                       name='openstates-scraper',
                       environment=None,
+                      verbose=False,
                       # cpu=None,
                       # memory=None,
                       ):
@@ -79,7 +80,7 @@ def make_scraper_task(family,
 
             if differ:
                 create = True
-                print('changing {}: {} => {}'.format(key, oldval, newval))
+                print('{}: changing {}: {} => {}'.format(family, key, oldval, newval))
     except ClientError:
         create = True
 
@@ -92,12 +93,13 @@ def make_scraper_task(family,
         )
         return response
     elif existing:
-        print('definition matches {family}:{revision}'.format(**existing))
+        if verbose:
+            print('{family}: definition matches {family}:{revision}'.format(**existing))
     else:
-        print('creating new task', family)
+        print('{}: creating new task'.format(family))
 
 
-def make_cron_rule(name, schedule, enabled):
+def make_cron_rule(name, schedule, enabled, verbose=False):
     events = boto3.client('events', region_name='us-east-1')
     lamb = boto3.client('lambda', region_name='us-east-1')
 
@@ -112,10 +114,10 @@ def make_cron_rule(name, schedule, enabled):
         if enabled != old_rule['State']:
             updating.append('enabled')
         if updating:
-            print('updating rule', name, ' '.join(updating))
+            print('{}: updating rule'.format(name), ' '.join(updating))
             create = True
     except ClientError:
-        print('creating new cron rule', name, schedule)
+        print('{}: creating new cron rule'.format(name), schedule)
         create = True
 
     if create:
@@ -147,11 +149,11 @@ def make_cron_rule(name, schedule, enabled):
         except ClientError:
             # don't recreate permission if it is already there
             pass
-    else:
-        print('no schedule change')
+    elif verbose:
+        print('{}: no schedule change'.format(name))
 
 
-def publish_task_definitions(only=None):
+def publish_task_definitions(only=None, verbose=False):
     tasks = load_tasks('../task-definitions')
 
     for task in tasks:
@@ -164,17 +166,18 @@ def publish_task_definitions(only=None):
         if only and task['name'] not in only:
             continue
 
-        print('==', task['name'], '===========')
         make_scraper_task(task['name'],
                           entrypoint,
                           image=task.get('image'),
                           memory_soft=task.get('memory_soft', 128),
                           environment=task.get('environment'),
+                          verbose=verbose,
                           )
         if task.get('cron'):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),
                            task.get('enabled', True),
+                           verbose=verbose,
                            )
 
 
