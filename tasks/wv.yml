@@ -1,6 +1,0 @@
-name: WV
-entrypoint: billy-update wv
-memory_soft: 128
-cron: 0 5 * * ? *
-enabled: true
-environment: openstates

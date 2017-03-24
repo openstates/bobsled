@@ -1,5 +1,0 @@
-name: CA
-entrypoint: [bash, -c, "mysqld_safe & sleep 10 && python /srv/openstates-web/openstates/ca/download.py && billy-update ca --bills --legislators"]
-memory_soft: 128
-cron: 0 8 * * ? *
-environment: openstates

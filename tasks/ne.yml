@@ -1,5 +1,0 @@
-name: NE
-entrypoint: billy-update ne
-memory_soft: 128
-cron: 0 7 * * ? *
-environment: openstates

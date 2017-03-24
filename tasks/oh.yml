@@ -1,5 +1,0 @@
-name: OH
-entrypoint: billy-update oh
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates

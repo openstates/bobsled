@@ -1,5 +1,0 @@
-name: WI
-entrypoint: billy-update wi
-memory_soft: 128
-cron: 0 6 * * ? *
-environment: openstates

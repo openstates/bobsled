@@ -1,6 +1,0 @@
-name: DE
-entrypoint: billy-update de --bills --committees --legislators
-memory_soft: 128
-cron: 0 5 * * ? *
-enabled: true
-environment: openstates

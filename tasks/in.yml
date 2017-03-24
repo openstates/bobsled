@@ -1,5 +1,0 @@
-name: IN
-entrypoint: billy-update in
-memory_soft: 128
-cron: 0 6 * * ? *
-environment: openstates-in

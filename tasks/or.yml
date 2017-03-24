@@ -1,5 +1,0 @@
-name: OR
-entrypoint: billy-update or
-memory_soft: 128
-cron: 0 8 * * ? *
-environment: openstates

@@ -1,6 +1,0 @@
-name: KY
-entrypoint: billy-update ky
-memory_soft: 128
-cron: 0 6 * * ? *
-enabled: true
-environment: openstates

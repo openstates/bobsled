@@ -1,6 +1,0 @@
-name: KS
-entrypoint: billy-update ks --rpm 12
-memory_soft: 128
-cron: 1 6 * * ? *
-enabled: true
-environment: openstates

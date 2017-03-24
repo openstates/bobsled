@@ -1,5 +1,0 @@
-name: TN
-entrypoint: billy-update tn
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates

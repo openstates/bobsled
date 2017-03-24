@@ -1,5 +1,0 @@
-name: Backup-Mongo
-entrypoint: /srv/openstates-web/scripts/backup
-memory_soft: 128
-cron: 0 0 * * ? *
-environment: openstates-backups

@@ -1,5 +1,0 @@
-name: DC
-entrypoint: billy-update dc
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates

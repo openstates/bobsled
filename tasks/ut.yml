@@ -1,5 +1,0 @@
-name: UT
-entrypoint: billy-update ut
-memory_soft: 128
-cron: 0 8 * * ? *
-environment: openstates

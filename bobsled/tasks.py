@@ -1,21 +1,40 @@
 from __future__ import print_function
 import os
+import glob
 import json
+import yaml
 import boto3
 from botocore.exceptions import ClientError
 
-from .config import load_config
 from .dynamo import Run
+
+
+def load_tasks(directory):
+    environments = yaml.load(open(os.path.join(directory, 'environments.yaml')))
+
+    tasks = []
+
+    files = glob.glob(os.path.join(directory, 'tasks/*.yml'))
+    for fn in files:
+        with open(fn) as f:
+            task = yaml.load(f)
+            # environment can be a string and will be looked up in environments
+            # or can be a dict and will be used as-is
+            if isinstance(task['environment'], str):
+                task['environment'] = environments[task['environment']]
+            tasks.append(task)
+
+    return tasks
 
 
 def make_scraper_task(family,
                       entrypoint,
+                      image,
                       memory_soft=128,
                       name='openstates-scraper',
-                      image='openstates/openstates',
                       environment=None,
-                      #cpu=None,
-                      #memory=None,
+                      # cpu=None,
+                      # memory=None,
                       ):
     ecs = boto3.client('ecs', region_name='us-east-1')
 
@@ -78,7 +97,7 @@ def make_scraper_task(family,
         print('creating new task', family)
 
 
-def make_cron_rule(name, schedule, enabled, config):
+def make_cron_rule(name, schedule, enabled):
     events = boto3.client('events', region_name='us-east-1')
     lamb = boto3.client('lambda', region_name='us-east-1')
 
@@ -133,9 +152,9 @@ def make_cron_rule(name, schedule, enabled, config):
 
 
 def publish_task_definitions(only=None):
-    config = load_config()
+    tasks = load_tasks('../task-definitions')
 
-    for task in config['tasks']:
+    for task in tasks:
         # convert entrypoint to list, break on spaces if needed
         entrypoint = task['entrypoint']
         if not isinstance(entrypoint, list):
@@ -148,25 +167,19 @@ def publish_task_definitions(only=None):
         print('==', task['name'], '===========')
         make_scraper_task(task['name'],
                           entrypoint,
+                          image=task.get('image'),
                           memory_soft=task.get('memory_soft', 128),
                           environment=task.get('environment'),
-                          image=task.get('image', 'openstates/openstates'),
                           )
         if task.get('cron'):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),
                            task.get('enabled', True),
-                           config
                            )
 
 
 def run_task(task_name, started_by):
-    config = load_config()
     ecs = boto3.client('ecs', region_name='us-east-1')
-
-    for task_def in config['tasks']:
-        if task_def['name'] == task_name:
-            task_json = task_def
 
     print('running', task_name)
 
@@ -175,7 +188,7 @@ def run_task(task_name, started_by):
         count=1,
         taskDefinition=task_name,
         startedBy=started_by,
-        #overrides={
+        # overrides={
         #    'containerOverrides': [
         #        {
         #            'name': 'string',
@@ -190,17 +203,11 @@ def run_task(task_name, started_by):
         #            ]
         #        },
         #    ],
-        #},
+        # },
     )
 
     Run(task_name,
-        task_definition=task_json,
+        task_definition={},     # TODO
         task_arn=response['tasks'][0]['taskArn'],
         ).save()
     return response
-
-
-def run_all_tasks(started_by):
-    config = load_config()
-    for task in config['tasks']:
-        run_task(task['name'], started_by, config)

@@ -1,5 +1,0 @@
-name: CT
-entrypoint: billy-update ct
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates

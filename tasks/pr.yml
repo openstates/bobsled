@@ -1,5 +1,0 @@
-name: PR
-entrypoint: billy-update pr --bills --legislators
-memory_soft: 128
-cron: 0 4 * * ? *
-environment: openstates

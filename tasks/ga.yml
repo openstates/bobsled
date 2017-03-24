@@ -1,5 +1,0 @@
-name: GA
-entrypoint: billy-update ga
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates

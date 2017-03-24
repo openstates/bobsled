@@ -1,6 +1,0 @@
-name: VA
-entrypoint: ./pupa-scrape.sh va
-memory_soft: 128
-cron: 0 5 * * ? *
-environment: openstates-pupa
-image: openstates/openstates-pupa
