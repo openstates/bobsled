@@ -8,7 +8,6 @@ import boto3
 import github3
 import pymongo
 from .utils import all_files
-from .config import load_config
 
 
 class RunList(object):
@@ -103,7 +102,6 @@ def write_html(runs, output_dir, days=14):
 
 def upload(dirname):
     s3 = boto3.resource('s3')
-    config = load_config()
     CONTENT_TYPE = {'html': 'text/html',
                     'css': 'text/css'}
 
@@ -113,7 +111,7 @@ def upload(dirname):
         s3.meta.client.put_object(
             ACL='public-read',
             Body=open(filename),
-            Bucket=config['aws']['status_bucket'],
+            Bucket=os.environ['BOBSLED_STATUS_BUCKET'],
             Key=filename.replace(dirname + '/', ''),
             ContentType=content_type,
         )
@@ -166,9 +164,9 @@ def check_status(do_upload=False):
 
 
 def make_issue(state, days, scraper_type, args, exception):
-    config = load_config()
-    gh = github3.login(token=config['github']['key'])
-    r = gh.repository('openstates', 'openstates')
+    gh = github3.login(token=os.environ['BOBSLED_GITHUB_KEY'])
+    r = gh.repository(os.environ['BOBSLED_GITHUB_USER'],
+                      os.environ['BOBSLED_GITHUB_ISSUE_REPO'])
 
     # ensure upper case
     state = state.upper()

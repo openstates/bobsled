@@ -1,5 +1,5 @@
 from __future__ import print_function
-
+import os
 import json
 import boto3
 from botocore.exceptions import ClientError
@@ -106,20 +106,20 @@ def make_cron_rule(name, schedule, enabled, config):
             State=enabled,
             Description='run {} at {}'.format(name, schedule),
         )
-        target = events.put_targets(
+        events.put_targets(
             Rule=name,
             Targets=[
                 {
                     'Id': name + '-scrape',
-                    'Arn': config['ec2']['lambda_arn'],
+                    'Arn': os.environ['BOBSLED_LAMBDA_ARN'],
                     'Input': json.dumps({'job': name})
                 }
             ]
         )
         perm_statement_id = name + '-scrape-permission'
         try:
-            perm = lamb.add_permission(
-                FunctionName=config['ec2']['lambda_arn'],
+            lamb.add_permission(
+                FunctionName=os.environ['BOBSLED_LAMBDA_ARN'],
                 StatementId=perm_statement_id,
                 Action='lambda:InvokeFunction',
                 Principal='events.amazonaws.com',
@@ -127,10 +127,6 @@ def make_cron_rule(name, schedule, enabled, config):
             )
         except ClientError:
             # don't recreate permission if it is already there
-            # could also
-            # lamb.remove_permission(FunctionName=config['ec2']['lambda_arn'],
-            #                     StatementId=perm_statement_id)
-            # and recreate each time, but no value?
             pass
     else:
         print('no schedule change')
@@ -164,9 +160,8 @@ def publish_task_definitions(only=None):
                            )
 
 
-def run_task(task_name, started_by, config=None):
-    if not config:
-        config = load_config()
+def run_task(task_name, started_by):
+    config = load_config()
     ecs = boto3.client('ecs', region_name='us-east-1')
 
     for task_def in config['tasks']:
@@ -176,7 +171,7 @@ def run_task(task_name, started_by, config=None):
     print('running', task_name)
 
     response = ecs.run_task(
-        cluster=config['ec2']['ecs_cluster'],
+        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
         count=1,
         taskDefinition=task_name,
         startedBy=started_by,

@@ -4,7 +4,6 @@ import zipfile
 import tempfile
 import boto3
 import botocore
-from .config import load_config
 
 
 def bobsled_to_zip(zipfilename):
@@ -15,7 +14,7 @@ def bobsled_to_zip(zipfilename):
     with zipfile.ZipFile(zipfilename, 'w') as zf:
         filenames = reduce(lambda x, y: x+y,
                            ([os.path.join(d, f) for f in files]
-                           for d, _, files in os.walk(tmpdir)))
+                            for d, _, files in os.walk(tmpdir)))
         for filename in filenames:
             if not filename.endswith('.pyc'):
                 afilename = filename.replace(tmpdir + '/', '')
@@ -28,7 +27,6 @@ def bobsled_to_zip(zipfilename):
 def publish_function(name, handler, description, timeout=3,
                      delete_first=False):
     lamb = boto3.client('lambda', region_name='us-east-1')
-    config = load_config()
 
     zipfilename = '/tmp/bobsled.zip'
 
@@ -41,7 +39,7 @@ def publish_function(name, handler, description, timeout=3,
             pass
     lamb.create_function(FunctionName=name,
                          Runtime='python2.7',
-                         Role=config['aws']['lambda_role'],
+                         Role=os.environ['BOBSLED_LAMBDA_ROLE'],
                          Handler=handler,
                          Code={'ZipFile': open(zipfilename, 'rb').read()},
                          Description=description,
