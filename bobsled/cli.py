@@ -12,10 +12,11 @@ def cli():
 
 
 @cli.command()
+@click.argument('dirname', nargs=1)
 @click.argument('only', nargs=-1)
 @click.option('-v', count=True)
-def publish(only, v):
-    publish_task_definitions(only, v > 0)
+def publish(dirname, only, v):
+    publish_task_definitions(dirname, only, v > 0)
 
 
 @cli.command()

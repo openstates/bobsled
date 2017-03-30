@@ -9,6 +9,14 @@ from botocore.exceptions import ClientError
 from .dynamo import Run
 
 
+def checkout_tasks():
+    os.system('GIT_SSH_COMMAND="ssh -i deploy.key" '
+              'git clone git@github.com:{}/{}.git --depth 1'.format(
+                  os.environ['BOBSLED_GITHUB_USER'],
+                  os.environ['BOBSLED_GITHUB_TASK_REPO']
+              ))
+
+
 def load_tasks(directory):
     environments = yaml.load(open(os.path.join(directory, 'environments.yaml')))
 
@@ -153,8 +161,8 @@ def make_cron_rule(name, schedule, enabled, verbose=False):
         print('{}: no schedule change'.format(name))
 
 
-def publish_task_definitions(only=None, verbose=False):
-    tasks = load_tasks('../task-definitions')
+def publish_task_definitions(dirname, only=None, verbose=False):
+    tasks = load_tasks(dirname)
 
     for task in tasks:
         # convert entrypoint to list, break on spaces if needed
