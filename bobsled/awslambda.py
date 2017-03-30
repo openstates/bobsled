@@ -24,8 +24,8 @@ def bobsled_to_zip(zipfilename):
     shutil.rmtree(tmpdir)
 
 
-def publish_function(name, handler, description, timeout=3,
-                     delete_first=False):
+def publish_function(name, handler, description, environment,
+                     timeout=3, delete_first=False):
     lamb = boto3.client('lambda', region_name='us-east-1')
 
     zipfilename = '/tmp/bobsled.zip'
@@ -44,4 +44,7 @@ def publish_function(name, handler, description, timeout=3,
                          Code={'ZipFile': open(zipfilename, 'rb').read()},
                          Description=description,
                          Timeout=timeout,
+                         Environment={
+                             'Variables': environment
+                         },
                          Publish=True)

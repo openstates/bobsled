@@ -42,6 +42,7 @@ def make_scraper_task(family,
                       name='openstates-scraper',
                       environment=None,
                       verbose=False,
+                      force=False,
                       # cpu=None,
                       # memory=None,
                       ):
@@ -90,6 +91,10 @@ def make_scraper_task(family,
                 create = True
                 print('{}: changing {}: {} => {}'.format(family, key, oldval, newval))
     except ClientError:
+        create = True
+
+    if force and not create:
+        print('{}: forced update'.format(family))
         create = True
 
     if create:
@@ -161,7 +166,7 @@ def make_cron_rule(name, schedule, enabled, verbose=False):
         print('{}: no schedule change'.format(name))
 
 
-def publish_task_definitions(dirname, only=None, verbose=False):
+def publish_task_definitions(dirname, only=None, force=False, verbose=False):
     tasks = load_tasks(dirname)
 
     for task in tasks:
@@ -179,6 +184,7 @@ def publish_task_definitions(dirname, only=None, verbose=False):
                           image=task.get('image'),
                           memory_soft=task.get('memory_soft', 128),
                           environment=task.get('environment'),
+                          force=force,
                           verbose=verbose,
                           )
         if task.get('cron'):

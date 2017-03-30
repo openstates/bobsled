@@ -1,3 +1,4 @@
+import os
 import getpass
 import click
 from .logs import print_latest_log, get_log_streams
@@ -14,9 +15,10 @@ def cli():
 @cli.command()
 @click.argument('dirname', nargs=1)
 @click.argument('only', nargs=-1)
+@click.option('--force/--no-force', default=False)
 @click.option('-v', count=True)
-def publish(dirname, only, v):
-    publish_task_definitions(dirname, only, v > 0)
+def publish(dirname, only, force, v):
+    publish_task_definitions(dirname, only, force, v > 0)
 
 
 @cli.command()
@@ -49,12 +51,18 @@ def status(upload):
 
 @cli.command()
 def init_lambda():
-    funcs = ('bobsled.handlers.echo',
-             'bobsled.handlers.check_status_handler',
-             'bobsled.handlers.run_task_handler',
-             )
-    for func in funcs:
-        publish_function(func.replace('.', '-'), func, func, timeout=30, delete_first=True)
+    funcs = {
+        'bobsled.handlers.echo': {
+        },
+        'bobsled.handlers.check_status_handler': {
+        },
+        'bobsled.handlers.run_task_handler': {
+            'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
+        },
+    }
+    for func, env in funcs.items():
+        publish_function(func.replace('.', '-'), func, func,
+                         env, timeout=30, delete_first=True)
 
 if __name__ == '__main__':
     cli()
