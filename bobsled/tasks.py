@@ -112,7 +112,7 @@ def make_scraper_task(family,
         print('{}: creating new task'.format(family))
 
 
-def make_cron_rule(name, schedule, enabled, verbose=False):
+def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     events = boto3.client('events', region_name='us-east-1')
     lamb = boto3.client('lambda', region_name='us-east-1')
 
@@ -131,6 +131,9 @@ def make_cron_rule(name, schedule, enabled, verbose=False):
             create = True
     except ClientError:
         print('{}: creating new cron rule'.format(name), schedule)
+        create = True
+
+    if force:
         create = True
 
     if create:
@@ -191,6 +194,7 @@ def publish_task_definitions(dirname, only=None, force=False, verbose=False):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),
                            task.get('enabled', True),
+                           force=force,
                            verbose=verbose,
                            )
 
