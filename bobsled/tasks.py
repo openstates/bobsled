@@ -39,7 +39,6 @@ def make_scraper_task(family,
                       entrypoint,
                       image,
                       memory_soft=128,
-                      name='openstates-scraper',
                       environment=None,
                       verbose=False,
                       force=False,
@@ -47,6 +46,7 @@ def make_scraper_task(family,
                       # memory=None,
                       ):
     ecs = boto3.client('ecs', region_name='us-east-1')
+    name = os.environ['BOBSLED_TASK_NAME']
 
     log_stream_prefix = family.lower()
     main_container = {
@@ -58,7 +58,7 @@ def make_scraper_task(family,
         'logConfiguration': {
             "logDriver": "awslogs",
             "options": {
-                "awslogs-group": "openstates-scrapers",
+                "awslogs-group": os.environ['BOBSLED_ECS_LOG_GROUP'],
                 "awslogs-region": "us-east-1",
                 "awslogs-stream-prefix": log_stream_prefix
             }

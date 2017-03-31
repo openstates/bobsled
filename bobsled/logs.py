@@ -1,3 +1,4 @@
+import os
 import datetime
 import boto3
 
@@ -9,7 +10,7 @@ def _fmt_time(ts):
 def get_log_streams(prefix=None):
     logs = boto3.client('logs', region_name='us-east-1')
 
-    params = dict(logGroupName='openstates-scrapers',
+    params = dict(logGroupName=os.environ['BOBSLED_ECS_LOG_GROUP'],
                   # orderBy='LastEventTime',
                   )
     if prefix:
@@ -27,7 +28,7 @@ def print_streams(prefix=None):
 def print_log(streamname):
     logs = boto3.client('logs', region_name='us-east-1')
 
-    events = logs.get_log_events(logGroupName='openstates-scrapers',
+    events = logs.get_log_events(logGroupName=os.environ['BOBSLED_ECS_LOG_GROUP'],
                                  logStreamName=streamname)
     # next = events['nextForwardToken']
     for event in events['events']:
