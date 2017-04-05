@@ -17,6 +17,7 @@ class StatusIndex(GlobalSecondaryIndex):
         write_capacity_units = 1
         projection = AllProjection()
     status = UnicodeAttribute(hash_key=True)
+    start = UTCDateTimeAttribute(range_key=True, default=datetime.datetime.utcnow)
 
 
 class Run(Model):
@@ -28,11 +29,20 @@ class Run(Model):
     task_definition = JSONAttribute()
     task_arn = UnicodeAttribute()
     status = UnicodeAttribute(default=Status.Running)
+
+    # indices
     status_index = StatusIndex()
 
+    @classmethod
+    def recent(self, days, statuses=None):
+        results = []
+        if not statuses:
+            statuses = [Status.Error, Status.Success]
+        since = datetime.datetime.utcnow() - datetime.timedelta(days=days)
+        for s in statuses:
+            results.extend(Run.status_index.query(s, start__gt=since))
+        return results
 
-def create_tables(delete=False):
-    if delete:
-        Run.delete_table()
-    if not Run.exists():
-        Run.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
+
+def create_tables():
+    Run.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
