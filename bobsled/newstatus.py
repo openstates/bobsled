@@ -9,6 +9,8 @@ import boto3
 from bobsled.dynamo import Run, Status
 from bobsled.templates import render_jinja_template
 
+OUTPUT_DIR = '/tmp/bobsled-output'
+
 
 def update_status():
     # update run records in database
@@ -21,6 +23,7 @@ def update_status():
 def check_status():
     # check everything that's running
     runs = {r.task_arn: r for r in Run.status_index.query(Status.Running)}
+    runs = {r.task_arn: r for r in Run.status_index.query(Status.Error)}
 
     if not runs:
         return
@@ -49,14 +52,18 @@ def check_status():
 
 def update_run_status(run):
     logs = get_log_for_run(run)
+    run.end = datetime.datetime.utcnow()
+
     if contains_error(logs):
         run.status = Status.Error
-        run.save()
         print(run, '=> error')
     else:
         run.status = Status.Success
-        run.save()
         print(run, '=> success')
+
+    run.save()
+
+    write_day_html(run.job, run.start.date())
 
 
 def get_log_for_run(run):
@@ -65,7 +72,7 @@ def get_log_for_run(run):
     pieces = dict(
         task_name=os.environ['BOBSLED_TASK_NAME'],
         family=run.job.lower(),
-        task_id=run.task_arn.split('/')[-1],
+        task_id=run.task_id,
     )
     log_arn = '{family}/{task_name}/{task_id}'.format(**pieces)
 
@@ -123,7 +130,6 @@ class RunList(object):
 
 def write_index_html():
     chart_days = 14
-    output_dir = '/tmp/bobsled-output'
 
     # get recent runs and group by day
     runs = Run.recent(chart_days)
@@ -141,10 +147,20 @@ def write_index_html():
     html = render_jinja_template('runs.html', runs=runs, days=days)
 
     try:
-        os.makedirs(output_dir)
+        os.makedirs(OUTPUT_DIR)
     except OSError:
         pass
 
-    with open(os.path.join(output_dir, 'index.html'), 'w') as out:
+    with open(os.path.join(OUTPUT_DIR, 'index.html'), 'w') as out:
         out.write(html)
-    shutil.copy(os.path.join(os.path.dirname(__file__), '../css/main.css'), output_dir)
+    shutil.copy(os.path.join(os.path.dirname(__file__), '../css/main.css'), OUTPUT_DIR)
+
+
+def write_day_html(job, date):
+    start = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
+    end = datetime.datetime(date.year, date.month, date.day, 11, 59, 59)
+    runs = list(Run.query(job, start__between=[start, end]))
+    html = render_jinja_template('day.html', runs=runs, date=date)
+    with open(os.path.join(OUTPUT_DIR,
+                           'run-{}-{}.html'.format(job, date)), 'w') as out:
+                    out.write(html)

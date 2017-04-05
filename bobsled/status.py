@@ -1,39 +1,8 @@
 from __future__ import print_function
 import os
 import datetime
-from jinja2 import Environment, PackageLoader
-import boto3
 import github3
-from .utils import all_files
 
-
-def format_datetime(value):
-    return value.strftime('%m/%d %H:%M:%S')
-
-
-def format_time(value):
-    return value.strftime('%H:%M:%S')
-
-
-def render_jinja_template(template, **context):
-    env = Environment(loader=PackageLoader('bobsled', 'templates'))
-    env.filters['datetime'] = format_datetime
-    env.filters['time'] = format_time
-    template = env.get_template(template)
-    return template.render(**context)
-
-
-def render_run(runlist, date):
-    return render_jinja_template('run.html', runlist=runlist, date=date)
-
-
-def write_html(runs, output_dir, days=14):
-    for state, state_runs in runs.items():
-        for date, rl in state_runs.items():
-            if rl.runs:
-                with open(os.path.join(output_dir,
-                                       'run-{}-{}.html'.format(state, date)), 'w') as out:
-                    out.write(render_run(rl, date))
 
 
 def state_status(runs):
@@ -67,9 +36,6 @@ def state_status(runs):
             print('warning for', state, bad_in_a_row)
             if exception and bad_in_a_row >= CRITICAL:
                 make_issue(state, bad_in_a_row, scraper, args, exception)
-
-
-    write_html(runs, output_dir, days=CHART_DAYS)
 
 
 def make_issue(state, days, scraper_type, args, exception):

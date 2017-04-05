@@ -1,6 +1,6 @@
 <html>
   <title>
-    Open States Run Log
+    Bobsled Run Log
   </title>
   <head>
     <link rel="stylesheet" href="/main.css">
@@ -16,16 +16,16 @@
     {% endfor %}
   </tr>
   <tbody>
-  {% for state, state_runs in runs.items() %}
+  {% for job, job_runs in runs.items() %}
   <tr>
-    <td>{{state|upper}}</td>
+    <td>{{job}}</td>
     {% for day in days %}
-      {% set tdclass = state_runs[day].status %}
+      {% set tdclass = job_runs[day].status %}
       <td class="{{tdclass}}">
-        {% if state_runs[day].runs %}
-          <a href="/run-{{state}}-{{day}}.html">
-            {% if state_runs[day].runs|length > 1 %}
-              {{state_runs[day].runs|length}}
+        {% if job_runs[day].runs %}
+          <a href="/run-{{job}}-{{day}}.html">
+            {% if job_runs[day].runs|length > 1 %}
+              {{job_runs[day].runs|length}}
             {% else %}
               &nbsp;
             {% endif %}

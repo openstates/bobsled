@@ -1,0 +1,32 @@
+<html>
+  <title>{{runs[0].job}} | {{date}}</title>
+  <head>
+    <link rel="stylesheet" href="/main.css">
+  </head>
+  <body>
+
+    <h1>{{runs[0].job}} | {{date}}</h1>
+
+    <table>
+      <tr>
+        <td>Status</td>
+        <td>Task ID</td>
+        <td>Start</td>
+        <td>End</td>
+      </tr>
+
+    {% for run in runs %}
+    <tr>
+      {% if run.is_failure %}
+        <td class="failure"> failure </td>
+      {% else %}
+        <td class="success"> success </td>
+      {% endif %}
+      <td> {{ run.task_id }} </td>
+      <td> {{ run.start|datetime }} </td>
+      <td> {{ run.end|datetime }} </td>
+    </tr>
+    {% endfor %}
+    </table>
+</body>
+</html>
