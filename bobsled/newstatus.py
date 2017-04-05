@@ -6,11 +6,14 @@ from bobsled.dynamo import Run, Status
 
 
 def check_status():
-    runs = {r.task_arn: r for r in Run.status_index.query('running')}
+    runs = {r.task_arn: r for r in Run.status_index.query(Status.Running)}
+
+    if not runs:
+        return
 
     ecs = boto3.client('ecs', region_name='us-east-1')
     resp = ecs.describe_tasks(cluster=os.environ['BOBSLED_ECS_CLUSTER'],
-                              tasks=runs.keys())
+                              tasks=list(runs.keys())[:100])
 
     for failure in resp['failures']:
         if failure['reason'] == 'MISSING':
@@ -68,7 +71,7 @@ def get_log_for_run(run):
 
 
 def contains_error(stream):
-    ERROR_REGEX = re.compile(r'CRITICAL|Exception')
+    ERROR_REGEX = re.compile(r'(CRITICAL)|(Exception)|(Traceback)')
     for line in stream:
         if ERROR_REGEX.findall(line['message']):
             return True
