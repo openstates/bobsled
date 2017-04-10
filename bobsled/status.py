@@ -14,6 +14,11 @@ OUTPUT_DIR = '/tmp/bobsled-output'
 
 
 def update_status():
+    try:
+        os.makedirs(OUTPUT_DIR)
+    except OSError:
+        pass
+
     # update run records in database
     check_status()
 
@@ -166,11 +171,6 @@ def write_index_html():
     days = [today - datetime.timedelta(days=n) for n in range(chart_days)]
     runs = OrderedDict(sorted(job_runs.items()))
     html = render_jinja_template('runs.html', runs=runs, days=days)
-
-    try:
-        os.makedirs(OUTPUT_DIR)
-    except OSError:
-        pass
 
     with open(os.path.join(OUTPUT_DIR, 'index.html'), 'w') as out:
         out.write(html)
