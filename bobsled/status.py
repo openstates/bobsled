@@ -174,7 +174,7 @@ def write_index_html():
 
     with open(os.path.join(OUTPUT_DIR, 'index.html'), 'w') as out:
         out.write(html)
-    shutil.copy(os.path.join(os.path.dirname(__file__), '../css/main.css'), OUTPUT_DIR)
+    shutil.copy(os.path.join(os.path.dirname(__file__), 'css/main.css'), OUTPUT_DIR)
 
 
 def write_day_html(job, date):
