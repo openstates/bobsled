@@ -6,7 +6,7 @@ from .utils import all_files
 
 
 def format_datetime(value):
-    return value.strftime('%m/%d %H:%M:%S')
+    return value.strftime('%m/%d %H:%M:%S') if value else ''
 
 
 def format_time(value):
@@ -27,12 +27,13 @@ def upload(dirname):
                     'css': 'text/css'}
 
     for filename in all_files(dirname):
+        key = filename.replace(dirname + '/', '')
         ext = filename.rsplit('.', 1)[-1]
         content_type = CONTENT_TYPE.get(ext, '')
         s3.meta.client.put_object(
             ACL='public-read',
             Body=open(filename),
             Bucket=os.environ['BOBSLED_STATUS_BUCKET'],
-            Key=filename.replace(dirname + '/', ''),
+            Key=key,
             ContentType=content_type,
         )
