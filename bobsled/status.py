@@ -8,7 +8,7 @@ import boto3
 import github3
 
 from bobsled.dynamo import Run, Status
-from bobsled.templates import render_jinja_template
+from bobsled.templates import render_jinja_template, upload
 
 OUTPUT_DIR = '/tmp/bobsled-output'
 
@@ -19,6 +19,8 @@ def update_status():
 
     # update global view
     write_index_html()
+
+    upload(OUTPUT_DIR)
 
 
 def check_status():

@@ -4,7 +4,7 @@ import click
 from .logs import print_latest_log, get_log_streams
 from .tasks import publish_task_definitions, run_task
 from .awslambda import publish_function
-from .status import check_status
+from .status import update_status
 
 
 @click.group()
@@ -45,9 +45,8 @@ def run(jobs):
 @cli.command()
 @click.option('--upload/--no-upload', default=False)
 def status(upload):
-    check_status(upload)
-    if upload:
-        click.echo('uploaded to S3')
+    update_status()
+
 
 @cli.command()
 def init_lambda():
