@@ -1,6 +1,6 @@
 from __future__ import print_function
 import os
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, FileSystemLoader
 import boto3
 from .utils import all_files
 
@@ -14,7 +14,9 @@ def format_time(value):
 
 
 def render_jinja_template(template, **context):
-    env = Environment(loader=PackageLoader('bobsled', 'templates'))
+    env = Environment(loader=FileSystemLoader(
+        os.path.join(os.path.dirname(__file__), 'templates')
+    ))
     env.filters['datetime'] = format_datetime
     env.filters['time'] = format_time
     template = env.get_template(template)
