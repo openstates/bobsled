@@ -1,10 +1,10 @@
 import os
 import getpass
 import click
-from .logs import print_latest_log, get_log_streams
 from .tasks import publish_task_definitions, run_task
 from .awslambda import publish_function
-from .status import update_status
+from .status import update_status, get_log_for_run
+from .dynamo import Run
 
 
 @click.group()
@@ -22,13 +22,12 @@ def publish(dirname, only, force, v):
 
 
 @cli.command()
-@click.argument('prefix', nargs=1)
-def logs(prefix):
-    if not prefix:
-        for ls in get_log_streams():
-            click.echo(ls)
-    else:
-        print_latest_log(prefix)
+@click.argument('job', nargs=1)
+def logs(job):
+    runs = list(Run.query(job, limit=1, scan_index_forward=False))
+    click.echo('log for {}'.format(runs[0]))
+    for ls in get_log_for_run(runs[0]):
+        click.echo(ls['message'])
 
 
 @cli.command()
