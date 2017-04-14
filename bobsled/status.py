@@ -4,7 +4,9 @@ import re
 import shutil
 import datetime
 from collections import defaultdict, OrderedDict
+
 import boto3
+from botocore.exceptions import ClientError
 import github3
 
 from bobsled.dynamo import Run, Status
@@ -60,7 +62,14 @@ def check_status():
 def update_run_status(run):
     CRITICAL = 2
 
-    logs = list(get_log_for_run(run))
+    try:
+        logs = list(get_log_for_run(run))
+    except ClientError:
+        run.end = datetime.datetime.utcnow()
+        run.status = Status.Missing
+        run.save()
+        return
+
     run.end = datetime.datetime.utcnow()
 
     if contains_error(logs):

@@ -6,9 +6,9 @@ from pynamodb.indexes import GlobalSecondaryIndex, AllProjection
 
 class Status:
     Running = 'running'
-    Frozen = 'frozen'
     Error = 'error'
     Success = 'success'
+    Missing = 'missing'
 
 
 class StatusIndex(GlobalSecondaryIndex):
@@ -45,7 +45,7 @@ class Run(Model):
     def recent(self, days, statuses=None):
         results = []
         if not statuses:
-            statuses = [Status.Error, Status.Success]
+            statuses = [Status.Error, Status.Success, Status.Missing]
         since = datetime.datetime.utcnow() - datetime.timedelta(days=days)
         for s in statuses:
             results.extend(Run.status_index.query(s, start__gt=since))
