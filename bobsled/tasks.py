@@ -204,6 +204,8 @@ def run_task(task_name, started_by):
 
     print('running', task_name)
 
+    taskdef = ecs.describe_task_definition(taskDefinition=task_name)
+
     response = ecs.run_task(
         cluster=os.environ['BOBSLED_ECS_CLUSTER'],
         count=1,
@@ -228,7 +230,7 @@ def run_task(task_name, started_by):
     )
 
     Run(task_name,
-        task_definition={},     # TODO
+        task_definition=taskdef['taskDefinition'],
         task_arn=response['tasks'][0]['taskArn'],
         ).save()
     return response
