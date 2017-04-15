@@ -61,9 +61,9 @@ def init_lambda():
             'BOBSLED_GITHUB_ISSUE_REPO': os.environ['BOBSLED_GITHUB_ISSUE_REPO'],
             'BOBSLED_STATUS_BUCKET': os.environ['BOBSLED_STATUS_BUCKET'],
         },
-        #'bobsled.handlers.run_task_handler': {
-        #    'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
-        #},
+        'bobsled.handlers.run_task_handler': {
+            'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
+        },
     }
     for func, env in funcs.items():
         publish_function(func.replace('.', '-'), func, func,

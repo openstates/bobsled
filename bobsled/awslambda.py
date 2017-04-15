@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import shutil
 import zipfile
@@ -32,19 +33,35 @@ def publish_function(name, handler, description, environment,
 
     bobsled_to_zip(zipfilename)
 
-    if delete_first:
-        try:
-            lamb.delete_function(FunctionName=name)
-        except botocore.exceptions.ClientError:
-            pass
-    lamb.create_function(FunctionName=name,
-                         Runtime='python2.7',
-                         Role=os.environ['BOBSLED_LAMBDA_ROLE'],
-                         Handler=handler,
-                         Code={'ZipFile': open(zipfilename, 'rb').read()},
-                         Description=description,
-                         Timeout=timeout,
-                         Environment={
-                             'Variables': environment
-                         },
-                         Publish=True)
+    try:
+        lamb.get_function(FunctionName=name)
+    except botocore.exceptions.ClientError:
+        print('creating function', name)
+        lamb.create_function(FunctionName=name,
+                             Runtime='python2.7',
+                             Role=os.environ['BOBSLED_LAMBDA_ROLE'],
+                             Handler=handler,
+                             Code={'ZipFile': open(zipfilename, 'rb').read()},
+                             Description=description,
+                             Timeout=timeout,
+                             Environment={
+                                 'Variables': environment
+                             },
+                             Publish=True)
+    else:
+        # runs if there is no error getting the function (i.e. it exists)
+        print('updating function code', name)
+        lamb.update_function_code(FunctionName=name,
+                                  ZipFile=open(zipfilename, 'rb').read(),
+                                  Publish=True,
+                                  )
+        print('updating function config', name)
+        lamb.update_function_configuration(FunctionName=name,
+                                           Role=os.environ['BOBSLED_LAMBDA_ROLE'],
+                                           Handler=handler,
+                                           Description=description,
+                                           Timeout=timeout,
+                                           Environment={
+                                               'Variables': environment
+                                           },
+                                           )
