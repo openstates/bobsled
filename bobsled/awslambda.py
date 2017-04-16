@@ -6,6 +6,8 @@ import tempfile
 import boto3
 import botocore
 
+from .utils import all_files
+
 
 def bobsled_to_zip(zipfilename):
     tmpdir = tempfile.mkdtemp()
@@ -13,9 +15,7 @@ def bobsled_to_zip(zipfilename):
     os.system('pip install {} -t {}'.format(dirname, tmpdir))
 
     with zipfile.ZipFile(zipfilename, 'w') as zf:
-        filenames = reduce(lambda x, y: x+y,
-                           ([os.path.join(d, f) for f in files]
-                            for d, _, files in os.walk(tmpdir)))
+        filenames = all_files(tmpdir)
         for filename in filenames:
             if not filename.endswith('.pyc'):
                 afilename = filename.replace(tmpdir + '/', '')
