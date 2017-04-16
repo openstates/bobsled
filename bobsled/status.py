@@ -104,6 +104,9 @@ def get_failures(job):
 def get_log_for_run(run):
     logs = boto3.client('logs', region_name='us-east-1')
 
+    env_replace = {e['value']: '**{}**'.format(e['name'])
+                   for e in run.task_definition['containerDefinitions'][0]['environment']}
+
     pieces = dict(
         task_name=os.environ['BOBSLED_TASK_NAME'],
         family=run.job.lower(),
@@ -123,6 +126,8 @@ def get_log_for_run(run):
             break
 
         for event in events['events']:
+            for k, v in env_replace.items():
+                event['message'] = event['message'].replace(k, v)
             yield event
 
         if not next:
