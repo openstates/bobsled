@@ -1,4 +1,3 @@
-from __future__ import print_function
 from bobsled.status import update_status
 from bobsled.tasks import run_task
 

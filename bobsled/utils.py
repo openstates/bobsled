@@ -1,4 +1,5 @@
 import os
+from functools import reduce
 
 
 def all_files(dirname):

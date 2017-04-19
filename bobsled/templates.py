@@ -1,4 +1,3 @@
-from __future__ import print_function
 import os
 from jinja2 import Environment, FileSystemLoader
 import boto3
