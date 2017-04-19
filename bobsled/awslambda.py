@@ -37,7 +37,7 @@ def publish_function(name, handler, description, environment,
     except botocore.exceptions.ClientError:
         print('creating function', name)
         lamb.create_function(FunctionName=name,
-                             Runtime='python2.7',
+                             Runtime='python3.6',
                              Role=os.environ['BOBSLED_LAMBDA_ROLE'],
                              Handler=handler,
                              Code={'ZipFile': open(zipfilename, 'rb').read()},
