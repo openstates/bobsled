@@ -33,7 +33,7 @@ def upload(dirname):
         content_type = CONTENT_TYPE.get(ext, '')
         s3.meta.client.put_object(
             ACL='public-read',
-            Body=open(filename),
+            Body=open(filename, 'rb'),
             Bucket=os.environ['BOBSLED_STATUS_BUCKET'],
             Key=key,
             ContentType=content_type,
