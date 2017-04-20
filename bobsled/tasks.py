@@ -82,7 +82,9 @@ def make_scraper_task(family,
             oldval = existing['containerDefinitions'][0][key]
             newval = main_container[key]
             if key == 'environment':
-                differ = (sorted(oldval) != sorted(newval))
+                s_oldval = sorted([tuple(i.items()) for i in oldval])
+                s_newval = sorted([tuple(i.items()) for i in newval])
+                differ = (s_oldval != s_newval)
             else:
                 differ = (oldval != newval)
 
