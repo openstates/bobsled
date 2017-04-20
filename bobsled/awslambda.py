@@ -57,6 +57,7 @@ def publish_function(name, handler, description, environment,
         print('updating function config', name)
         lamb.update_function_configuration(FunctionName=name,
                                            Role=os.environ['BOBSLED_LAMBDA_ROLE'],
+                                           Runtime='python3.6',
                                            Handler=handler,
                                            Description=description,
                                            Timeout=timeout,

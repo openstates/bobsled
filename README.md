@@ -10,7 +10,7 @@ the goal is to make it as cheap and simple as possible to run scrapers
 at the moment this is experimental and unsupported, use 100% at your own risk
 and keep an eye on your EC2 bill as some of the commands may cost you
 
-designed to work within AWS Lambda which only supports Python 2.7
+designed to work within AWS Lambda's Python 3.6 environment
 
 ## architecture
 
