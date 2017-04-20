@@ -16,7 +16,8 @@ def bobsled_to_zip(zipfilename):
     with zipfile.ZipFile(zipfilename, 'w') as zf:
         filenames = all_files(tmpdir)
         for filename in filenames:
-            if not filename.endswith('.pyc'):
+            afilename = filename.replace(tmpdir + '/', '')
+            if not afilename.endswith('.pyc') and not afilename.startswith('boto'):
                 afilename = filename.replace(tmpdir + '/', '')
                 print(afilename)
                 zf.write(filename, afilename)
