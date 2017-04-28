@@ -2,6 +2,7 @@ import os
 import shutil
 import zipfile
 import tempfile
+import subprocess
 import boto3
 import botocore
 
@@ -11,7 +12,10 @@ from .utils import all_files
 def bobsled_to_zip(zipfilename):
     tmpdir = tempfile.mkdtemp()
     dirname = os.path.dirname(os.path.dirname(__file__))
-    os.system('pip install {} -t {}'.format(dirname, tmpdir))
+    command = ['pip3', 'install', dirname, '-t', tmpdir]
+    env = os.environ.copy()
+    env['PIP_REQUIRE_VIRTUALENV'] = ''
+    subprocess.run(command, check=True, env=env)
 
     with zipfile.ZipFile(zipfilename, 'w') as zf:
         filenames = all_files(tmpdir)
