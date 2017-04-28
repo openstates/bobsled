@@ -17,11 +17,7 @@
 
     {% for run in runs %}
     <tr>
-      {% if run.is_failure %}
-        <td class="failure"> failure </td>
-      {% else %}
-        <td class="success"> success </td>
-      {% endif %}
+      <td class="{{ run.status }}"> {{ run.status }} </td>
       <td> {{ run.task_id }} </td>
       <td> {{ run.start|datetime }} </td>
       <td> {{ run.end|datetime }} </td>

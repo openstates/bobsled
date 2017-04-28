@@ -55,20 +55,35 @@ td a {
 
 
 /* run */
-.failure {
+.error {
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
     background-color: #aa0000;
     color: white;
-    border-radius: 5px;
-    padding: 10px;
-    text-align: center;
 }
 .success {
-    background-color: #00aa00;
-    color: white;
     border-radius: 5px;
     padding: 10px;
     text-align: center;
+    background-color: #00aa00;
+    color: white;
 }
+.missing {
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    background-color: #000000;
+    color: white;
+}
+.systemerror {
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    background-color: #ff6633;
+    color: white;
+}
+
 table.import td, table.import th {
     border: 1px solid black;
     text-align: center;

@@ -39,11 +39,6 @@ class Run(Model):
     def task_id(self):
         return self.task_arn.split('/')[-1]
 
-    @property
-    def is_failure(self):
-        # TODO: kill this property
-        return self.status == Status.Error
-
     @classmethod
     def recent(self, days, statuses=None):
         results = []
