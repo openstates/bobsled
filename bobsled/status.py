@@ -1,11 +1,9 @@
 import os
-import re
 import shutil
 import datetime
 from collections import defaultdict, OrderedDict
 
 import boto3
-from botocore.exceptions import ClientError
 import github3
 
 from bobsled.dynamo import Run, Status
@@ -45,43 +43,52 @@ def check_status():
     # match status to runs
     for failure in resp['failures']:
         if failure['reason'] == 'MISSING':
-            update_run_status(runs[failure['arn']])
+            # this shouldn't happen if we're checking frequently enough
+            update_run_status(runs[failure['arn']], None)
         else:
             raise ValueError('unexpected status {}'.format(failure))
 
     for task in resp['tasks']:
         if task['lastStatus'] == 'STOPPED':
-            update_run_status(runs[task['taskArn']])
+            update_run_status(runs[task['taskArn']], task)
         elif task['lastStatus'] in ('RUNNING', 'PENDING'):
             print('still running', runs[task['taskArn']])
         else:
             raise ValueError('unexpected status {}'.format(task))
 
 
-def update_run_status(run):
+def update_run_status(run, task):
     CRITICAL = 2
 
-    try:
-        logs = list(get_log_for_run(run))
-    except ClientError:
-        run.end = datetime.datetime.utcnow()
+    # this means that the record was missing
+    if not task:
         run.status = Status.Missing
-        run.save()
-        return
-
-    run.end = datetime.datetime.utcnow()
-
-    if contains_error(logs):
-        run.status = Status.Error
-        print(run, '=> error')
-        bad_in_a_row = get_failures(run.job)
-
-        if bad_in_a_row >= CRITICAL:
-            make_issue(run.job, bad_in_a_row, logs)
+        print(run, '=> missing')
     else:
-        run.status = Status.Success
-        print(run, '=> success')
+        try:
+            # check exit code
+            exit_code = task['containers'][0]['exitCode']
+            if exit_code == 0:
+                run.status = Status.Success
+                print(run, '=> success')
+            else:
+                run.status = Status.Error
+                run.status_note = 'Exit Code: {}'.format(exit_code)
+                print(run, '=> error')
 
+                # if we had a job failure, maybe file an issue
+                bad_in_a_row = get_failures(run.job)
+                if bad_in_a_row >= CRITICAL:
+                    logs = list(get_log_for_run(run))
+                    make_issue(run.job, bad_in_a_row, logs)
+        except KeyError:
+            # usually this means we had resource exhaustion
+            run.status = Status.SystemError
+            run.status_note = task['containers'][0]['reason']
+            print(run, '=> systemerror')
+
+    # save our new status
+    run.end = datetime.datetime.utcnow()
     run.save()
 
     write_day_html(run.job, run.start.date())
@@ -92,6 +99,9 @@ def get_failures(job):
     bad_in_a_row = 0
     # get recent runs in reverse-cron
     for run in Run.query(job, limit=8, scan_index_forward=False):
+        # how many Errors do we see until there's a success?
+        # note that we intentionally ignore SystemError and Missing here
+        # as they shouldn't count for or against the error count
         if run.status == Status.Success:
             break
         elif run.status == Status.Error:
@@ -131,13 +141,6 @@ def get_log_for_run(run):
 
         if not next:
             break
-
-
-def contains_error(stream):
-    ERROR_REGEX = re.compile(r'(CRITICAL)|(Exception)|(Traceback)')
-    for line in stream:
-        if ERROR_REGEX.findall(line['message']):
-            return True
 
 
 class RunList(object):

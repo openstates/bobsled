@@ -9,6 +9,7 @@ class Status:
     Error = 'error'
     Success = 'success'
     Missing = 'missing'
+    SystemError = 'systemerror'
 
 
 class StatusIndex(GlobalSecondaryIndex):
@@ -29,6 +30,7 @@ class Run(Model):
     task_definition = JSONAttribute()
     task_arn = UnicodeAttribute()
     status = UnicodeAttribute(default=Status.Running)
+    status_note = UnicodeAttribute(null=True)
 
     # indices
     status_index = StatusIndex()
@@ -39,6 +41,7 @@ class Run(Model):
 
     @property
     def is_failure(self):
+        # TODO: kill this property
         return self.status == Status.Error
 
     @classmethod
