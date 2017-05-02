@@ -1,5 +1,6 @@
 *.pyc
 __pycache__
+.cache
 .env
 MANIFEST
 dist/

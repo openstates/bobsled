@@ -49,13 +49,9 @@ def create_instance(instance_type):
 def get_instances():
     ec2 = boto3.client('ec2', 'us-east-1')
     resp = ec2.describe_instances(Filters=[
-        {
-            'Name': 'tag-key',
-            'Values': [
-                'bobsled',
-            ]
-        },
-    ])
+        {'Name': 'tag-key', 'Values': ['bobsled']},
+        {'Name': 'instance-state-name', 'Values': ['pending', 'running']}
+     ])
 
     instances = []
     for reservation in resp['Reservations']:
@@ -63,6 +59,25 @@ def get_instances():
             instances.append(instance)
 
     return instances
+
+
+def get_killable_instances(instance_type):
+    ecs = boto3.client('ecs', region_name='us-east-1')
+    arns = ecs.list_container_instances(cluster=os.environ['BOBSLED_ECS_CLUSTER']
+                                        )['containerInstanceArns']
+    resp = ecs.describe_container_instances(cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+                                            containerInstances=arns)
+    resp = resp['containerInstances']
+    killable = []
+    for inst in resp:
+        # instance is idle
+        if inst['pendingTasksCount'] == 0 and inst['runningTasksCount'] == 0:
+            # check if it is the right size
+            for attrib in inst['attributes']:
+                if attrib['name'] == 'ecs.instance-type' and attrib['value'] == instance_type:
+                    killable.append(inst)
+
+    return killable
 
 
 def _parse_time(time):
@@ -93,6 +108,8 @@ def get_desired_status(schedule, time):
 
 
 def scale(schedule, time):
+    ec2 = boto3.client('ec2', region_name='us-east-1')
+
     instances = get_instances()
     desired_status = get_desired_status(schedule, time)
 
@@ -104,5 +121,10 @@ def scale(schedule, time):
     for inst_type, num in to_create.items():
         for n in range(num):
             create_instance(inst_type)
+
     for inst_type, num in to_delete.items():
-        pass
+        killable = get_killable_instances(inst_type)
+        # kill no more than num idle instances
+        for instance in killable[:num]:
+            print('terminating', instance['InstanceId'])
+            ec2.terminate_instances(InstanceIds=[instance['InstanceId']])

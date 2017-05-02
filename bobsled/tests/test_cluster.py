@@ -1,9 +1,15 @@
 import os
+import json
 import datetime
 import yaml
-from bobsled.cluster import get_desired_status, create_instance, get_instances, scale
-from moto import mock_ec2
+import pytest
 import boto3
+
+from unittest.mock import create_autospec, patch
+from moto import mock_ec2, mock_ecs
+
+from bobsled.cluster import (create_cluster, get_desired_status, create_instance,
+                             get_killable_instances, get_instances, scale)
 
 
 def setUp():
@@ -80,6 +86,54 @@ def test_get_instances():
     assert len(instances) == 3
 
 
+@pytest.mark.skip(reason="""as of moto 0.4.31 the ECS mocking isn't complete
+
+moto is missing runningTasksCount, pendingTasksCount, attributes on
+the ECS instance, so get_killable_instances can't figure out
+which instances have tasks
+""")
+@mock_ecs
+@mock_ec2
+def test_get_killable_instances():
+    # this test is skipped
+    ecs = boto3.client('ecs', 'us-east-1')
+
+    create_cluster()
+
+    resp = create_instance('t2.medium')
+    # have to do this manually here, it is done automatically w/in the instance
+    instance_id_document = json.dumps({'instanceId': resp['Instances'][0]['InstanceId']})
+    ecs.register_container_instance(
+        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+        instanceIdentityDocument=instance_id_document
+    )
+
+    # wrong type
+    assert get_killable_instances('t2.small') == []
+    # instance is idle
+    assert len(get_killable_instances('t2.medium')) == 1
+
+    # make a fake task
+    ecs.register_task_definition(
+        family='fake-task',
+        containerDefinitions=[{
+            'name': 'fake',
+            'image': 'fake/fake',
+            'essential': True,
+            'memoryReservation': 128,
+        }],
+    )
+    ecs.run_task(
+        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+        count=1,
+        taskDefinition='fake-task',
+        startedBy='test',
+    )
+
+    # task will now be running on the instance
+    assert len(get_killable_instances('t2.medium')) == 0
+
+
 scale_schedule = """schedule:
   - time: "01:00"
     instances: ['t2.small']
@@ -139,25 +193,41 @@ def test_scale_up():
     assert len(instances) == 2
     assert {i['InstanceType'] for i in instances} == {'t2.small', 't2.large'}
     # original small is still there
-    assert small_launch_time in {i['LaunchTime'] for i in instances} 
+    assert small_launch_time in {i['LaunchTime'] for i in instances}
 
-
+@mock_ecs
 @mock_ec2
 def test_scale_down():
     schedule = yaml.load(scale_schedule)['schedule']
+    create_cluster()
 
-    # get to 2am state
+    # start at 2am state w/ 2 instances running
     scale(schedule, datetime.time(2, 0))
-    instances = get_instances()
-    assert len(instances) == 2
+    old_instances = get_instances()
+    assert len(old_instances) == 2
 
     # now go to 3am, where small & large are replaced by medium
-    scale(schedule, datetime.time(3, 0))
-    instances = get_instances()
-    assert len(instances) == 1
-    assert {i['InstanceType'] for i in instances} == {'t2.medium'}
+    # but let's assume one is still in use, let's make sure it stick around
+    def _get_killable(instance_type):
+        if instance_type == old_instances[0]['InstanceType']:
+            return [old_instances[0]]
+        return []
 
-    # now go to 5am, everything off
-    scale(schedule, datetime.time(5, 0))
+    with patch('bobsled.cluster.get_killable_instances', _get_killable):
+        scale(schedule, datetime.time(3, 0))
+    cur_instances = get_instances()
+    assert len(cur_instances) == 2
+    assert {i['InstanceType'] for i in cur_instances} == {'t2.medium',
+                                                          old_instances[1]['InstanceType']}
+
+    # now go to 5am, everything off and all instances in killable state
+    def _get_killable(instance_type):
+        for inst in cur_instances:
+            if instance_type == inst['InstanceType']:
+                return [inst]
+        return []
+
+    with patch('bobsled.cluster.get_killable_instances', _get_killable):
+        scale(schedule, datetime.time(7, 0))
     instances = get_instances()
     assert len(instances) == 0
