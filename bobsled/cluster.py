@@ -1,4 +1,6 @@
 import os
+import re
+import datetime
 import boto3
 
 
@@ -22,12 +24,36 @@ def create_instance(instance_type):
         UserData=ecs_user_data,
         InstanceType=instance_type,
         IamInstanceProfile={'Name': 'ecsInstanceRole'},
-        #SubnetId='string',
-        #DisableApiTermination=True|False,
-        #InstanceInitiatedShutdownBehavior='stop'|'terminate',
-        #AdditionalInfo='string',
+        # SubnetId='string',
+        # DisableApiTermination=True|False,
+        # InstanceInitiatedShutdownBehavior='stop'|'terminate',
+        # AdditionalInfo='string',
     )
     return response
 
 
+def _parse_time(time):
+    h, m = re.match(r'([0-2]\d):([0-5]\d)', time).groups()
+    return datetime.time(int(h), int(m))
 
+
+def get_desired_status(schedule, time):
+    last_time = None
+    last_result = schedule[-1]['instances']
+
+    # walk through schedule and break when we're in the right slot
+    # being in the right slot means we should return the previous (start time)
+    # instances array
+    for entry in schedule:
+        entry_time = _parse_time(entry['time'])
+
+        # we're before or equal to the start time
+        if last_time is None:
+            if time < entry_time:
+                break
+        elif last_time < time < entry_time:
+            break
+
+        last_result = entry['instances']
+
+    return last_result
