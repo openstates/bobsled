@@ -1,6 +1,7 @@
 import os
 import re
 import datetime
+from collections import Counter
 import boto3
 
 
@@ -28,8 +29,40 @@ def create_instance(instance_type):
         # DisableApiTermination=True|False,
         # InstanceInitiatedShutdownBehavior='stop'|'terminate',
         # AdditionalInfo='string',
+        TagSpecifications=[{
+            'ResourceType': 'instance',
+            'Tags': [
+                {
+                    'Key': 'bobsled',
+                    'Value': 'true'
+                },
+            ]
+        }]
     )
+    # in theory these lines aren't needed, but moto doesn't work without them
+    instance_id = response['Instances'][0]['InstanceId']
+    ec2.create_tags(Resources=[instance_id],
+                    Tags=[{'Key': 'bobsled', 'Value': 'true'}])
     return response
+
+
+def get_instances():
+    ec2 = boto3.client('ec2', 'us-east-1')
+    resp = ec2.describe_instances(Filters=[
+        {
+            'Name': 'tag-key',
+            'Values': [
+                'bobsled',
+            ]
+        },
+    ])
+
+    instances = []
+    for reservation in resp['Reservations']:
+        for instance in reservation['Instances']:
+            instances.append(instance)
+
+    return instances
 
 
 def _parse_time(time):
@@ -57,3 +90,19 @@ def get_desired_status(schedule, time):
         last_result = entry['instances']
 
     return last_result
+
+
+def scale(schedule, time):
+    instances = get_instances()
+    desired_status = get_desired_status(schedule, time)
+
+    instance_types = [inst['InstanceType'] for inst in instances]
+
+    to_create = Counter(desired_status) - Counter(instance_types)
+    to_delete = Counter(instance_types) - Counter(desired_status)
+
+    for inst_type, num in to_create.items():
+        for n in range(num):
+            create_instance(inst_type)
+    for inst_type, num in to_delete.items():
+        pass
