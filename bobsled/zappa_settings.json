@@ -1,0 +1,24 @@
+{
+    "dev": {
+        "app_function": "bobsled.app",
+        "events": [
+            {
+                "function": "bobsled.handlers.scale_handler",
+                "expression": "rate(20 minutes)"
+            },
+            {
+                "function": "bobsled.handlers.update_status_handler",
+                "expression": "rate(30 minutes)"
+            }
+        ],
+        "apigateway_enabled": false,
+        "async_resources": false,
+        "keep_warm": false,
+        "route53_enabled": false,
+        "runtime": "python3.6",
+
+        "aws_region": "us-east-1",
+        "profile_name": "openstates",
+        "s3_bucket": "zappa-bobsled"
+    }
+}
