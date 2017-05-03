@@ -34,16 +34,16 @@ def load_tasks(directory):
     return tasks
 
 
-def make_scraper_task(family,
-                      entrypoint,
-                      image,
-                      memory_soft=128,
-                      environment=None,
-                      verbose=False,
-                      force=False,
-                      # cpu=None,
-                      # memory=None,
-                      ):
+def make_task(family,
+              entrypoint,
+              image,
+              memory_soft=128,
+              environment=None,
+              verbose=False,
+              force=False,
+              # cpu=None,
+              # memory=None,
+              ):
     ecs = boto3.client('ecs', region_name='us-east-1')
     name = os.environ['BOBSLED_TASK_NAME']
 
@@ -183,14 +183,14 @@ def publish_task_definitions(dirname, only=None, force=False, verbose=False):
         if only and task['name'] not in only:
             continue
 
-        make_scraper_task(task['name'],
-                          entrypoint,
-                          image=task.get('image'),
-                          memory_soft=task.get('memory_soft', 128),
-                          environment=task.get('environment'),
-                          force=force,
-                          verbose=verbose,
-                          )
+        make_task(task['name'],
+                  entrypoint,
+                  image=task.get('image'),
+                  memory_soft=task.get('memory_soft', 128),
+                  environment=task.get('environment'),
+                  force=force,
+                  verbose=verbose,
+                  )
         if task.get('cron'):
             make_cron_rule(task['name'],
                            'cron({})'.format(task['cron']),

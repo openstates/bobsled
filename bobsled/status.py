@@ -233,8 +233,8 @@ Based on automated runs it appears that {job} has not run successfully in {days}
   {logs}
 ```
 
-Visit http://bobsled.openstates.org/ for more info.
-'''.format(job=job, since=since, days=days, logs=logs)
-    title = '{} scraper failing since at least {}'.format(job, since)
+Visit http://{bucket} for more info.
+'''.format(job=job, since=since, days=days, logs=logs, bucket=os.environ['BOBSLED_STATUS_BUCKET'])
+    title = '{} failing since at least {}'.format(job, since)
     issue = r.create_issue(title=title, body=body, labels=['automatic', 'ready'])
     print('created issue: #{} - {}'.format(issue.number, title))
