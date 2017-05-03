@@ -5,7 +5,7 @@ import yaml
 import pytest
 import boto3
 
-from unittest.mock import create_autospec, patch
+from unittest.mock import patch
 from moto import mock_ec2, mock_ecs
 
 from bobsled.cluster import (create_cluster, get_desired_status, create_instance,
@@ -195,6 +195,7 @@ def test_scale_up():
     # original small is still there
     assert small_launch_time in {i['LaunchTime'] for i in instances}
 
+
 @mock_ecs
 @mock_ec2
 def test_scale_down():
@@ -209,6 +210,7 @@ def test_scale_down():
     # now go to 3am, where small & large are replaced by medium
     # but let's assume one is still in use, let's make sure it stick around
     def _get_killable(instance_type):
+        old_instances[0]['ec2InstanceId'] = old_instances[0]['InstanceId']
         if instance_type == old_instances[0]['InstanceType']:
             return [old_instances[0]]
         return []
@@ -223,6 +225,7 @@ def test_scale_down():
     # now go to 5am, everything off and all instances in killable state
     def _get_killable(instance_type):
         for inst in cur_instances:
+            inst['ec2InstanceId'] = inst['InstanceId']
             if instance_type == inst['InstanceType']:
                 return [inst]
         return []

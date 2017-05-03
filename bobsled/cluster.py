@@ -1,8 +1,13 @@
 import os
 import re
 import datetime
+import logging
 from collections import Counter
 import boto3
+
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def create_cluster():
@@ -68,9 +73,15 @@ def get_killable_instances(instance_type):
     resp = ecs.describe_container_instances(cluster=os.environ['BOBSLED_ECS_CLUSTER'],
                                             containerInstances=arns)
     resp = resp['containerInstances']
+
+    logger.debug('checking for killable %s among %s candidates', instance_type, len(arns))
+
     killable = []
     for inst in resp:
         # instance is idle
+        logger.debug('checking %s %s %s', inst['ec2InstanceId'], inst['pendingTasksCount'],
+                     inst['runningTasksCount'])
+
         if inst['pendingTasksCount'] == 0 and inst['runningTasksCount'] == 0:
             # check if it is the right size
             for attrib in inst['attributes']:
@@ -110,21 +121,25 @@ def get_desired_status(schedule, time):
 def scale(schedule, time):
     ec2 = boto3.client('ec2', region_name='us-east-1')
 
-    instances = get_instances()
     desired_status = get_desired_status(schedule, time)
 
+    instances = get_instances()
     instance_types = [inst['InstanceType'] for inst in instances]
+
+    logger.info('scaling from %s to %s', instance_types, desired_status)
 
     to_create = Counter(desired_status) - Counter(instance_types)
     to_delete = Counter(instance_types) - Counter(desired_status)
 
     for inst_type, num in to_create.items():
         for n in range(num):
+            logger.info('creating %s', inst_type)
             create_instance(inst_type)
 
     for inst_type, num in to_delete.items():
         killable = get_killable_instances(inst_type)
+        logger.debug('found %s killable', len(killable))
         # kill no more than num idle instances
         for instance in killable[:num]:
-            print('terminating', instance['InstanceId'])
-            ec2.terminate_instances(InstanceIds=[instance['InstanceId']])
+            logger.info('terminating %s', instance['ec2InstanceId'])
+            ec2.terminate_instances(InstanceIds=[instance['ec2InstanceId']])
