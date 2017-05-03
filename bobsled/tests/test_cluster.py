@@ -12,9 +12,8 @@ from bobsled.cluster import (create_cluster, get_desired_status, create_instance
                              get_killable_instances, get_instances, scale)
 
 
-def setUp():
+def setup_module(m):
     os.environ['BOBSLED_ECS_CLUSTER'] = 'bobsled-cluster'
-    os.environ['BOBSLED_ECS_IMAGE_ID'] = 'ami-abcdef12'
     os.environ['BOBSLED_ECS_KEY_NAME'] = 'bobsled.pem'
     os.environ['BOBSLED_SECURITY_GROUP_ID'] = 'bobsled-ecs'
 

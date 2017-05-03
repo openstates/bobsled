@@ -22,7 +22,7 @@ def create_instance(instance_type):
         os.environ['BOBSLED_ECS_CLUSTER']
     )
     response = ec2.run_instances(
-        ImageId=os.environ['BOBSLED_ECS_IMAGE_ID'],
+        ImageId=os.environ.get('BOBSLED_ECS_IMAGE_ID', 'ami-275ffe31'),
         MinCount=1,
         MaxCount=1,
         KeyName=os.environ['BOBSLED_ECS_KEY_NAME'],
