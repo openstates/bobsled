@@ -50,8 +50,6 @@ def status(upload):
 @cli.command()
 def init_lambda():
     funcs = {
-        #'bobsled.handlers.echo': {
-        #},
         'bobsled.handlers.update_status_handler': {
             'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
             'BOBSLED_TASK_NAME': os.environ['BOBSLED_TASK_NAME'],
@@ -64,6 +62,12 @@ def init_lambda():
         'bobsled.handlers.run_task_handler': {
             'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
         },
+        'bobsled.handlers.scale_handler': {
+            'BOBSLED_ECS_CLUSTER': os.environ['BOBSLED_ECS_CLUSTER'],
+            'BOBSLED_ECS_KEY_NAME': os.environ['BOBSLED_ECS_KEY_NAME'],
+            'BOBSLED_SECURITY_GROUP_ID': os.environ['BOBSLED_SECURITY_GROUP_ID'],
+            'BOBSLED_CLUSTER_SCHEDULE': os.environ['BOBSLED_CLUSTER_SCHEDULE'],
+        }
     }
     for func, env in funcs.items():
         publish_function(func.replace('.', '-'), func, func,
