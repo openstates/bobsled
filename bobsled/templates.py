@@ -1,7 +1,13 @@
 import os
+from functools import reduce
 from jinja2 import Environment, FileSystemLoader
 import boto3
-from .utils import all_files
+
+
+def all_files(dirname):
+    return reduce(lambda a, b: a+b,
+                  [[os.path.join(d, f) for f in filenames]
+                   for d, _, filenames in os.walk(dirname)])
 
 
 def format_datetime(value):
