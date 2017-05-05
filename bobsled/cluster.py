@@ -5,6 +5,8 @@ import logging
 from collections import Counter
 import boto3
 
+from . import config
+
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -14,10 +16,10 @@ def create_instance(instance_type):
     ec2 = boto3.client('ec2', region_name='us-east-1')
 
     ecs_user_data = '#!/bin/bash\necho ECS_CLUSTER={} >> /etc/ecs/ecs.config'.format(
-        os.environ['BOBSLED_ECS_CLUSTER']
+        config.CLUSTER_NAME
     )
     response = ec2.run_instances(
-        ImageId=os.environ.get('BOBSLED_ECS_IMAGE_ID', 'ami-275ffe31'),
+        ImageId=config.ECS_IMAGE_ID,
         MinCount=1,
         MaxCount=1,
         KeyName=os.environ['BOBSLED_ECS_KEY_NAME'],
@@ -63,9 +65,9 @@ def get_instances():
 
 def get_killable_instances(instance_type):
     ecs = boto3.client('ecs', region_name='us-east-1')
-    arns = ecs.list_container_instances(cluster=os.environ['BOBSLED_ECS_CLUSTER']
+    arns = ecs.list_container_instances(cluster=config.CLUSTER_NAME
                                         )['containerInstanceArns']
-    resp = ecs.describe_container_instances(cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+    resp = ecs.describe_container_instances(cluster=config.CLUSTER_NAME,
                                             containerInstances=arns)
     resp = resp['containerInstances']
 

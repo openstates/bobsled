@@ -1,10 +1,10 @@
-import os
 import getpass
 import click
 import boto3
 from .tasks import publish_task_definitions, run_task
 from .status import update_status, get_log_for_run
 from .dynamo import Run
+from . import config
 
 
 @click.group()
@@ -51,7 +51,7 @@ def init():
     # create table and ECS cluster
     Run.create_table(read_capacity_units=2, write_capacity_units=2, wait=True)
     ecs = boto3.client('ecs', region_name='us-east-1')
-    ecs.create_cluster(clusterName=os.environ['BOBSLED_ECS_CLUSTER'])
+    ecs.create_cluster(clusterName=config.CLUSTER_NAME)
 
 
 if __name__ == '__main__':

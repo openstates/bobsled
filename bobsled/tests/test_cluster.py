@@ -10,10 +10,11 @@ from moto import mock_ec2, mock_ecs
 
 from bobsled.cluster import (create_cluster, get_desired_status, create_instance,
                              get_killable_instances, get_instances, scale)
+from . import config
 
 
 def setup_module(m):
-    os.environ['BOBSLED_ECS_CLUSTER'] = 'bobsled-cluster'
+    os.environ['BOBSLED_CLUSTER_NAME'] = 'bobsled-cluster'
     os.environ['BOBSLED_ECS_KEY_NAME'] = 'bobsled.pem'
     os.environ['BOBSLED_SECURITY_GROUP_ID'] = 'bobsled-ecs'
 
@@ -103,7 +104,7 @@ def test_get_killable_instances():
     # have to do this manually here, it is done automatically w/in the instance
     instance_id_document = json.dumps({'instanceId': resp['Instances'][0]['InstanceId']})
     ecs.register_container_instance(
-        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+        cluster=config.CLUSTER_NAME,
         instanceIdentityDocument=instance_id_document
     )
 
@@ -123,7 +124,7 @@ def test_get_killable_instances():
         }],
     )
     ecs.run_task(
-        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+        cluster=config.CLUSTER_NAME,
         count=1,
         taskDefinition='fake-task',
         startedBy='test',

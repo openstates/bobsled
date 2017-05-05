@@ -8,6 +8,7 @@ import github3
 
 from bobsled.dynamo import Run, Status
 from bobsled.templates import render_jinja_template, upload
+from . import config
 
 OUTPUT_DIR = '/tmp/bobsled-output'
 
@@ -37,7 +38,7 @@ def check_status():
     ecs = boto3.client('ecs', region_name='us-east-1')
     # we limit this to 100 for AWS, which is fine b/c 100 shouldn't be running at once
     # if somehow they are, a subsequent run will pick the rest up
-    resp = ecs.describe_tasks(cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+    resp = ecs.describe_tasks(cluster=config.CLUSTER_NAME,
                               tasks=list(runs.keys())[:100])
 
     # match status to runs
@@ -117,7 +118,7 @@ def get_log_for_run(run):
                    for e in run.task_definition['containerDefinitions'][0]['environment']}
 
     pieces = dict(
-        task_name=os.environ['BOBSLED_TASK_NAME'],
+        task_name=config.TASK_NAME,
         family=run.job.lower(),
         task_id=run.task_id,
     )

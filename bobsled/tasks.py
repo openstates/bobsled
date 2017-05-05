@@ -6,6 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from .dynamo import Run
+from . import config
 
 
 def checkout_tasks():
@@ -45,11 +46,10 @@ def make_task(family,
               # memory=None,
               ):
     ecs = boto3.client('ecs', region_name='us-east-1')
-    name = os.environ['BOBSLED_TASK_NAME']
 
     log_stream_prefix = family.lower()
     main_container = {
-        'name': name,
+        'name': config.TASK_NAME,
         'image': image,
         'essential': True,
         'entryPoint': entrypoint,
@@ -208,7 +208,7 @@ def run_task(task_name, started_by):
     taskdef = ecs.describe_task_definition(taskDefinition=task_name)
 
     response = ecs.run_task(
-        cluster=os.environ['BOBSLED_ECS_CLUSTER'],
+        cluster=config.CLUSTER_NAME,
         count=1,
         taskDefinition=task_name,
         startedBy=started_by,
