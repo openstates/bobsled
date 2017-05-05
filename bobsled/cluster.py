@@ -10,11 +10,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def create_cluster():
-    ecs = boto3.client('ecs', region_name='us-east-1')
-    ecs.create_cluster(clusterName=os.environ['BOBSLED_ECS_CLUSTER'])
-
-
 def create_instance(instance_type):
     ec2 = boto3.client('ec2', region_name='us-east-1')
 

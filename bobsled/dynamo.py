@@ -48,7 +48,3 @@ class Run(Model):
         for s in statuses:
             results.extend(Run.status_index.query(s, start__gt=since))
         return results
-
-
-def create_tables():
-    Run.create_table(read_capacity_units=1, write_capacity_units=1, wait=True)
