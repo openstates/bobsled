@@ -17,3 +17,7 @@ def run_task_handler(event, context):
 def scale_handler(event, context):
     schedule = json.loads(os.environ['BOBSLED_CLUSTER_SCHEDULE'])
     scale(schedule, datetime.datetime.utcnow().time())
+
+
+def app(*args, **kwargs):
+    return 'noop'

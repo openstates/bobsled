@@ -1,6 +1,6 @@
 {
     "dev": {
-        "app_function": "bobsled.app",
+        "app_function": "bobsled.handlers.app",
         "events": [
             {
                 "function": "bobsled.handlers.scale_handler",
@@ -18,7 +18,6 @@
         "runtime": "python3.6",
 
         "aws_region": "us-east-1",
-        "profile_name": "openstates",
-        "s3_bucket": "zappa-bobsled"
+        "s3_bucket": "zappa-bobsled-jpt"
     }
 }
