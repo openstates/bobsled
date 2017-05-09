@@ -19,5 +19,7 @@
 
         "aws_region": "us-east-1",
         "s3_bucket": "zappa-bobsled-jpt"
+        "environment_variables": {
+        }
     }
 }

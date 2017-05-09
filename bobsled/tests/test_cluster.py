@@ -8,15 +8,18 @@ import boto3
 from unittest.mock import patch
 from moto import mock_ec2, mock_ecs
 
-from bobsled.cluster import (create_cluster, get_desired_status, create_instance,
+from bobsled.cluster import (get_desired_status, create_instance,
                              get_killable_instances, get_instances, scale)
-from . import config
+from bobsled import config
 
 
 def setup_module(m):
     os.environ['BOBSLED_CLUSTER_NAME'] = 'bobsled-cluster'
     os.environ['BOBSLED_ECS_KEY_NAME'] = 'bobsled.pem'
     os.environ['BOBSLED_SECURITY_GROUP_ID'] = 'bobsled-ecs'
+    with mock_ecs():
+        ecs = boto3.client('ecs', region_name='us-east-1')
+        ecs.create_cluster(clusterName=config.CLUSTER_NAME)
 
 
 example_schedule = """schedule:
@@ -97,8 +100,6 @@ which instances have tasks
 def test_get_killable_instances():
     # this test is skipped
     ecs = boto3.client('ecs', 'us-east-1')
-
-    create_cluster()
 
     resp = create_instance('t2.medium')
     # have to do this manually here, it is done automatically w/in the instance
@@ -200,7 +201,6 @@ def test_scale_up():
 @mock_ec2
 def test_scale_down():
     schedule = yaml.load(scale_schedule)['schedule']
-    create_cluster()
 
     # start at 2am state w/ 2 instances running
     scale(schedule, datetime.time(2, 0))
