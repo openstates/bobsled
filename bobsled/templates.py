@@ -3,6 +3,8 @@ from functools import reduce
 from jinja2 import Environment, FileSystemLoader
 import boto3
 
+from . import config
+
 
 def all_files(dirname):
     return reduce(lambda a, b: a+b,
@@ -40,7 +42,7 @@ def upload(dirname):
         s3.meta.client.put_object(
             ACL='public-read',
             Body=open(filename, 'rb'),
-            Bucket=os.environ['BOBSLED_STATUS_BUCKET'],
+            Bucket=config.STATUS_BUCKET,
             Key=key,
             ContentType=content_type,
         )

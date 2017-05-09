@@ -128,7 +128,7 @@ def get_log_for_run(run):
 
     while True:
         extra = {'nextToken': next} if next else {}
-        events = logs.get_log_events(logGroupName=os.environ['BOBSLED_ECS_LOG_GROUP'],
+        events = logs.get_log_events(logGroupName=config.LOG_GROUP,
                                      logStreamName=log_arn, **extra)
         next = events['nextForwardToken']
 
@@ -205,9 +205,8 @@ def write_day_html(job, date):
 
 
 def make_issue(job, days, logs):
-    gh = github3.login(token=os.environ['BOBSLED_GITHUB_KEY'])
-    r = gh.repository(os.environ['BOBSLED_GITHUB_USER'],
-                      os.environ['BOBSLED_GITHUB_ISSUE_REPO'])
+    gh = github3.login(token=config.GITHUB_KEY)
+    r = gh.repository(config.GITHUB_USER, config.GITHUB_ISSUE_REPO)
 
     # ensure upper case
     job = job.upper()
@@ -235,7 +234,7 @@ Based on automated runs it appears that {job} has not run successfully in {days}
 ```
 
 Visit http://{bucket} for more info.
-'''.format(job=job, since=since, days=days, logs=logs, bucket=os.environ['BOBSLED_STATUS_BUCKET'])
+'''.format(job=job, since=since, days=days, logs=logs, bucket=config.STATUS_BUCKET)
     title = '{} failing since at least {}'.format(job, since)
     issue = r.create_issue(title=title, body=body, labels=['automatic', 'ready'])
     print('created issue: #{} - {}'.format(issue.number, title))

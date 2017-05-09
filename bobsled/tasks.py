@@ -12,8 +12,7 @@ from . import config
 def checkout_tasks():
     os.system('GIT_SSH_COMMAND="ssh -i deploy.key" '
               'git clone git@github.com:{}/{}.git --depth 1'.format(
-                  os.environ['BOBSLED_GITHUB_USER'],
-                  os.environ['BOBSLED_GITHUB_TASK_REPO']
+                  config.GITHUB_USER, config.GITHUB_TASK_REPO
               ))
 
 
@@ -57,7 +56,7 @@ def make_task(family,
         'logConfiguration': {
             "logDriver": "awslogs",
             "options": {
-                "awslogs-group": os.environ['BOBSLED_ECS_LOG_GROUP'],
+                "awslogs-group": config.LOG_GROUP,
                 "awslogs-region": "us-east-1",
                 "awslogs-stream-prefix": log_stream_prefix
             }
@@ -149,7 +148,7 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
             Targets=[
                 {
                     'Id': name + '-scrape',
-                    'Arn': os.environ['BOBSLED_LAMBDA_ARN'],
+                    'Arn': config.LAMBDA_ARN,
                     'Input': json.dumps({'job': name})
                 }
             ]
@@ -157,7 +156,7 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
         perm_statement_id = name + '-scrape-permission'
         try:
             lamb.add_permission(
-                FunctionName=os.environ['BOBSLED_LAMBDA_ARN'],
+                FunctionName=config.LAMBDA_ARN,
                 StatementId=perm_statement_id,
                 Action='lambda:InvokeFunction',
                 Principal='events.amazonaws.com',
