@@ -1,14 +1,14 @@
 {
     "dev": {
-        "app_function": "bobsled.handlers.app",
+        "app_function": "bobsled.app.app",
         "events": [
             {
-                "function": "bobsled.handlers.scale_handler",
-                "expression": "rate(20 minutes)"
+                "function": "bobsled.cluster.autoscale",
+                "expression": "rate(20 days)"
             },
             {
-                "function": "bobsled.handlers.update_status_handler",
-                "expression": "rate(30 minutes)"
+                "function": "bobsled.status.update_status",
+                "expression": "rate(30 days)"
             }
         ],
         "apigateway_enabled": false,
@@ -18,8 +18,10 @@
         "runtime": "python3.6",
 
         "aws_region": "us-east-1",
-        "s3_bucket": "zappa-bobsled-jpt"
+        "s3_bucket": "zappa-bobsled-jpt",
         "environment_variables": {
+            "BOBSLED_STATUS_BUCKET": "jpt-zappa-status",
+            "BOBSLED_CONFIG_PATH": "s3://zappa-bobsled-jpt/config.yaml"
         }
     }
 }

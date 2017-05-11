@@ -1,9 +1,9 @@
-import os
 import re
 import datetime
 import logging
 from collections import Counter
 import boto3
+import yaml
 
 from . import config
 
@@ -140,3 +140,16 @@ def scale(schedule, time):
         for instance in killable[:num]:
             logger.info('terminating %s', instance['ec2InstanceId'])
             ec2.terminate_instances(InstanceIds=[instance['ec2InstanceId']])
+
+
+def autoscale():
+    from zappa.utilities import parse_s3_url
+    remote_bucket, remote_file = parse_s3_url(config.CONFIG_PATH)
+
+    s3 = boto3.client('s3', region_name='us-east-1')
+    remote_config = s3.get_object(Bucket=remote_bucket, Key=remote_file)
+    remote_config = yaml.load(remote_config['Body'].read())
+
+    print(remote_config)
+
+    scale(remote_config['schedule'], datetime.datetime.utcnow().time())
