@@ -136,6 +136,10 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     if force:
         create = True
 
+    # figure out full lambda arn
+    account_id = boto3.client('sts').get_caller_identity().get('Account')
+    lambda_arn = 'arn:aws:lambda:us-east-1:{}:function:bobsled-dev'.format(account_id)
+
     if create:
         rule = events.put_rule(
             Name=name,
@@ -147,22 +151,26 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
             Rule=name,
             Targets=[
                 {
-                    'Id': name + '-scrape',
-                    'Arn': config.LAMBDA_ARN,
-                    'Input': json.dumps({'job': name})
+                    'Id': name + '-job',
+                    'Arn': lambda_arn,
+                    'Input': json.dumps({
+                        'job': name,
+                        'command': 'bobsled.tasks.run_task_handler',
+                    })
                 }
             ]
         )
-        perm_statement_id = name + '-scrape-permission'
+        perm_statement_id = name + '-job-permission'
         try:
             lamb.add_permission(
-                FunctionName=config.LAMBDA_ARN,
+                FunctionName=lambda_arn,
                 StatementId=perm_statement_id,
                 Action='lambda:InvokeFunction',
                 Principal='events.amazonaws.com',
                 SourceArn=rule['RuleArn'],
             )
-        except ClientError:
+        except ClientError as e:
+            print(e)
             # don't recreate permission if it is already there
             pass
     elif verbose:
@@ -234,3 +242,8 @@ def run_task(task_name, started_by):
         task_arn=response['tasks'][0]['taskArn'],
         ).save()
     return response
+
+
+def run_task_handler(event, context):
+    print(event, context)
+    run_task(event['job'], 'lambda')

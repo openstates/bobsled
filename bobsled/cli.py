@@ -52,7 +52,9 @@ def init():
     Run.create_table(read_capacity_units=2, write_capacity_units=2, wait=True)
     ecs = boto3.client('ecs', region_name='us-east-1')
     ecs.create_cluster(clusterName=config.CLUSTER_NAME)
-
+    logs = boto3.client('logs', region_name='us-east-1')
+    logs.create_log_group(logGroupName='bobsled')
+    # TODO: create ecsInstanceRole?
 
 if __name__ == '__main__':
     cli()
