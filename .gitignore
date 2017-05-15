@@ -5,3 +5,4 @@ __pycache__
 MANIFEST
 dist/
 bobsled.egg-info
+zappa_settings.json
