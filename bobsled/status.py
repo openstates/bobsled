@@ -195,12 +195,13 @@ def write_index_html():
 
 
 def write_day_html(job, date):
+    print(job, date)
     start = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
     end = datetime.datetime(date.year, date.month, date.day, 11, 59, 59)
     runs = list(Run.query(job, start__between=[start, end]))
+    print(runs)
     html = render_jinja_template('day.html', runs=runs, date=date)
-    with open(os.path.join(OUTPUT_DIR,
-                           'run-{}-{}.html'.format(job, date)), 'w') as out:
+    with open(os.path.join(OUTPUT_DIR, 'run-{}-{}.html'.format(job, date)), 'w') as out:
                     out.write(html)
 
 

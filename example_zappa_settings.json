@@ -24,18 +24,29 @@
             },
             {
             "Effect": "Allow",
-            "Action": ["ec2:RunInstances", "ec2:CreateTags"],
+            "Action": [
+                "ec2:RunInstances",
+                "ec2:CreateTags",
+                "ec2:DescribeInstances",
+                "ec2:TerminateInstances"
+            ],
             "Resource": "*"
             },
             {
             "Effect": "Allow",
-            "Action": ["ecs:DescribeTaskDefinition", "ecs:RunTask"],
+            "Action": [
+                "ecs:DescribeTaskDefinition",
+                "ecs:RunTask",
+                "ecs:DescribeTasks",
+                "ecs:ListContainerInstances",
+                "ecs:DescribeContainerInstances"
+            ],
             "Resource": "*"
             }
         ],
 
         "aws_region": "us-east-1",
-        "s3_bucket": "zappa-bobsled-jpt",
+        "s3_bucket": "jpt-zappa",
         "environment_variables": {
             "BOBSLED_STATUS_BUCKET": "",
             "BOBSLED_CONFIG_PATH": "",
