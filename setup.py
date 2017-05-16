@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='bobsled',
-      version='0.3',
+      version='0.5',
       description='a cool task runner',
       author='James Turk',
       author_email='james@openstates.org',
@@ -22,4 +22,4 @@ setup(name='bobsled',
           'github3.py==0.9.6',
           'Jinja2==2.9.5',
       ]
-)
+      )

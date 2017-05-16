@@ -96,7 +96,6 @@ def update_run_status(run, task):
 
 
 def get_failures(job):
-
     bad_in_a_row = 0
     # get recent runs in reverse-cron
     for run in Run.query(job, limit=8, scan_index_forward=False):
@@ -199,10 +198,12 @@ def write_day_html(job, date):
     start = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
     end = datetime.datetime(date.year, date.month, date.day, 11, 59, 59)
     runs = list(Run.query(job, start__between=[start, end]))
+    for run in runs:
+        run.logs = '\n'.join(get_log_for_run(run))
     print(runs)
     html = render_jinja_template('day.html', runs=runs, date=date)
     with open(os.path.join(OUTPUT_DIR, 'run-{}-{}.html'.format(job, date)), 'w') as out:
-                    out.write(html)
+        out.write(html)
 
 
 def make_issue(job, days, logs):

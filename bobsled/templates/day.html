@@ -5,24 +5,18 @@
   </head>
   <body>
 
-    <h1>{{runs[0].job}} | {{date}}</h1>
+      <h1>{{runs[0].job}} | {{date}}</h1>
 
-    <table>
-      <tr>
-        <td>Status</td>
-        <td>Task ID</td>
-        <td>Start</td>
-        <td>End</td>
-      </tr>
-
-    {% for run in runs %}
-    <tr>
-      <td class="{{ run.status }}"> {{ run.status }} </td>
-      <td> {{ run.task_id }} </td>
-      <td> {{ run.start|datetime }} </td>
-      <td> {{ run.end|datetime }} </td>
-    </tr>
-    {% endfor %}
-    </table>
+      {% for run in runs %}
+      <h2> Run {{ run.task_id }} </h2>
+      <div class="{{ run.status }}"> {{ run.status }} </div>
+      <dl>
+          <dt> Start </dt>
+          <dd> {{ run.start|datetime }} </dd>
+          <dt> End </dt>
+          <dd> {{ run.end|datetime }} </dd>
+      </dl>
+      <pre>{{ run.logs }}</pre>
+      {% endfor %}
 </body>
 </html>

@@ -4,7 +4,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 from .tasks import publish_task_definitions, run_task
-from .status import update_status, get_log_for_run
+from .status import get_log_for_run
 from .dynamo import Run
 from . import config
 
@@ -41,11 +41,6 @@ def run(jobs):
             run_task(job, who)
     else:
         click.secho('must include job name', fg='red')
-
-
-@cli.command()
-def status():
-    update_status()
 
 
 @cli.command()
