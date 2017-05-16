@@ -4,6 +4,7 @@ import datetime
 from collections import defaultdict, OrderedDict
 
 import boto3
+from botocore.exceptions import ClientError
 import github3
 
 from bobsled.dynamo import Run, Status
@@ -128,8 +129,12 @@ def get_log_for_run(run):
 
     while True:
         extra = {'nextToken': next} if next else {}
-        events = logs.get_log_events(logGroupName=config.LOG_GROUP,
-                                     logStreamName=log_arn, **extra)
+        try:
+            events = logs.get_log_events(logGroupName=config.LOG_GROUP,
+                                         logStreamName=log_arn, **extra)
+        except ClientError:
+            yield {'message': 'no logs'}
+            break
         next = events['nextForwardToken']
 
         if not events['events']:
