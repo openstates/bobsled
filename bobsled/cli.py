@@ -1,6 +1,8 @@
 import getpass
 import click
 import boto3
+from botocore.exceptions import ClientError
+
 from .tasks import publish_task_definitions, run_task
 from .status import update_status, get_log_for_run
 from .dynamo import Run
@@ -53,8 +55,13 @@ def init():
     ecs = boto3.client('ecs', region_name='us-east-1')
     ecs.create_cluster(clusterName=config.CLUSTER_NAME)
     logs = boto3.client('logs', region_name='us-east-1')
-    logs.create_log_group(logGroupName='bobsled')
+    try:
+        logs.create_log_group(logGroupName=config.LOG_GROUP)
+    except ClientError:
+        # TODO: check error here
+        pass
     # TODO: create ecsInstanceRole?
+
 
 if __name__ == '__main__':
     cli()

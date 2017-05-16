@@ -5,6 +5,30 @@ bobsled is a task runner designed for Open States
 the goal is to make it as cheap and simple as possible to run scrapers
 (and other tasks) within the AWS environment
 
+## getting started
+
+* Create a S3 bucket (i.e. bobsled-tutorial), this will be used for uploads and storing your secret config variables.
+* Create a second S3 bucket (i.e. status.example.com), this will be used for hosting the public bobsled status logs.
+* Create an EC2 key named bobsled (configurable w/ ECS_KEY_NAME)
+* Create a VPC (if you don't already have one) and choose a subnet ID to use for launching bobsled instances.
+* copy example_zappa_settings.json to zappa_settings.json, set the following
+    * s3_bucket - the name of the bucket you just created
+    * environment_variables.BOBSLED_STATUS_BUCKET - name of status bucket created above
+    * environment_variables.BOBSLED_CONFIG_PATH - e.g. s3://{s3_bucket}/config.yml
+    * environment_variables.BOBSLED_SUBNET_ID - e.g. subnet-88eeff00
+    * environment_variables.BOBSLED_SECURITY_GROUP_ID - e.g. sg-123456ef
+* $ zappa publish dev
+* $ aws s3 cp config.yaml BOBSLED_CONFIG_PATH
+* $ bobsled init
+
+## optional
+
+CLUSTER_NAME
+TASK_NAME
+LOG_GROUP
+ECS_IMAGE_ID
+ECS_KEY_NAME
+
 ## status
 
 at the moment this is experimental and unsupported, use 100% at your own risk
