@@ -122,6 +122,7 @@ def get_log_for_run(run):
         task_id=run.task_id,
     )
     log_arn = '{family}/{task_name}/{task_id}'.format(**pieces)
+    print(log_arn)
 
     next = None
 
@@ -199,7 +200,8 @@ def write_day_html(job, date):
     end = datetime.datetime(date.year, date.month, date.day, 11, 59, 59)
     runs = list(Run.query(job, start__between=[start, end]))
     for run in runs:
-        run.logs = '\n'.join(get_log_for_run(run))
+        logs = list(get_log_for_run(run))
+        run.logs = '\n'.join([l['message'] for l in logs[-100:]])
     print(runs)
     html = render_jinja_template('day.html', runs=runs, date=date)
     with open(os.path.join(OUTPUT_DIR, 'run-{}-{}.html'.format(job, date)), 'w') as out:
