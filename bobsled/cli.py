@@ -47,9 +47,9 @@ def run(jobs):
 def init():
     # create table and ECS cluster
     Run.create_table(read_capacity_units=2, write_capacity_units=2, wait=True)
-    ecs = boto3.client('ecs', region_name='us-east-1')
+    ecs = boto3.client('ecs')
     ecs.create_cluster(clusterName=config.CLUSTER_NAME)
-    logs = boto3.client('logs', region_name='us-east-1')
+    logs = boto3.client('logs')
     try:
         logs.create_log_group(logGroupName=config.LOG_GROUP)
     except ClientError:

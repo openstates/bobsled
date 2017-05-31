@@ -44,7 +44,8 @@ def make_task(family,
               # cpu=None,
               # memory=None,
               ):
-    ecs = boto3.client('ecs', region_name='us-east-1')
+    ecs = boto3.client('ecs')
+    region = ecs.meta.region_name
 
     log_stream_prefix = family.lower()
     main_container = {
@@ -57,7 +58,7 @@ def make_task(family,
             "logDriver": "awslogs",
             "options": {
                 "awslogs-group": config.LOG_GROUP,
-                "awslogs-region": "us-east-1",
+                "awslogs-region": region,
                 "awslogs-stream-prefix": log_stream_prefix
             }
         },
@@ -113,8 +114,8 @@ def make_task(family,
 
 
 def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
-    events = boto3.client('events', region_name='us-east-1')
-    lamb = boto3.client('lambda', region_name='us-east-1')
+    events = boto3.client('events')
+    lamb = boto3.client('lambda')
 
     enabled = 'ENABLED' if enabled else 'DISABLED'
     create = False
@@ -138,7 +139,8 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
 
     # figure out full lambda arn
     account_id = boto3.client('sts').get_caller_identity().get('Account')
-    lambda_arn = 'arn:aws:lambda:us-east-1:{}:function:bobsled-dev'.format(account_id)
+    region = events.meta.region_name
+    lambda_arn = 'arn:aws:lambda:{}:{}:function:bobsled-dev'.format(region, account_id)
 
     if create:
         rule = events.put_rule(
@@ -208,7 +210,7 @@ def publish_task_definitions(dirname, only=None, force=False, verbose=False):
 
 
 def run_task(task_name, started_by):
-    ecs = boto3.client('ecs', region_name='us-east-1')
+    ecs = boto3.client('ecs')
 
     print('running', task_name)
 

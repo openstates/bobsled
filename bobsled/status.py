@@ -36,7 +36,7 @@ def check_status():
     if not runs:
         return
 
-    ecs = boto3.client('ecs', region_name='us-east-1')
+    ecs = boto3.client('ecs')
     # we limit this to 100 for AWS, which is fine b/c 100 shouldn't be running at once
     # if somehow they are, a subsequent run will pick the rest up
     resp = ecs.describe_tasks(cluster=config.CLUSTER_NAME,
@@ -112,7 +112,7 @@ def get_failures(job):
 
 
 def get_log_for_run(run):
-    logs = boto3.client('logs', region_name='us-east-1')
+    logs = boto3.client('logs')
 
     env_replace = {e['value']: '**{}**'.format(e['name'])
                    for e in run.task_definition['containerDefinitions'][0]['environment']}

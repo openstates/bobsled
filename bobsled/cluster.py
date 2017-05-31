@@ -13,7 +13,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def create_instance(instance_type):
-    ec2 = boto3.client('ec2', region_name='us-east-1')
+    ec2 = boto3.client('ec2')
 
     ecs_user_data = '#!/bin/bash\necho ECS_CLUSTER={} >> /etc/ecs/ecs.config'.format(
         config.CLUSTER_NAME
@@ -49,7 +49,7 @@ def create_instance(instance_type):
 
 
 def get_instances():
-    ec2 = boto3.client('ec2', 'us-east-1')
+    ec2 = boto3.client('ec2')
     resp = ec2.describe_instances(Filters=[
         {'Name': 'tag-key', 'Values': ['bobsled']},
         {'Name': 'instance-state-name', 'Values': ['pending', 'running']}
@@ -64,7 +64,7 @@ def get_instances():
 
 
 def get_killable_instances(instance_type):
-    ecs = boto3.client('ecs', region_name='us-east-1')
+    ecs = boto3.client('ecs')
     arns = ecs.list_container_instances(cluster=config.CLUSTER_NAME
                                         )['containerInstanceArns']
     resp = ecs.describe_container_instances(cluster=config.CLUSTER_NAME,
@@ -116,7 +116,7 @@ def get_desired_status(schedule, time):
 
 
 def scale(schedule, time):
-    ec2 = boto3.client('ec2', region_name='us-east-1')
+    ec2 = boto3.client('ec2')
 
     desired_status = get_desired_status(schedule, time)
 
@@ -146,7 +146,7 @@ def autoscale():
     from zappa.utilities import parse_s3_url
     remote_bucket, remote_file = parse_s3_url(config.CONFIG_PATH)
 
-    s3 = boto3.client('s3', region_name='us-east-1')
+    s3 = boto3.client('s3')
     remote_config = s3.get_object(Bucket=remote_bucket, Key=remote_file)
     remote_config = yaml.load(remote_config['Body'].read())
 
