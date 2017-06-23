@@ -1,9 +1,11 @@
 import os
 import glob
 import json
+from functools import lru_cache
 import yaml
 import boto3
 from botocore.exceptions import ClientError
+import credstash
 
 from .dynamo import Run
 from . import config
@@ -14,6 +16,16 @@ def checkout_tasks():
               'git clone git@github.com:{}/{}.git --depth 1'.format(
                   config.GITHUB_USER, config.GITHUB_TASK_REPO
               ))
+
+
+@lru_cache()
+def get_credstash_env(name):
+    env = {}
+    prefix = name + '.'
+    for key, value in credstash.getAllSecrets().items():
+        if key.startswith(prefix):
+            env[key.replace(prefix, '')] = value
+    return env
 
 
 def load_tasks(directory):
@@ -29,6 +41,9 @@ def load_tasks(directory):
             # or can be a dict and will be used as-is
             if isinstance(task['environment'], str):
                 task['environment'] = environments[task['environment']]
+
+            if task.get('credstash', None):
+                task['environment'].update(get_credstash_env(task['credstash']))
             tasks.append(task)
 
     return tasks
