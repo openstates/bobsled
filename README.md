@@ -23,11 +23,17 @@ the goal is to make it as cheap and simple as possible to run scrapers
 
 ## optional
 
-CLUSTER_NAME
-TASK_NAME
-LOG_GROUP
-ECS_IMAGE_ID
-ECS_KEY_NAME
+CLUSTER_NAME - ECS cluster name. (default: bobsled)
+TASK_NAME - ECS task name. (default: bobsled)
+LOG_GROUP - CloudWatch log name. (default: bobsled)
+ECS_IMAGE_ID - ECS image ID. (defaults to ami-275ffe31, latest ECS AMI)
+ECS_KEY_NAME - ECS instance SSH key. (default: bobsled)
+
+GITHUB_USER
+GITHUB_KEY
+GITHUB_TASK_REPO
+GITHUB_ISSUE_REPO
+LAMBDA_ARN
 
 ## status
 
