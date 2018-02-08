@@ -114,11 +114,19 @@ def make_task(family,
         create = True
 
     if create:
+        account_id = boto3.client('sts').get_caller_identity().get('Account')
+        # TODO: create this role?
+        role_arn = 'arn:aws:iam::{}:role/{}'.format(account_id, 'ecs-fargate-bobsled')
         response = ecs.register_task_definition(
             family=family,
             containerDefinitions=[
                 main_container
             ],
+            cpu='256',
+            memory='512',
+            networkMode='awsvpc',
+            executionRoleArn=,
+            requiresCompatibilities=['EC2', 'FARGATE'],
         )
         return response
     elif existing:
@@ -236,6 +244,14 @@ def run_task(task_name, started_by):
         count=1,
         taskDefinition=task_name,
         startedBy=started_by,
+        launchType='FARGATE',
+        networkConfiguration={
+            'awsvpcConfiguration': {
+                'subnets': [config.SUBNET_ID],
+                'securityGroups': [config.SECURITY_GROUP_ID],
+                'assignPublicIp': 'ENABLED',
+            }
+        },
         # overrides={
         #    'containerOverrides': [
         #        {

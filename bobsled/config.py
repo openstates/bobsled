@@ -1,7 +1,7 @@
 import os
 
 # optional (have defaults)
-CLUSTER_NAME = os.environ.get('BOBSLED_CLUSTER_NAME', 'bobsled')
+CLUSTER_NAME = os.environ.get('BOBSLED_CLUSTER_NAME', 'bobsled-fg')
 TASK_NAME = os.environ.get('BOBSLED_TASK_NAME', 'bobsled')
 LOG_GROUP = os.environ.get('BOBSLED_ECS_LOG_GROUP', 'bobsled')
 ECS_IMAGE_ID = os.environ.get('BOBSLED_ECS_IMAGE_ID', 'ami-275ffe31')
