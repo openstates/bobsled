@@ -5,10 +5,6 @@
         "app_function": "bobsled.app.app",
         "events": [
             {
-                "function": "bobsled.cluster.autoscale",
-                "expression": "rate(20 minutes)"
-            },
-            {
                 "function": "bobsled.status.update_status",
                 "expression": "rate(30 minutes)"
             }
