@@ -125,7 +125,7 @@ def make_task(family,
             cpu='256',
             memory='512',
             networkMode='awsvpc',
-            executionRoleArn=,
+            executionRoleArn=role_arn,
             requiresCompatibilities=['EC2', 'FARGATE'],
         )
         return response
