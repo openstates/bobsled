@@ -21,6 +21,7 @@ setup(name='bobsled',
           'pynamodb==2.1.5',
           'github3.py==0.9.6',
           'Jinja2==2.9.5',
+          'credstash==1.14.0',
           'click',
       ]
       )
