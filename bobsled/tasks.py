@@ -5,7 +5,6 @@ from functools import lru_cache
 import yaml
 import boto3
 from botocore.exceptions import ClientError
-import credstash
 
 from .dynamo import Run
 from . import config
@@ -18,13 +17,29 @@ def checkout_tasks():
               ))
 
 
+def get_all_ssm_parameters(path):
+    ssm = boto3.client('ssm')
+    resp = ssm.get_parameters_by_path(Path=path, WithDecryption=True)
+    yield from resp['Parameters']
+
+    while True:
+        try:
+            next_token = resp['NextToken']
+        except KeyError:
+            break
+
+        resp = ssm.get_parameters_by_path(Path=path, WithDecryption=True, NextToken=next_token)
+        yield from resp['Parameters']
+
+
 @lru_cache()
-def get_credstash_env(name):
+def get_env(name):
     env = {}
-    prefix = name + '.'
-    for key, value in credstash.getAllSecrets().items():
-        if key.startswith(prefix):
-            env[key.replace(prefix, '')] = value
+    prefix = '/bobsled/{}/'.format(name)
+    for param in get_all_ssm_parameters(prefix):
+        key = param['Name']
+        value = param['Value']
+        env[key.replace(prefix, '')] = value
     return env
 
 
@@ -42,8 +57,8 @@ def load_tasks(directory):
             if isinstance(task['environment'], str):
                 task['environment'] = environments[task['environment']]
 
-            if task.get('credstash', None):
-                task['environment'].update(get_credstash_env(task['credstash']))
+            if task.get('paramstore', None):
+                task['environment'].update(get_env(task['paramstore']))
             tasks.append(task)
 
     return tasks
