@@ -56,8 +56,8 @@ def make_task(family,
               environment=None,
               verbose=False,
               force=False,
-              # cpu=None,
-              # memory=None,
+              cpu='256',
+              memory='512',
               ):
     ecs = boto3.client('ecs')
     region = ecs.meta.region_name
@@ -79,8 +79,6 @@ def make_task(family,
         },
     }
 
-    # TODO: add CPU/memory limits
-
     if environment:
         main_container['environment'] = [{'name': k, 'value': v}
                                          for k, v in environment.items()]
@@ -90,6 +88,14 @@ def make_task(family,
     try:
         resp = ecs.describe_task_definition(taskDefinition=family)
         existing = resp['taskDefinition']
+
+        if memory != existing['memory']:
+            print('{}: changing memory: {} => {}'.format(family, existing['memory'], memory))
+            create = True
+        if cpu != existing['cpu']:
+            print('{}: changing cpu: {} => {}'.format(family, existing['cpu'], cpu))
+            create = True
+
         for key in ('entryPoint', 'environment', 'image', 'name',
                     'memoryReservation', 'essential', 'logConfiguration'):
 
@@ -122,8 +128,8 @@ def make_task(family,
             containerDefinitions=[
                 main_container
             ],
-            cpu='256',
-            memory='512',
+            cpu=cpu,
+            memory=memory,
             networkMode='awsvpc',
             executionRoleArn=role_arn,
             requiresCompatibilities=['EC2', 'FARGATE'],
@@ -222,6 +228,8 @@ def publish_task_definitions(dirname, only=None, force=False, verbose=False):
                   environment=task.get('environment'),
                   force=force,
                   verbose=verbose,
+                  memory=str(task.get('memory', '512')),
+                  cpu=str(task.get('cpu', '256')),
                   )
         if task.get('cron'):
             make_cron_rule(task['name'],
