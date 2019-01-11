@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='bobsled',
-      version='0.5',
+      version='0.6',
       description='a cool task runner',
       author='James Turk',
       author_email='james@openstates.org',
