@@ -44,7 +44,7 @@ designed to work within AWS Lambda's Python 3.6 environment
 
 ## architecture
 
-* docker images - currently outside the purview of bamboo, but at least one image is needed
+* docker images - currently outside the purview of bobsled, but at least one image is needed
 * ECS Tasks - one per type of job, consist of a docker image, a command, and optional environment details
 * CloudWatch Rule - these are essentially cron jobs that run Lambda tasks
 * Lambda Entrypoint - currently a single entrypoint that exists as glue between CloudWatch rules & ECS tasks
