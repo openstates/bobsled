@@ -20,7 +20,7 @@ setup(name='bobsled',
           'PyYAML',
           'pynamodb==2.1.5',
           'github3.py==0.9.6',
-          'Jinja2==2.9.5',
+          'Jinja2==2.10.1',
           'click',
       ]
       )
