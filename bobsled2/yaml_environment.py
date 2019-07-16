@@ -1,8 +1,8 @@
-from .base import EnvironmentService, Environment
 import yaml
+from .base import EnvironmentService, Environment
 
 
-class YamlEnvironment:
+class YamlEnvironment(EnvironmentService):
     def __init__(self, filename):
         with open(filename) as f:
             data = yaml.safe_load(f)

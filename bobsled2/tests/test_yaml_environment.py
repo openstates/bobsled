@@ -1,20 +1,13 @@
-import yaml
+import os
 from ..yaml_environment import YamlEnvironment, Environment
 
-def setup():
-    with open("testenv.yml", "w") as f:
-        yaml.dump({
-            "one": {"number": 123, "word": "hello"},
-            "two": {"foo": "bar"},
-        },
-                  f)
-
+ENV_FILE = os.path.join(os.path.dirname(__file__), "testenv.yml")
 
 def test_get_environments():
-    env = YamlEnvironment("testenv.yml")
+    env = YamlEnvironment(ENV_FILE)
     assert env.get_environments() == ["one", "two"]
 
 
 def test_environment():
-    env = YamlEnvironment("testenv.yml")
+    env = YamlEnvironment(ENV_FILE)
     assert env.get_environment("one") == Environment("one", {"number": 123, "word": "hello"})

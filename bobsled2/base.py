@@ -24,22 +24,22 @@ class Trigger:
 @attr.s(auto_attribs=True)
 class Task:
     name: str
-    tags: typing.List[str]
     image: str
-    entrypoint: str
-    memory: int
-    enabled: bool
-    triggers: typing.List[Trigger]
+    tags: typing.List[str] = []
+    entrypoint: str = ""
+    memory: int = 0
+    enabled: bool = True
+    triggers: typing.List[Trigger] = []
 
 
 @attr.s(auto_attribs=True)
 class Run:
-    status: Status
     task: str
-    start: str
-    end: str
-    exit_code: int
-    run_info: typing.Dict[str, any]
+    status: Status
+    start: str = ""
+    end: str = ""
+    exit_code: int = None
+    run_info: typing.Dict[str, any] = {}
     uuid: str = attr.Factory(uuid.uuid4)
 
 
@@ -52,22 +52,17 @@ class EnvironmentService:
 
 
 class TaskService:
-    def load_tasks(self):
-        pass
-
-    def add_task(self, task):
-        pass
-
-    def delete_task(self, task):
-        pass
-
     def get_tasks(self):
+        pass
+
+    def get_task(self, name):
         pass
 
 
 class RunService:
-    def register_crons(self, tasks):
-        pass
+    def update_statuses(self):
+        for r in self.get_runs(Status.Running):
+            self.update_status(r)
 
     def run_task(self, task, trigger):
         pass
@@ -75,23 +70,11 @@ class RunService:
     def update_status(self):
         pass
 
-    def get_logs(self, task, stream=False):
+    def get_logs(self, run):
         pass
 
-    def get_runs(self, status, count):
+    def get_runs(self, status):
         pass
 
-
-# # startup
-# tasks = RepoTaskService("https://example.git")
-# ecs = ECSRunService(...)
-# ecs.register_crons(tasks)
-
-
-# # homepage
-# ecs.get_runs() # waiting, running, finished
-# tasks.get_tasks()
-
-
-# # task page
-# ecs.get_logs(task)
+    def register_crons(self, tasks):
+        pass

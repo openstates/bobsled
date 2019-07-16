@@ -1,0 +1,8 @@
+hello-world:
+  image: hello-world
+full-example:
+  image: alpine
+  tags: ["a", "b", "c"]
+  entrypoint: "echo 'hello alpine'"
+  memory: 256
+  enabled: true
