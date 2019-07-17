@@ -1,0 +1,36 @@
+{
+  "name": "bobsled",
+  "version": "0.7.0",
+  "description": "bobsled is a task runner designed for Open States",
+  "scripts": {
+    "start": "webpack --watch --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
+    "prettier": "prettier --write js/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openstates/bobsled.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/openstates/bobsled/issues"
+  },
+  "homepage": "https://github.com/openstates/bobsled#readme",
+  "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6",
+    "webpack-merge": "^4.2.1"
+  },
+  "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.1"
+  },
+  "babel": {
+    "presets": ["@babel/preset-react"]
+  }
+}

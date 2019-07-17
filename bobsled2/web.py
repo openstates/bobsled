@@ -10,7 +10,7 @@ from bobsled2.core import bobsled
 templates = Jinja2Templates(directory='bobsled2/templates')
 
 app = Starlette(debug=True)
-app.mount('/static', StaticFiles(directory='bobsled2/static'), name='static')
+app.mount('/static', StaticFiles(directory='static'), name='static')
 
 
 @app.route('/')
