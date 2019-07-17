@@ -61,7 +61,7 @@ class TaskService:
 
 class RunService:
     def update_statuses(self):
-        for r in self.get_runs(Status.Running):
+        for r in self.get_runs(status=Status.Running):
             self.update_status(r)
 
     def run_task(self, task, trigger):
@@ -73,7 +73,7 @@ class RunService:
     def get_logs(self, run):
         pass
 
-    def get_runs(self, status):
+    def get_runs(self, *, status, task_name):
         pass
 
     def register_crons(self, tasks):

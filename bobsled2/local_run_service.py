@@ -2,6 +2,7 @@ import datetime
 import docker
 from .base import RunService, Run, Status
 
+
 class LocalRunService(RunService):
     def __init__(self):
         self.client = docker.from_env()
@@ -26,8 +27,8 @@ class LocalRunService(RunService):
         run = Run(
             task.name,
             Status.Running,
-            start = datetime.datetime.utcnow(),
-            run_info = {"container_id": container.id}
+            start=datetime.datetime.utcnow(),
+            run_info={"container_id": container.id}
         )
         self.runs.append(run)
         return run
@@ -47,8 +48,13 @@ class LocalRunService(RunService):
         container = self._get_container(run)
         return container.logs()
 
-    def get_runs(self, status):
-        return [r for r in self.runs if r.status == status]
+    def get_runs(self, *, status=None, task_name=None):
+        runs = [r for r in self.runs]
+        if status:
+            runs = [r for r in runs if r.status == status]
+        if task_name:
+            runs = [r for r in runs if r.task == task_name]
+        return runs
 
     def register_crons(self, tasks):
         pass

@@ -14,14 +14,14 @@ def test_simple_run():
     ticks = 0
     while ticks < 20:
         lrs.update_statuses()
-        n_running = len(lrs.get_runs(Status.Running))
+        n_running = len(lrs.get_runs(status=Status.Running))
         if n_running == 0:
             break
         time.sleep(0.1)
         ticks += 1
 
     assert n_running == 0
-    assert len(lrs.get_runs(Status.Success)) == 1
+    assert len(lrs.get_runs(status=Status.Success)) == 1
     lrs.cleanup()
 
 
