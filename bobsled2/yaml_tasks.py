@@ -11,7 +11,7 @@ class YamlTasks(TaskService):
             self.tasks[name] = Task(name=name, **taskdef)
 
     def get_tasks(self):
-        return list(self.tasks.keys())
+        return list(self.tasks.values())
 
     def get_task(self, name):
         return self.tasks[name]

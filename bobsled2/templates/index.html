@@ -1,0 +1,19 @@
+
+<table>
+<thead>
+    <tr>
+        <th>Task</th>
+        <th>Tags</th>
+        <th>Enabled</th>
+    </tr>
+<thead>
+<tbody>
+{% for task in tasks %}
+<tr>
+    <td><a href="/{{ task.name }}">{{ task.name }}</a></td>
+    <td>{{ " ".join(task.tags) }}</td>
+    <td>{{ task.enabled }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>

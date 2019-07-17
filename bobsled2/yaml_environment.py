@@ -11,7 +11,7 @@ class YamlEnvironment(EnvironmentService):
             self.environments[name] = Environment(name, values)
 
     def get_environments(self):
-        return list(self.environments.keys())
+        return list(self.environments.values())
 
     def get_environment(self, name):
         return self.environments[name]
