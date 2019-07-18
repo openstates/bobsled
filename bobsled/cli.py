@@ -43,20 +43,5 @@ def run(jobs):
         click.secho('must include job name', fg='red')
 
 
-@cli.command()
-def init():
-    # create table and ECS cluster
-    Run.create_table(read_capacity_units=2, write_capacity_units=2, wait=True)
-    ecs = boto3.client('ecs')
-    ecs.create_cluster(clusterName=config.CLUSTER_NAME)
-    logs = boto3.client('logs')
-    try:
-        logs.create_log_group(logGroupName=config.LOG_GROUP)
-    except ClientError:
-        # TODO: check error here
-        pass
-    # TODO: create ecsInstanceRole?
-
-
 if __name__ == '__main__':
     cli()
