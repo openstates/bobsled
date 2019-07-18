@@ -6,3 +6,5 @@ full-example:
   entrypoint: "echo 'hello alpine'"
   memory: 256
   enabled: true
+forever:
+  image: forever

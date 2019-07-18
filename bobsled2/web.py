@@ -1,3 +1,4 @@
+import asyncio
 import attr
 from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
@@ -63,6 +64,20 @@ async def run_detail(request):
     run = bobsled.run.get_run(run_id)
     rundata = _run2dict(run)
     return JSONResponse(rundata)
+
+
+@app.websocket_route('/ws/logs/{run_id}')
+async def websocket_endpoint(websocket):
+    await websocket.accept()
+    run_id = websocket.path_params["run_id"]
+    while True:
+        run = bobsled.run.get_run(run_id)
+        rundict = _run2dict(run)
+        await websocket.send_json(rundict)
+        if run.status in (Status.Error, Status.Success):
+            break
+        await asyncio.sleep(1)
+    await websocket.close()
 
 
 if __name__ == '__main__':
