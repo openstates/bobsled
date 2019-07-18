@@ -17,10 +17,17 @@ app.mount('/static', StaticFiles(directory='static'), name='static')
 
 @app.route("/")
 @app.route('/task/{task_name}')
+@app.route('/run/{run_id}')
 async def index(request):
     return templates.TemplateResponse("base.html", {
         "request": request
     })
+
+
+def _run2dict(run):
+    run = attr.asdict(run)
+    run['status'] = run["status"].name
+    return run
 
 
 @app.route('/api/index')
@@ -42,13 +49,7 @@ async def task_overview(request):
     })
 
 
-def _run2dict(run):
-    run = attr.asdict(run)
-    run['status'] = run["status"].name
-    return run
-
-
-@app.route('/api/run/{task_name}')
+@app.route('/api/task/{task_name}/run')
 async def run_task(request):
     task_name = request.path_params['task_name']
     task = bobsled.tasks.get_task(task_name)
@@ -56,5 +57,13 @@ async def run_task(request):
     return JSONResponse(_run2dict(run))
 
 
+@app.route('/api/run/{run_id}')
+async def run_detail(request):
+    run_id = request.path_params['run_id']
+    run = bobsled.run.get_run(run_id)
+    rundata = _run2dict(run)
+    return JSONResponse(rundata)
+
+
 if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run(app, host='0.0.0.0', port=8000)

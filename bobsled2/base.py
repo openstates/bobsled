@@ -3,6 +3,7 @@ import enum
 import uuid
 import typing
 
+
 class Status(enum.Enum):
     Pending = 1
     Running = 2
@@ -38,6 +39,7 @@ class Run:
     status: Status
     start: str = ""
     end: str = ""
+    logs: str = ""
     exit_code: int = None
     run_info: typing.Dict[str, any] = {}
     uuid: str = attr.Factory(lambda: uuid.uuid4().hex)

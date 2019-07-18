@@ -44,11 +44,21 @@ class LocalRunService(RunService):
             else:
                 run.status = Status.Success
             run.exit_code = resp["StatusCode"]
+            run.logs = container.logs().decode()
             container.remove()
 
     def get_logs(self, run):
         container = self._get_container(run)
-        return container.logs()
+        return container.logs().decode()
+
+    def get_run(self, run_id):
+        run = [r for r in self.runs if r.uuid == run_id]
+        if run:
+            run = run[0]
+            self.update_status(run)
+            if run.status == Status.Running:
+                run.logs = self.get_logs(run)
+            return run
 
     def get_runs(self, *, status=None, task_name=None, update_status=False):
         runs = [r for r in self.runs]

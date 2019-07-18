@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import RunPage from "./RunPage";
 
 
 function App() {
@@ -7,6 +8,7 @@ function App() {
     <Router>
       <Route exact path="/" component={Home} />
       <Route path="/task/:task_name" component={TaskPage} />
+      <Route path="/run/:run_id" component={RunPage} />
     </Router>
   );
 }
@@ -79,7 +81,7 @@ class TaskPage extends React.Component {
 
   startRun() {
     const outerThis = this;
-    fetch("/api/run/" + this.state.task_name)
+    fetch("/api/task/" + this.state.task_name + "/run")
       .then(response => response.json())
       .then(function(data) {
         let runs = outerThis.state.runs;
@@ -91,7 +93,7 @@ class TaskPage extends React.Component {
   render() {
     let rows = this.state.runs.map(run =>
       <tr key={ run.uuid }>
-        <td>{ run.uuid }</td>
+        <td><Link to={ "/run/" + run.uuid }>{ run.uuid }</Link></td>
         <td>{ run.status }</td>
         <td>{ run.start }</td>
         <td>{ run.end }</td>
