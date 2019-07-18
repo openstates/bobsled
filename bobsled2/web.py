@@ -1,7 +1,8 @@
+import attr
 from starlette.applications import Starlette
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 import uvicorn
 
 from .base import Status
@@ -12,24 +13,29 @@ templates = Jinja2Templates(directory='bobsled2/templates')
 app = Starlette(debug=True)
 app.mount('/static', StaticFiles(directory='static'), name='static')
 
-
-@app.route('/')
-async def homepage(request):
-    return templates.TemplateResponse('index.html', {
-        'request': request,
-        'tasks': bobsled.tasks.get_tasks(),
-        'runs': bobsled.run.get_runs(status=Status.Running),
+@app.route("/")
+@app.route('/task/{task_name}')
+async def index(request):
+    return templates.TemplateResponse("base.html", {
+        "request": request
     })
 
 
-@app.route('/task/{task_name}')
+@app.route('/api/index')
+async def api_index(request):
+    return JSONResponse({
+        'tasks': [attr.asdict(t) for t in bobsled.tasks.get_tasks()],
+        'runs': [attr.asdict(r) for r in bobsled.run.get_runs(status=Status.Running)],
+    })
+
+
+@app.route('/api/task/{task_name}')
 async def task_overview(request):
     task_name = request.path_params['task_name']
     task = bobsled.tasks.get_task(task_name)
-    return templates.TemplateResponse('task_overview.html', {
-        'request': request,
-        "task": task,
-        "runs": bobsled.run.get_runs(task_name=task_name)
+    return JSONResponse({
+        "task": attr.asdict(task),
+        "runs": [attr.asdict(r) for r in bobsled.run.get_runs(task_name=task_name)]
     })
 
 

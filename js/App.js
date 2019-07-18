@@ -5,51 +5,145 @@ import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 function App() {
   return (
     <Router>
-      <div>
-        <Header />
-
-        <Route exact path="/" component={Home} />
-        <Route path="/about" component={About} />
-        <Route path="/topics" component={Topics} />
-      </div>
+      <Route exact path="/" component={Home} />
+      <Route path="/task/:task_name" component={TaskPage} />
     </Router>
   );
 }
 
-function Home() {
-  return <h2>Home</h2>;
+
+class Home extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tasks: []
+    };
+  }
+
+  componentDidMount() {
+    fetch("/api/index")
+      .then(response => response.json())
+      .then(data => this.setState(data));
+  }
+
+  render() {
+    let rows = this.state.tasks.map(task => {
+      return (<tr key={task.name}>
+
+        <td><Link to={ "/task/" + task.name }>{ task.name }</Link></td>
+        <td>{ task.tags }</td>
+        <td>{ task.enabled ? "yes" : "no" }</td>
+      </tr>
+      );
+    });
+
+    return (
+      <section className="section">
+      <div className="container">
+
+      <table className="table">
+      <thead>
+          <tr>
+            <th>Task</th>
+            <th>Tags</th>
+            <th>Enabled</th>
+          </tr>
+      </thead>
+      <tbody>
+        { rows }
+      </tbody>
+      </table>
+
+      </div>
+      </section>
+    )
+  }
 }
 
-function About() {
-  return <h2>About</h2>;
-}
+class TaskPage extends React.Component {
+  constructor(props) {
+    super(props);
+    console.log(this.props.match.params);
+    this.state = {
+      task_name: this.props.match.params.task_name,
+      task: {},
+      runs: []
+    };
+  }
 
-function Topic({ match }) {
-  return <h3>Requested Param: {match.params.id}</h3>;
-}
+  componentDidMount() {
+    fetch("/api/task/" + this.state.task_name)
+      .then(response => response.json())
+      .then(data => this.setState(data));
+  }
 
-function Topics({ match }) {
-  return (
-    <div>
-      <h2>Topics</h2>
+  render() {
+    let rows = this.state.runs.map(run =>
+      <tr>
+        <td>{ run.uuid }</td>
+        <td>{ run.status }</td>
+        <td>{ run.start }</td>
+        <td>{ run.end }</td>
+      </tr>
+    );
+    return (
+    <section className="section">
+    <div className="container">
 
-      <ul>
-        <li>
-          <Link to={`${match.url}/components`}>Components</Link>
-        </li>
-        <li>
-          <Link to={`${match.url}/props-v-state`}>Props v. State</Link>
-        </li>
-      </ul>
+      <h1 className="title is-2"> { this.state.task.name } </h1>
 
-      <Route path={`${match.path}/:id`} component={Topic} />
-      <Route
-        exact
-        path={match.path}
-        render={() => <h3>Please select a topic.</h3>}
-      />
+      <div className="columns">
+
+      <div className="column is-one-quarter">
+        <table className="table">
+        <tbody>
+        <tr>
+          <th>Image</th>
+          <td>{ this.state.task.image }</td>
+        </tr>
+        <tr>
+          <th>Entrypoint</th>
+          <td>{ this.state.task.entrypoint }</td>
+        </tr>
+        <tr>
+          <th>Memory</th>
+          <td>{ this.state.task.memory }</td>
+        </tr>
+        <tr>
+          <th>Tags</th>
+          <td>{ this.state.task.tags }</td>
+        </tr>
+        <tr>
+          <th>Enabled</th>
+          <td>{ this.state.task.enabled ? "yes" : "no" }</td>
+        </tr>
+
+        </tbody>
+        </table>
+      </div>
+
+      <div className="column">
+        <h3 className="title is-3">Recent Runs</h3>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>UUID</th>
+              <th>Status</th>
+              <th>Start</th>
+              <th>End</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows}
+          </tbody>
+        </table>
+      </div>
+
+      </div>
     </div>
-  );
+    </section>
+    );
+  }
 }
 
 function Header() {
