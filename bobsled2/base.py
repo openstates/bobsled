@@ -45,38 +45,7 @@ class Run:
     uuid: str = attr.Factory(lambda: uuid.uuid4().hex)
 
 
-class EnvironmentService:
-    def get_environments(self):
-        pass
-
-    def get_environment(self, name):
-        pass
-
-
-class TaskService:
-    def get_tasks(self):
-        pass
-
-    def get_task(self, name):
-        pass
-
-
 class RunService:
     def update_statuses(self):
         for r in self.get_runs(status=Status.Running):
             self.update_status(r)
-
-    def run_task(self, task, trigger):
-        pass
-
-    def update_status(self):
-        pass
-
-    def get_logs(self, run):
-        pass
-
-    def get_runs(self, *, status, task_name):
-        pass
-
-    def register_crons(self, tasks):
-        pass

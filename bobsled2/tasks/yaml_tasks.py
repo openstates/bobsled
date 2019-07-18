@@ -1,8 +1,8 @@
 import yaml
-from .base import Task, TaskService
+from ..base import Task
 
 
-class YamlTasks(TaskService):
+class YamlTaskStorage:
     def __init__(self, filename):
         with open(filename) as f:
             data = yaml.safe_load(f)
