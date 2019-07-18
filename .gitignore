@@ -9,3 +9,7 @@ zappa_settings.json
 config.yaml
 node_modules
 static/bundles
+
+bobsled.yml
+environments.yml
+tasks.yml

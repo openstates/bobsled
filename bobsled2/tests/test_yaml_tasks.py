@@ -1,14 +1,15 @@
 import os
-from ..yaml_tasks import YamlTasks, Task
+from ..tasks import YamlTaskStorage
+from ..base import Task
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks.yml")
 
 def test_get_tasks():
-    tasks = YamlTasks(ENV_FILE)
-    assert tasks.get_tasks() == ["hello-world", "full-example"]
+    tasks = YamlTaskStorage(ENV_FILE)
+    assert len(tasks.get_tasks()) == 3
 
 def test_get_task():
-    tasks = YamlTasks(ENV_FILE)
+    tasks = YamlTaskStorage(ENV_FILE)
     task = tasks.get_task("full-example")
     assert task.name == "full-example"
     assert task.tags == ["a", "b", "c"]
