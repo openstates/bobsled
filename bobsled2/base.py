@@ -40,7 +40,7 @@ class Run:
     end: str = ""
     exit_code: int = None
     run_info: typing.Dict[str, any] = {}
-    uuid: str = attr.Factory(uuid.uuid4)
+    uuid: str = attr.Factory(lambda: uuid.uuid4().hex)
 
 
 class EnvironmentService:

@@ -27,15 +27,17 @@ class LocalRunService(RunService):
         run = Run(
             task.name,
             Status.Running,
-            start=datetime.datetime.utcnow(),
+            start=datetime.datetime.utcnow().isoformat(),
             run_info={"container_id": container.id}
         )
         self.runs.append(run)
         return run
 
     def update_status(self, run):
+        if run.status in (Status.Success, Status.Error):
+            return
         container = self._get_container(run)
-        if container.status == "exited":
+        if container and container.status == "exited":
             resp = container.wait()
             if resp["Error"] or resp["StatusCode"]:
                 run.status = Status.Error
@@ -48,12 +50,15 @@ class LocalRunService(RunService):
         container = self._get_container(run)
         return container.logs()
 
-    def get_runs(self, *, status=None, task_name=None):
+    def get_runs(self, *, status=None, task_name=None, update_status=False):
         runs = [r for r in self.runs]
         if status:
             runs = [r for r in runs if r.status == status]
         if task_name:
             runs = [r for r in runs if r.task == task_name]
+        if update_status:
+            for run in runs:
+                self.update_status(run)
         return runs
 
     def register_crons(self, tasks):

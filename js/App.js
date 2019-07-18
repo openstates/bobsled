@@ -63,12 +63,12 @@ class Home extends React.Component {
 class TaskPage extends React.Component {
   constructor(props) {
     super(props);
-    console.log(this.props.match.params);
     this.state = {
       task_name: this.props.match.params.task_name,
       task: {},
       runs: []
     };
+    this.startRun = this.startRun.bind(this);
   }
 
   componentDidMount() {
@@ -77,9 +77,20 @@ class TaskPage extends React.Component {
       .then(data => this.setState(data));
   }
 
+  startRun() {
+    const outerThis = this;
+    fetch("/api/run/" + this.state.task_name)
+      .then(response => response.json())
+      .then(function(data) {
+        let runs = outerThis.state.runs;
+        runs.unshift(data);
+        outerThis.setState({runs: runs});
+      });
+  }
+
   render() {
     let rows = this.state.runs.map(run =>
-      <tr>
+      <tr key={ run.uuid }>
         <td>{ run.uuid }</td>
         <td>{ run.status }</td>
         <td>{ run.start }</td>
@@ -95,6 +106,11 @@ class TaskPage extends React.Component {
       <div className="columns">
 
       <div className="column is-one-quarter">
+
+        <a className="button is-primary is-centered" onClick={this.startRun}>
+          Start Run
+        </a>
+
         <table className="table">
         <tbody>
         <tr>
