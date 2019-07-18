@@ -3,8 +3,7 @@ import React from "react";
 class RunPage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-    };
+    this.state = {};
   }
 
   componentDidMount() {
@@ -15,17 +14,16 @@ class RunPage extends React.Component {
 
   render() {
     return (
-    <section className="section">
-    <div className="container">
+      <section className="section">
+        <div className="container">
+          <h1 className="title is-2">
+            {" "}
+            {this.state.task}: {this.state.uuid}{" "}
+          </h1>
 
-      <h1 className="title is-2"> { this.state.task }: { this.state.uuid } </h1>
-
-      <pre>
-          { this.state.logs }
-      </pre>
-
-    </div>
-    </section>
+          <pre>{this.state.logs}</pre>
+        </div>
+      </section>
     );
   }
 }
