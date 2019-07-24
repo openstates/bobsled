@@ -63,9 +63,6 @@ class DatabaseRunPersister:
 
     async def connect(self):
         await self.database.connect()
-        self.create_tables()
-
-    def create_tables(self):
         engine = sqlalchemy.create_engine(str(self.database.url))
         metadata.create_all(engine)
 
@@ -79,7 +76,8 @@ class DatabaseRunPersister:
     async def get_run(self, run_id):
         query = runs.select().where(runs.c.uuid == run_id)
         row = await self.database.fetch_one(query=query)
-        return _db_to_run(row)
+        if row:
+            return _db_to_run(row)
 
     async def get_runs(self, *, status=None, task_name=None):
         query = runs.select()

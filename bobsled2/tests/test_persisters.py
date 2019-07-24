@@ -28,6 +28,15 @@ async def test_simple_add_then_get(cls):
 
 @pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
 @pytest.mark.asyncio
+async def test_bad_get(cls):
+    p = cls()
+    await p.connect()
+    r = await p.get_run("nonsense")
+    assert r is None
+
+
+@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.asyncio
 async def test_get_runs(cls):
     p = cls()
     await p.connect()

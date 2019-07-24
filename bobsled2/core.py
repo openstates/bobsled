@@ -22,6 +22,11 @@ DEFAULT_SETTINGS = {
         "provider": "LocalRunService",
         "args": {
         }
+    },
+    "persister": {
+        "provider": "DatabaseRunPersister",
+        "args": {
+        }
     }
 }
 
@@ -36,9 +41,11 @@ class Bobsled:
         EnvCls = getattr(environments, settings["environments"]["provider"])
         TaskCls = getattr(tasks, settings["tasks"]["provider"])
         RunCls = getattr(runners, settings["runner"]["provider"])
+        PersisterCls = getattr(runners, settings["persister"]["provider"])
 
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
-        self.run = RunCls(**settings["runner"]["args"])
+        self.run = RunCls(persister=PersisterCls(**settings["persister"]["args"]),
+                          **settings["runner"]["args"])
 
 bobsled = Bobsled()
