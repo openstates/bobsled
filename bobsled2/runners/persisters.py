@@ -9,6 +9,9 @@ class MemoryRunPersister:
     def __init__(self):
         self.runs = []
 
+    async def connect(self):
+        pass
+
     async def add_run(self, run):
         self.runs.append(run)
 

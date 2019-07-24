@@ -24,7 +24,7 @@ async def test_simple_run():
 
     assert n_running == 0
     assert len(await lrs.get_runs(status=Status.Success)) == 1
-    lrs.cleanup()
+    await lrs.cleanup()
 
 
 @pytest.mark.asyncio
@@ -33,4 +33,4 @@ async def test_get_logs():
     task = Task("hello-world", image="hello-world")
     run = await lrs.run_task(task)
     assert "Hello from Docker" in lrs.get_logs(run)
-    lrs.cleanup()
+    await lrs.cleanup()
