@@ -5,7 +5,7 @@ import sqlalchemy
 from ..base import Run, Status
 
 
-class LocalRunPersister:
+class MemoryRunPersister:
     def __init__(self):
         self.runs = []
 

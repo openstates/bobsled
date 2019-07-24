@@ -1,14 +1,12 @@
 import datetime
 import docker
 from ..base import RunService, Run, Status
-from .persisters import LocalRunPersister, DatabaseRunPersister
 
 
 class LocalRunService(RunService):
-    def __init__(self):
+    def __init__(self, persister):
         self.client = docker.from_env()
-        # self.persister = LocalRunPersister()
-        self.persister = DatabaseRunPersister("sqlite:///test.db")
+        self.persister = persister
 
     def _get_container(self, run):
         if run.status == Status.Running:
