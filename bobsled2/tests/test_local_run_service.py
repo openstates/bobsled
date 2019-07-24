@@ -24,7 +24,7 @@ async def test_simple_run():
 
     assert n_running == 0
     assert len(await lrs.get_runs(status=Status.Success)) == 1
-    await lrs.cleanup()
+    assert await lrs.cleanup() == 0
 
 
 @pytest.mark.asyncio
@@ -34,3 +34,30 @@ async def test_get_logs():
     run = await lrs.run_task(task)
     assert "Hello from Docker" in lrs.get_logs(run)
     await lrs.cleanup()
+
+
+@pytest.mark.asyncio
+async def test_stop_run():
+    lrs = LocalRunService(MemoryRunPersister())
+
+    # run forever task, then kill it
+    task = Task("forever", image="forever")
+    run = await lrs.run_task(task)
+    assert "still alive..." in lrs.get_logs(run)
+    await lrs.stop_run(run.uuid)
+
+    run = await lrs.get_run(run.uuid)
+    assert run.status == Status.UserKilled
+    assert await lrs.cleanup() == 0
+
+
+@pytest.mark.asyncio
+async def test_cleanup():
+    lrs = LocalRunService(MemoryRunPersister())
+
+    # run forever task
+    task = Task("forever", image="forever")
+    run = await lrs.run_task(task)
+    assert "still alive..." in lrs.get_logs(run)
+
+    assert await lrs.cleanup() == 1

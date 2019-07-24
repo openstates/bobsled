@@ -9,6 +9,7 @@ class Status(enum.Enum):
     Running = 2
     Error = 3
     Success = 4
+    UserKilled = 5
 
 
 @attr.s(auto_attribs=True)
