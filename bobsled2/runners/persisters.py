@@ -83,7 +83,8 @@ class DatabaseRunPersister:
     async def save_run(self, run):
         values = _run_to_db(run)
         uuid = values.pop("uuid")
-        runs.update().where(runs.c.uuid == uuid).values(**values)
+        query = runs.update().where(runs.c.uuid == uuid).values(**values)
+        await self.database.execute(query=query)
 
     async def get_run(self, run_id):
         query = runs.select().where(runs.c.uuid == run_id)

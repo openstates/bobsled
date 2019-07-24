@@ -37,8 +37,8 @@ async def test_update(cls):
     r.exit_code = 0
     await p.save_run(r)
     r2 = await p.get_run(r.uuid)
-    assert r.status == Status.Success
-    assert r.exit_code == 0
+    assert r2.status == Status.Success
+    assert r2.exit_code == 0
 
 
 @pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])

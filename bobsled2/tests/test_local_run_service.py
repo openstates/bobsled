@@ -15,7 +15,7 @@ async def test_simple_run():
     # wait a maximum of 2 seconds
     ticks = 0
     while ticks < 20:
-        await lrs.update_status(run)
+        await lrs.update_status(run.uuid)
         n_running = len(await lrs.get_runs(status=Status.Running))
         if n_running == 0:
             break

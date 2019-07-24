@@ -36,12 +36,15 @@ class LocalRunService(RunService):
         await self.persister.add_run(run)
         return run
 
-    async def update_status(self, run):
+    async def update_status(self, run_id, update_logs=False):
+        run = await self.persister.get_run(run_id)
         if run.status in (Status.Success, Status.Error):
-            return
+            return run
         container = self._get_container(run)
         if not container:
-            run.status = Status.Error
+            # TODO: handle this
+            print("missing container for", run)
+            return run
         if container.status == "exited":
             resp = container.wait()
             if resp["Error"] or resp["StatusCode"]:
@@ -52,6 +55,10 @@ class LocalRunService(RunService):
             run.logs = container.logs().decode()
             await self.persister.save_run(run)
             container.remove()
+        elif run.status == Status.Running and update_logs:
+            run.logs = self.get_logs(run)
+            await self.persister.save_run(run)
+        return run
 
     def get_logs(self, run):
         container = self._get_container(run)
@@ -61,18 +68,13 @@ class LocalRunService(RunService):
             return ""
 
     async def get_run(self, run_id):
-        run = await self.persister.get_run(run_id)
-        if run:
-            await self.update_status(run)
-            if run.status == Status.Running:
-                run.logs = self.get_logs(run)
-            return run
+        return await self.update_status(run_id, update_logs=True)
 
     async def get_runs(self, *, status=None, task_name=None, update_status=False):
         runs = await self.persister.get_runs(status=status, task_name=task_name)
         if update_status:
             for run in runs:
-                await self.update_status(run)
+                await self.update_status(run.uuid)
         return runs
 
     def register_crons(self, tasks):
