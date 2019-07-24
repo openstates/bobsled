@@ -28,6 +28,21 @@ async def test_simple_add_then_get(cls):
 
 @pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
 @pytest.mark.asyncio
+async def test_update(cls):
+    p = cls()
+    await p.connect()
+    r = Run("test-task", Status.Running)
+    await p.add_run(r)
+    r.status = Status.Success
+    r.exit_code = 0
+    await p.save_run(r)
+    r2 = await p.get_run(r.uuid)
+    assert r.status == Status.Success
+    assert r.exit_code == 0
+
+
+@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.asyncio
 async def test_bad_get(cls):
     p = cls()
     await p.connect()

@@ -26,6 +26,7 @@ DEFAULT_SETTINGS = {
     "persister": {
         "provider": "DatabaseRunPersister",
         "args": {
+            "database_uri": "sqlite:///bobsled2.db",
         }
     }
 }

@@ -15,6 +15,10 @@ class MemoryRunPersister:
     async def add_run(self, run):
         self.runs.append(run)
 
+    async def save_run(self, run):
+        # run is modified in place
+        pass
+
     async def get_run(self, run_id):
         run = [r for r in self.runs if r.uuid == run_id]
         if run:
@@ -56,6 +60,12 @@ def _db_to_run(r):
         uuid=r.uuid,
     )
 
+def _run_to_db(r):
+    values = attr.asdict(r)
+    values["status"] = values["status"].name
+    values["run_info_json"] = json.dumps(values.pop("run_info"))
+    return values
+
 
 class DatabaseRunPersister:
     def __init__(self, database_uri):
@@ -68,10 +78,12 @@ class DatabaseRunPersister:
 
     async def add_run(self, run):
         query = runs.insert()
-        values = attr.asdict(run)
-        values["status"] = values["status"].name
-        values["run_info_json"] = json.dumps(values.pop("run_info"))
-        await self.database.execute(query=query, values=values)
+        await self.database.execute(query=query, values=_run_to_db(run))
+
+    async def save_run(self, run):
+        values = _run_to_db(run)
+        uuid = values.pop("uuid")
+        runs.update().where(runs.c.uuid == uuid).values(**values)
 
     async def get_run(self, run_id):
         query = runs.select().where(runs.c.uuid == run_id)
