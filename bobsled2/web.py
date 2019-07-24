@@ -35,7 +35,7 @@ def _run2dict(run):
 async def api_index(request):
     return JSONResponse({
         'tasks': [attr.asdict(t) for t in bobsled.tasks.get_tasks()],
-        'runs': [_run2dict(r) for r in bobsled.run.get_runs(status=Status.Running)],
+        'runs': [_run2dict(r) for r in await bobsled.run.get_runs(status=Status.Running)],
     })
 
 
@@ -43,7 +43,7 @@ async def api_index(request):
 async def task_overview(request):
     task_name = request.path_params['task_name']
     task = bobsled.tasks.get_task(task_name)
-    runs = bobsled.run.get_runs(task_name=task_name, update_status=True)
+    runs = await bobsled.run.get_runs(task_name=task_name, update_status=True)
     return JSONResponse({
         "task": attr.asdict(task),
         "runs": [_run2dict(r) for r in runs]
@@ -54,14 +54,14 @@ async def task_overview(request):
 async def run_task(request):
     task_name = request.path_params['task_name']
     task = bobsled.tasks.get_task(task_name)
-    run = bobsled.run.run_task(task)
+    run = await bobsled.run.run_task(task)
     return JSONResponse(_run2dict(run))
 
 
 @app.route('/api/run/{run_id}')
 async def run_detail(request):
     run_id = request.path_params['run_id']
-    run = bobsled.run.get_run(run_id)
+    run = await bobsled.run.get_run(run_id)
     rundata = _run2dict(run)
     return JSONResponse(rundata)
 
@@ -71,7 +71,7 @@ async def websocket_endpoint(websocket):
     await websocket.accept()
     run_id = websocket.path_params["run_id"]
     while True:
-        run = bobsled.run.get_run(run_id)
+        run = await bobsled.run.get_run(run_id)
         rundict = _run2dict(run)
         await websocket.send_json(rundict)
         if run.status in (Status.Error, Status.Success):
@@ -80,5 +80,10 @@ async def websocket_endpoint(websocket):
     await websocket.close()
 
 
+@app.on_event('startup')
+async def initdb():
+    await bobsled.run.persister.connect()
+
+
 if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=8000, lifespan="on")
