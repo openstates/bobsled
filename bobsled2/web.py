@@ -1,3 +1,4 @@
+import datetime
 import asyncio
 import attr
 from starlette.applications import Starlette
@@ -6,9 +7,10 @@ from starlette.staticfiles import StaticFiles
 from starlette.responses import JSONResponse
 from starlette.endpoints import WebSocketEndpoint
 import uvicorn
+import jwt
 
 from .base import Status
-from bobsled2.core import bobsled
+from .core import bobsled
 
 templates = Jinja2Templates(directory='bobsled2/templates')
 
@@ -29,6 +31,33 @@ def _run2dict(run):
     run = attr.asdict(run)
     run['status'] = run["status"].name
     return run
+
+
+@app.route('/api/login')
+async def login(request):
+    KEY_VALID_HOURS = 24*30
+    try:
+        username = request.query_params["username"]
+        password = request.query_params["password"]
+    except KeyError:
+        return JSONResponse({
+            "error": "must supply username and password"
+        })
+    user = bobsled.auth.check_login(username, password)
+    if user:
+        until = datetime.datetime.utcnow() + datetime.timedelta(hours=KEY_VALID_HOURS)
+        return JSONResponse({
+            "token": jwt.encode({
+                "username": user.username,
+                "permissions": user.permissions,
+                "until": until.isoformat()
+            },
+                                key=bobsled.settings['secret_key']).decode()
+        })
+    else:
+        return JSONResponse({
+            "error": "invalid login"
+        })
 
 
 @app.route('/api/index')

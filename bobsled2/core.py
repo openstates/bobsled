@@ -3,7 +3,7 @@ import copy
 import importlib
 import yaml
 
-from bobsled2 import environments, tasks, runners
+from bobsled2 import environments, tasks, runners, auth
 
 DEFAULT_SETTINGS = {
     "environments": {
@@ -28,7 +28,14 @@ DEFAULT_SETTINGS = {
         "args": {
             "database_uri": "sqlite:///bobsled2.db",
         }
-    }
+    },
+    "auth": {
+        "provider": "YamlAuthStorage",
+        "args": {
+            "filename": "bobsled2/tests/users.yml",
+        }
+    },
+    "secret_key": None,
 }
 
 
@@ -39,14 +46,20 @@ class Bobsled:
             settings = copy.deepcopy(DEFAULT_SETTINGS)
             settings.update(yaml.safe_load(f))
 
+        if settings["secret_key"] is None:
+            raise ValueError("must set 'secret_key' setting")
+        self.settings = settings
+
         EnvCls = getattr(environments, settings["environments"]["provider"])
         TaskCls = getattr(tasks, settings["tasks"]["provider"])
         RunCls = getattr(runners, settings["runner"]["provider"])
         PersisterCls = getattr(runners, settings["persister"]["provider"])
+        AuthCls = getattr(auth, settings["auth"]["provider"])
 
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
         self.run = RunCls(persister=PersisterCls(**settings["persister"]["args"]),
                           **settings["runner"]["args"])
+        self.auth = AuthCls(**settings["auth"]["args"])
 
 bobsled = Bobsled()

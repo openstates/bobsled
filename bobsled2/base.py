@@ -46,6 +46,13 @@ class Run:
     uuid: str = attr.Factory(lambda: uuid.uuid4().hex)
 
 
+@attr.s(auto_attribs=True)
+class User:
+    username: str
+    password: str = "!"
+    permissions: typing.List[str] = []
+
+
 class RunService:
     def update_statuses(self):
         for r in self.get_runs(status=Status.Running):

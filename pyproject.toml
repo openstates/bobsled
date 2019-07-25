@@ -17,6 +17,9 @@ jinja2 = "^2.10"
 databases = "^0.2.5"
 aiosqlite = "^0.10.0"
 pytest-asyncio = "^0.10.0"
+pyjwt = "^1.7"
+passlib = "^1.7"
+argon2_cffi = "^19.1"
 
 [tool.poetry.dev-dependencies]
 
