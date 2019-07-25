@@ -66,6 +66,13 @@ async def run_detail(request):
     return JSONResponse(rundata)
 
 
+@app.route('/api/run/{run_id}/stop')
+async def stop_run(request):
+    run_id = request.path_params['run_id']
+    await bobsled.run.stop_run(run_id)
+    return JSONResponse({})
+
+
 @app.websocket_route('/ws/logs/{run_id}')
 async def websocket_endpoint(websocket):
     await websocket.accept()
@@ -74,7 +81,7 @@ async def websocket_endpoint(websocket):
         run = await bobsled.run.get_run(run_id)
         rundict = _run2dict(run)
         await websocket.send_json(rundict)
-        if run.status in (Status.Error, Status.Success):
+        if run.status not in (Status.Running, Status.Pending):
             break
         await asyncio.sleep(1)
     await websocket.close()

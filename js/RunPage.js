@@ -8,6 +8,15 @@ class RunPage extends React.Component {
         "ws://localhost:8000/ws/logs/" + this.props.match.params.run_id
       ),
     };
+    this.stopRun = this.stopRun.bind(this);
+  }
+
+  stopRun() {
+    const outerThis = this;
+    fetch("/api/run/" + this.props.match.params.run_id + "/stop")
+      .then(response => response.json())
+      .then(function(data) {
+      });
   }
 
   componentDidMount() {
@@ -28,6 +37,17 @@ class RunPage extends React.Component {
           <h1 className="title is-2">
             {this.state.task}: {this.state.uuid}
           </h1>
+
+          {this.state.status == "Running" ?
+          <a
+            className="button is-danger is-centered"
+            onClick={this.stopRun}
+          >
+            Stop
+          </a>
+              :
+          ""
+          }
 
           <table className="table">
             <tbody>

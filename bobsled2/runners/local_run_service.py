@@ -85,10 +85,13 @@ class LocalRunService(RunService):
         run = await self.persister.get_run(run_id)
         if run.status == Status.Running:
             container = self._get_container(run)
+            if not container:
+                print("MISSING CONTAINER")
+                return
             container.remove(force=True)
             run.status = Status.UserKilled
             run.end = datetime.datetime.utcnow().isoformat()
-            self.persister.save_run(run)
+            await self.persister.save_run(run)
 
     def register_crons(self, tasks):
         # TODO
