@@ -15,6 +15,7 @@ import uvicorn
 import jwt
 
 from .base import Status
+from .exceptions import AlreadyRunning
 from .core import bobsled
 
 
@@ -101,7 +102,10 @@ async def task_overview(request):
 async def run_task(request):
     task_name = request.path_params['task_name']
     task = bobsled.tasks.get_task(task_name)
-    run = await bobsled.run.run_task(task)
+    try:
+        run = await bobsled.run.run_task(task)
+    except AlreadyRunning:
+        return JSONResponse({"error": "Task was already running"})
     return JSONResponse(_run2dict(run))
 
 

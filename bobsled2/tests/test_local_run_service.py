@@ -2,6 +2,7 @@ import time
 import pytest
 from ..base import Task, Run, Status
 from ..runners import LocalRunService, MemoryRunPersister
+from ..exceptions import AlreadyRunning
 
 
 @pytest.mark.asyncio
@@ -61,3 +62,16 @@ async def test_cleanup():
     assert "still alive..." in lrs.get_logs(run)
 
     assert await lrs.cleanup() == 1
+
+
+@pytest.mark.asyncio
+async def test_already_running():
+    lrs = LocalRunService(MemoryRunPersister())
+    task = Task("forever", image="forever")
+    await lrs.run_task(task)
+    with pytest.raises(AlreadyRunning):
+        await lrs.run_task(task)
+
+    assert await lrs.cleanup() == 1
+
+

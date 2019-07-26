@@ -1,0 +1,3 @@
+
+class AlreadyRunning(Exception):
+    pass

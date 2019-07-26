@@ -1,6 +1,7 @@
 import datetime
 import docker
 from ..base import RunService, Run, Status
+from ..exceptions import AlreadyRunning
 
 
 class LocalRunService(RunService):
@@ -25,6 +26,10 @@ class LocalRunService(RunService):
         return n
 
     async def run_task(self, task):
+        # TODO handle waiting
+        running = await self.get_runs(status=Status.Running, task_name=task.name)
+        if running:
+            raise AlreadyRunning()
         container = self.client.containers.run(
             task.image,
             task.entrypoint if task.entrypoint else None,
@@ -79,6 +84,7 @@ class LocalRunService(RunService):
         if update_status:
             for run in runs:
                 await self.update_status(run.uuid)
+        # todo:? refresh runs dict?
         return runs
 
     async def stop_run(self, run_id):
