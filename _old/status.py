@@ -14,21 +14,6 @@ from . import config
 OUTPUT_DIR = '/tmp/bobsled-output'
 
 
-def update_status():
-    try:
-        os.makedirs(OUTPUT_DIR)
-    except OSError:
-        pass
-
-    # update run records in database
-    check_status()
-
-    # update global view
-    write_index_html()
-
-    upload(OUTPUT_DIR)
-
-
 def check_status():
     # check everything that's running
     runs = {r.task_arn: r for r in Run.status_index.query(Status.Running)}
@@ -96,21 +81,6 @@ def update_run_status(run, task):
     write_day_html(run.job, run.start.date())
 
 
-def get_failures(job):
-    bad_in_a_row = 0
-    # get recent runs in reverse-cron
-    for run in Run.query(job, limit=8, scan_index_forward=False):
-        # how many Errors do we see until there's a success?
-        # note that we intentionally ignore SystemError and Missing here
-        # as they shouldn't count for or against the error count
-        if run.status == Status.Success:
-            break
-        elif run.status == Status.Error:
-            bad_in_a_row += 1
-
-    return bad_in_a_row
-
-
 def get_log_for_run(run):
     logs = boto3.client('logs')
 
@@ -174,43 +144,6 @@ class RunList(object):
             return 'bad'
         else:
             return 'empty'
-
-
-def write_index_html():
-    chart_days = 14
-
-    # get recent runs and group by day
-    runs = Run.recent(chart_days)
-
-    job_runs = defaultdict(lambda: defaultdict(RunList))
-
-    for run in runs:
-        rundate = run.start.date()
-        job_runs[run.job][rundate].add(run)
-
-    # render HTML
-    today = datetime.date.today()
-    days = [today - datetime.timedelta(days=n) for n in range(chart_days)]
-    runs = OrderedDict(sorted(job_runs.items()))
-    html = render_jinja_template('runs.html', runs=runs, days=days)
-
-    with open(os.path.join(OUTPUT_DIR, 'index.html'), 'w') as out:
-        out.write(html)
-    shutil.copy(os.path.join(os.path.dirname(__file__), 'css/main.css'), OUTPUT_DIR)
-
-
-def write_day_html(job, date):
-    print(job, date)
-    start = datetime.datetime(date.year, date.month, date.day, 0, 0, 0)
-    end = datetime.datetime(date.year, date.month, date.day, 11, 59, 59)
-    runs = list(Run.query(job, start__between=[start, end]))
-    for run in runs:
-        logs = list(get_log_for_run(run))
-        run.logs = '\n'.join([l['message'] for l in logs[-100:]])
-    print(runs)
-    html = render_jinja_template('day.html', runs=runs, date=date)
-    with open(os.path.join(OUTPUT_DIR, 'run-{}-{}.html'.format(job, date)), 'w') as out:
-        out.write(html)
 
 
 def make_issue(job, days, logs):

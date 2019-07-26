@@ -43,27 +43,6 @@ def get_env(name):
     return env
 
 
-def load_tasks(directory):
-    environments = yaml.load(open(os.path.join(directory, 'environments.yaml')))
-
-    tasks = []
-
-    files = glob.glob(os.path.join(directory, 'tasks/*.yml'))
-    for fn in files:
-        with open(fn) as f:
-            task = yaml.load(f)
-            # environment can be a string and will be looked up in environments
-            # or can be a dict and will be used as-is
-            if isinstance(task['environment'], str):
-                task['environment'] = environments[task['environment']]
-
-            if task.get('paramstore', None):
-                task['environment'].update(get_env(task['paramstore']))
-            tasks.append(task)
-
-    return tasks
-
-
 def make_task(family,
               entrypoint,
               image,
@@ -223,38 +202,6 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
         print('{}: no schedule change'.format(name))
 
 
-def publish_task_definitions(dirname, only=None, force=False, verbose=False):
-    tasks = load_tasks(dirname)
-
-    for task in tasks:
-        # convert entrypoint to list, break on spaces if needed
-        entrypoint = task['entrypoint']
-        if not isinstance(entrypoint, list):
-            entrypoint = entrypoint.split()
-
-        # shortcut for only adding certain task definitions
-        if only and task['name'] not in only:
-            continue
-
-        make_task(task['name'],
-                  entrypoint,
-                  image=task.get('image'),
-                  memory_soft=task.get('memory_soft', 128),
-                  environment=task.get('environment'),
-                  force=force,
-                  verbose=verbose,
-                  memory=str(task.get('memory', '512')),
-                  cpu=str(task.get('cpu', '256')),
-                  )
-        if task.get('cron'):
-            make_cron_rule(task['name'],
-                           'cron({})'.format(task['cron']),
-                           task.get('enabled', True),
-                           force=force,
-                           verbose=verbose,
-                           )
-
-
 def run_task(task_name, started_by):
     ecs = boto3.client('ecs')
 
@@ -298,8 +245,3 @@ def run_task(task_name, started_by):
         task_arn=response['tasks'][0]['taskArn'],
         ).save()
     return response
-
-
-def run_task_handler(event, context):
-    print(event, context)
-    run_task(event['job'], 'lambda')

@@ -32,7 +32,7 @@ class JWTSessionAuthBackend(AuthenticationBackend):
         return AuthCredentials(["authenticated"]), SimpleUser(data["username"])
 
 
-templates = Jinja2Templates(directory='bobsled2/templates')
+templates = Jinja2Templates(directory='bobsled/templates')
 
 app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())

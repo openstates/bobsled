@@ -3,7 +3,7 @@ import copy
 import importlib
 import yaml
 
-from bobsled2 import environments, tasks, runners, auth
+from bobsled import environments, tasks, runners, auth
 
 DEFAULT_SETTINGS = {
     "environments": {
@@ -26,13 +26,13 @@ DEFAULT_SETTINGS = {
     "persister": {
         "provider": "DatabaseRunPersister",
         "args": {
-            "database_uri": "sqlite:///bobsled2.db",
+            "database_uri": "sqlite:///bobsled.db",
         }
     },
     "auth": {
         "provider": "YamlAuthStorage",
         "args": {
-            "filename": "bobsled2/tests/users.yml",
+            "filename": "bobsled/tests/users.yml",
         }
     },
     "secret_key": None,
