@@ -10,6 +10,7 @@ class Status(enum.Enum):
     Error = 3
     Success = 4
     UserKilled = 5
+    TimedOut = 6
 
 
 @attr.s(auto_attribs=True)
@@ -31,6 +32,7 @@ class Task:
     entrypoint: str = ""
     memory: int = 0
     enabled: bool = True
+    timeout_minutes: int = 0
     triggers: typing.List[Trigger] = []
 
 

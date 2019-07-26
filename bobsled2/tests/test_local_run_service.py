@@ -75,3 +75,24 @@ async def test_already_running():
     assert await lrs.cleanup() == 1
 
 
+@pytest.mark.asyncio
+async def test_timeout():
+    lrs = LocalRunService(MemoryRunPersister())
+    task = Task("timeout", image="forever", timeout_minutes=(1/60.))
+    run = await lrs.run_task(task)
+
+    assert run.status == Status.Running
+
+    # wait a maximum of 2 seconds
+    ticks = 0
+    while ticks < 20:
+        await lrs.update_status(run.uuid)
+        n_running = len(await lrs.get_runs(status=Status.Running))
+        if n_running == 0:
+            break
+        time.sleep(0.1)
+        ticks += 1
+
+    assert n_running == 0
+    assert len(await lrs.get_runs(status=Status.TimedOut)) == 1
+    assert await lrs.cleanup() == 0

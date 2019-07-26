@@ -35,24 +35,34 @@ class LocalRunService(RunService):
             task.entrypoint if task.entrypoint else None,
             detach=True
         )
+        now = datetime.datetime.utcnow()
+        timeout_at = ""
+        if task.timeout_minutes:
+            timeout_at = (now + datetime.timedelta(minutes=task.timeout_minutes)).isoformat()
         run = Run(
             task.name,
             Status.Running,
-            start=datetime.datetime.utcnow().isoformat(),
-            run_info={"container_id": container.id}
+            start=now.isoformat(),
+            run_info={
+                "container_id": container.id,
+                "timeout_at": timeout_at,
+            }
         )
         await self.persister.add_run(run)
         return run
 
     async def update_status(self, run_id, update_logs=False):
         run = await self.persister.get_run(run_id)
-        if run.status in (Status.Success, Status.Error):
+
+        if run.status in (Status.Success, Status.Error, Status.TimedOut, Status.UserKilled):
             return run
+
         container = self._get_container(run)
         if not container:
             # TODO: handle this
             print("missing container for", run)
             return run
+
         if container.status == "exited":
             resp = container.wait()
             if resp["Error"] or resp["StatusCode"]:
@@ -64,9 +74,18 @@ class LocalRunService(RunService):
             run.end = datetime.datetime.utcnow().isoformat()
             await self.persister.save_run(run)
             container.remove()
-        elif run.status == Status.Running and update_logs:
-            run.logs = self.get_logs(run)
-            await self.persister.save_run(run)
+
+        elif run.status == Status.Running:
+            # handle timeouts and update_logs params together
+            if run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
+                container.remove(force=True)
+                run.status = Status.TimedOut
+                update_logs = True
+
+            # will be set if we timed out
+            if update_logs:
+                run.logs = self.get_logs(run)
+                await self.persister.save_run(run)
         return run
 
     def get_logs(self, run):
