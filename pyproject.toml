@@ -20,6 +20,7 @@ pytest-asyncio = "^0.10.0"
 pyjwt = "^1.7"
 passlib = "^1.7"
 argon2_cffi = "^19.1"
+python-multipart = "^0.0.5"
 
 [tool.poetry.dev-dependencies]
 
