@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import RunList from "./RunList.js";
 
 class TaskPage extends React.Component {
   constructor(props) {
@@ -30,16 +31,6 @@ class TaskPage extends React.Component {
   }
 
   render() {
-    let rows = this.state.runs.map(run => (
-      <tr key={run.uuid}>
-        <td>
-          <Link to={"/run/" + run.uuid}>{run.uuid}</Link>
-        </td>
-        <td>{run.status}</td>
-        <td>{run.start}</td>
-        <td>{run.end}</td>
-      </tr>
-    ));
     return (
       <section className="section">
         <div className="container">
@@ -80,20 +71,7 @@ class TaskPage extends React.Component {
               </table>
             </div>
 
-            <div className="column">
-              <h3 className="title is-3">Recent Runs</h3>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>UUID</th>
-                    <th>Status</th>
-                    <th>Start</th>
-                    <th>End</th>
-                  </tr>
-                </thead>
-                <tbody>{rows}</tbody>
-              </table>
-            </div>
+            <RunList title="Recent Runs" runs={this.state.runs} />
           </div>
         </div>
       </section>

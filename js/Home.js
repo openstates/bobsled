@@ -1,11 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import RunList from "./RunList.js";
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       tasks: [],
+      runs: []
     };
   }
 
@@ -41,6 +43,8 @@ class Home extends React.Component {
             </thead>
             <tbody>{rows}</tbody>
           </table>
+
+          <RunList title="Currently Running" runs={this.state.runs} />
         </div>
       </section>
     );
