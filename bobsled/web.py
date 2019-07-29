@@ -24,10 +24,8 @@ class JWTSessionAuthBackend(AuthenticationBackend):
         jwt_token = request.cookies.get("jwt_token")
 
         if not jwt_token:
-            print("auth null")
             return
         data = jwt.decode(jwt_token, bobsled.settings["secret_key"], algorithms=["HS256"])
-        print("auth", data)
 
         return AuthCredentials(["authenticated"]), SimpleUser(data["username"])
 

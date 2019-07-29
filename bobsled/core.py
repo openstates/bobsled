@@ -24,9 +24,8 @@ DEFAULT_SETTINGS = {
         }
     },
     "persister": {
-        "provider": "DatabaseRunPersister",
+        "provider": "MemoryRunPersister",
         "args": {
-            "database_uri": "sqlite:///bobsled.db",
         }
     },
     "auth": {
