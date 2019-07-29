@@ -1,8 +1,9 @@
 import attr
 import enum
 import uuid
+import datetime
 import typing
-
+from .exceptions import AlreadyRunning
 
 class Status(enum.Enum):
     Pending = 1
@@ -56,6 +57,23 @@ class User:
 
 
 class RunService:
-    def update_statuses(self):
-        for r in self.get_runs(status=Status.Running):
-            self.update_status(r)
+    async def run_task(self, task):
+        # TODO handle waiting
+        running = await self.get_runs(status=Status.Running, task_name=task.name)
+        if running:
+            raise AlreadyRunning()
+        run_info = self.start_task(task)
+        now = datetime.datetime.utcnow()
+        timeout_at = ""
+        if task.timeout_minutes:
+            timeout_at = (now + datetime.timedelta(minutes=task.timeout_minutes)).isoformat()
+        run_info["timeout_at"] = timeout_at
+
+        run = Run(
+            task.name,
+            Status.Running,
+            start=now.isoformat(),
+            run_info=run_info,
+        )
+        await self.persister.add_run(run)
+        return run

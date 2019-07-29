@@ -1,7 +1,6 @@
 import datetime
 import docker
 from ..base import RunService, Run, Status
-from ..exceptions import AlreadyRunning
 
 
 class LocalRunService(RunService):
@@ -25,31 +24,13 @@ class LocalRunService(RunService):
                 n += 1
         return n
 
-    async def run_task(self, task):
-        # TODO handle waiting
-        running = await self.get_runs(status=Status.Running, task_name=task.name)
-        if running:
-            raise AlreadyRunning()
+    def start_task(self, task):
         container = self.client.containers.run(
             task.image,
             task.entrypoint if task.entrypoint else None,
             detach=True
         )
-        now = datetime.datetime.utcnow()
-        timeout_at = ""
-        if task.timeout_minutes:
-            timeout_at = (now + datetime.timedelta(minutes=task.timeout_minutes)).isoformat()
-        run = Run(
-            task.name,
-            Status.Running,
-            start=now.isoformat(),
-            run_info={
-                "container_id": container.id,
-                "timeout_at": timeout_at,
-            }
-        )
-        await self.persister.add_run(run)
-        return run
+        return {"container_id": container.id}
 
     async def update_status(self, run_id, update_logs=False):
         run = await self.persister.get_run(run_id)
