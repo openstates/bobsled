@@ -69,7 +69,7 @@ class LocalRunService(RunService):
                 run.status = Status.Error
             else:
                 run.status = Status.Success
-            run.exit_code = resp["StatusCode"]
+
             run.logs = container.logs().decode()
             run.end = datetime.datetime.utcnow().isoformat()
             await self.persister.save_run(run)
@@ -78,22 +78,15 @@ class LocalRunService(RunService):
         elif run.status == Status.Running:
             # handle timeouts and update_logs params together
             if run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
+                run.logs = container.logs().decode()
                 container.remove(force=True)
                 run.status = Status.TimedOut
-                update_logs = True
+                await self.persister.save_run(run)
 
-            # will be set if we timed out
-            if update_logs:
-                run.logs = self.get_logs(run)
+            elif update_logs:
+                run.logs = container.logs().decode()
                 await self.persister.save_run(run)
         return run
-
-    def get_logs(self, run):
-        container = self._get_container(run)
-        if container:
-            return container.logs().decode()
-        else:
-            return ""
 
     async def get_run(self, run_id):
         return await self.update_status(run_id, update_logs=True)
