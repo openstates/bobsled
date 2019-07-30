@@ -94,7 +94,7 @@ class ECSRunService(RunService):
             print(f'{task.name}: creating new task')
 
     def start_task(self, task):
-        self.ecs.run_task(
+        resp = self.ecs.run_task(
             cluster=self.cluster_name,
             count=1,
             taskDefinition=task.name,
@@ -108,3 +108,37 @@ class ECSRunService(RunService):
                 }
             },
         )
+        return {"task_arn": resp["tasks"][0]["taskArn"]}
+
+    async def update_status(self, run_id, update_logs=False):
+        run = await self.persister.get_run(run_id)
+
+        if run.status.is_terminal():
+            return run
+
+        # note: what ECS calls a task, we call a run
+        arn = run.run_info["task_arn"]
+        task = self.ecs.describe_tasks(self.cluster_name, tasks=[arn])
+
+        if resp["failures"]:
+            # can be MISSING or ??? (TODO: handle)
+            raise ValueError(f"unexpected status: {failure}")
+
+        result = resp["tasks"][0]
+        if result["lastStatus"] == "STOPPED":
+            run.exit_code = result["containers"][0]["exitCode"]
+            run.end = datetime.datetime.utcnow().isoformat()
+            run.status = Status.Error if run.exit_code else Status.Success
+            await self.persister.save_run(run)
+        elif result["lastStatus"] == "RUNNING":
+            if run.status != Status.Running:
+                run.status = Status.Running
+                await self.persister.save_run(run)
+        elif result["lastStatus"] == "PENDING":
+            if run.status != Status.Pending:
+                run.status = Status.Pending
+                await self.persister.save_run(run)
+        return run
+
+    def stop(self, run):
+        self.ecs.stop_task(self.cluster_name, run.run_info["task_arn"])

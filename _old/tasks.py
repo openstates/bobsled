@@ -42,18 +42,6 @@ def get_env(name):
         env[key.replace(prefix, '')] = value
     return env
 
-
-def make_task(family,
-              entrypoint,
-              image,
-              memory_soft=128,
-              environment=None,
-              verbose=False,
-              force=False,
-              cpu='256',
-              memory='512',
-              ):
-
 def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     events = boto3.client('events')
     lamb = boto3.client('lambda')
@@ -118,32 +106,3 @@ def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
             pass
     elif verbose:
         print('{}: no schedule change'.format(name))
-
-
-def run_task(task_name, started_by):
-    ecs = boto3.client('ecs')
-
-    print('running', task_name)
-
-    taskdef = ecs.describe_task_definition(taskDefinition=task_name)
-
-    response = ecs.run_task(
-        cluster=config.CLUSTER_NAME,
-        count=1,
-        taskDefinition=task_name,
-        startedBy=started_by,
-        launchType='FARGATE',
-        networkConfiguration={
-            'awsvpcConfiguration': {
-                'subnets': [config.SUBNET_ID],
-                'securityGroups': [config.SECURITY_GROUP_ID],
-                'assignPublicIp': 'ENABLED',
-            }
-        },
-    )
-
-    Run(task_name,
-        task_definition=taskdef['taskDefinition'],
-        task_arn=response['tasks'][0]['taskArn'],
-        ).save()
-    return response

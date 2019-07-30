@@ -14,36 +14,6 @@ from . import config
 OUTPUT_DIR = '/tmp/bobsled-output'
 
 
-def check_status():
-    # check everything that's running
-    runs = {r.task_arn: r for r in Run.status_index.query(Status.Running)}
-
-    if not runs:
-        return
-
-    ecs = boto3.client('ecs')
-    # we limit this to 100 for AWS, which is fine b/c 100 shouldn't be running at once
-    # if somehow they are, a subsequent run will pick the rest up
-    resp = ecs.describe_tasks(cluster=config.CLUSTER_NAME,
-                              tasks=list(runs.keys())[:100])
-
-    # match status to runs
-    for failure in resp['failures']:
-        if failure['reason'] == 'MISSING':
-            # this shouldn't happen if we're checking frequently enough
-            update_run_status(runs[failure['arn']], None)
-        else:
-            raise ValueError('unexpected status {}'.format(failure))
-
-    for task in resp['tasks']:
-        if task['lastStatus'] == 'STOPPED':
-            update_run_status(runs[task['taskArn']], task)
-        elif task['lastStatus'] in ('RUNNING', 'PENDING'):
-            print('still running', runs[task['taskArn']])
-        else:
-            raise ValueError('unexpected status {}'.format(task))
-
-
 def update_run_status(run, task):
     CRITICAL = 2
 
