@@ -13,6 +13,9 @@ class Status(enum.Enum):
     UserKilled = 5
     TimedOut = 6
 
+    def is_terminal(self):
+        return self.value in (3, 4, 5, 6)
+
 
 @attr.s(auto_attribs=True)
 class Environment:

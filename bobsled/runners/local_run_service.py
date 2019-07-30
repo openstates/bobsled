@@ -35,7 +35,7 @@ class LocalRunService(RunService):
     async def update_status(self, run_id, update_logs=False):
         run = await self.persister.get_run(run_id)
 
-        if run.status in (Status.Success, Status.Error, Status.TimedOut, Status.UserKilled):
+        if run.status.is_terminal():
             return run
 
         container = self._get_container(run)
