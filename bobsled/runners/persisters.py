@@ -26,8 +26,10 @@ class MemoryRunPersister:
 
     async def get_runs(self, *, status=None, task_name=None):
         runs = [r for r in self.runs]
-        if status:
+        if isinstance(status, Status):
             runs = [r for r in runs if r.status == status]
+        elif isinstance(status, list):
+            runs = [r for r in runs if r.status in status]
         if task_name:
             runs = [r for r in runs if r.task == task_name]
         return runs
@@ -94,8 +96,10 @@ class DatabaseRunPersister:
 
     async def get_runs(self, *, status=None, task_name=None):
         query = runs.select()
-        if status:
+        if isinstance(status, Status):
             query = query.where(runs.c.status == status.name)
+        elif isinstance(status, list):
+            query = query.where(runs.c.status.in_(s.name for s in status))
         if task_name:
             query = query.where(runs.c.task == task_name)
         rows = await self.database.fetch_all(query=query)

@@ -62,3 +62,4 @@ async def test_get_runs(cls):
     assert len(await p.get_runs(status=Status.Running)) == 2
     assert len(await p.get_runs(task_name="stopped")) == 1
     assert len(await p.get_runs(task_name="empty")) == 0
+    assert len(await p.get_runs(status=[Status.Running, Status.Success])) == 3
