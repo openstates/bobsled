@@ -23,6 +23,7 @@ argon2_cffi = "^19.1"
 python-multipart = "^0.0.5"
 flake8 = "^3.7"
 boto3 = "^1.9"
+moto = "^1.3"
 
 [tool.poetry.dev-dependencies]
 
