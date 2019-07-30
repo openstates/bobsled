@@ -53,88 +53,6 @@ def make_task(family,
               cpu='256',
               memory='512',
               ):
-    ecs = boto3.client('ecs')
-    region = ecs.meta.region_name
-
-    log_stream_prefix = family.lower()
-    main_container = {
-        'name': config.TASK_NAME,
-        'image': image,
-        'essential': True,
-        'entryPoint': entrypoint,
-        'memoryReservation': memory_soft,
-        'logConfiguration': {
-            "logDriver": "awslogs",
-            "options": {
-                "awslogs-group": config.LOG_GROUP,
-                "awslogs-region": region,
-                "awslogs-stream-prefix": log_stream_prefix
-            }
-        },
-    }
-
-    if environment:
-        main_container['environment'] = [{'name': k, 'value': v}
-                                         for k, v in environment.items()]
-
-    create = False
-    existing = None
-    try:
-        resp = ecs.describe_task_definition(taskDefinition=family)
-        existing = resp['taskDefinition']
-
-        if memory != existing['memory']:
-            print('{}: changing memory: {} => {}'.format(family, existing['memory'], memory))
-            create = True
-        if cpu != existing['cpu']:
-            print('{}: changing cpu: {} => {}'.format(family, existing['cpu'], cpu))
-            create = True
-
-        for key in ('entryPoint', 'environment', 'image', 'name',
-                    'memoryReservation', 'essential', 'logConfiguration'):
-
-            # check if values differ for this key
-            oldval = existing['containerDefinitions'][0][key]
-            newval = main_container[key]
-            if key == 'environment':
-                s_oldval = sorted([tuple(i.items()) for i in oldval])
-                s_newval = sorted([tuple(i.items()) for i in newval])
-                differ = (s_oldval != s_newval)
-            else:
-                differ = (oldval != newval)
-
-            if differ:
-                create = True
-                print('{}: changing {}: {} => {}'.format(family, key, oldval, newval))
-    except ClientError:
-        create = True
-
-    if force and not create:
-        print('{}: forced update'.format(family))
-        create = True
-
-    if create:
-        account_id = boto3.client('sts').get_caller_identity().get('Account')
-        # TODO: create this role?
-        role_arn = 'arn:aws:iam::{}:role/{}'.format(account_id, 'ecs-fargate-bobsled')
-        response = ecs.register_task_definition(
-            family=family,
-            containerDefinitions=[
-                main_container
-            ],
-            cpu=cpu,
-            memory=memory,
-            networkMode='awsvpc',
-            executionRoleArn=role_arn,
-            requiresCompatibilities=['EC2', 'FARGATE'],
-        )
-        return response
-    elif existing:
-        if verbose:
-            print('{family}: definition matches {family}:{revision}'.format(**existing))
-    else:
-        print('{}: creating new task'.format(family))
-
 
 def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     events = boto3.client('events')
@@ -222,22 +140,6 @@ def run_task(task_name, started_by):
                 'assignPublicIp': 'ENABLED',
             }
         },
-        # overrides={
-        #    'containerOverrides': [
-        #        {
-        #            'name': 'string',
-        #            'command': [
-        #                'string',
-        #            ],
-        #            'environment': [
-        #                {
-        #                    'name': 'string',
-        #                    'value': 'string'
-        #                },
-        #            ]
-        #        },
-        #    ],
-        # },
     )
 
     Run(task_name,
