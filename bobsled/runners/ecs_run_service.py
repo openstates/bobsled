@@ -96,6 +96,8 @@ class ECSRunService(RunService):
             print(f'{task.name}: creating new task')
 
     def start_task(self, task):
+        # TODO: move registration to an up front call
+        self.register_task(task)
         resp = self.ecs.run_task(
             cluster=self.cluster_name,
             count=1,
@@ -123,29 +125,74 @@ class ECSRunService(RunService):
         resp = self.ecs.describe_tasks(cluster=self.cluster_name, tasks=[arn])
 
         if resp["failures"]:
+            if resp["failures"][0]["reason"] == "MISSING":
+                print("missing")
+                return
             # can be MISSING or ??? (TODO: handle)
             raise ValueError(f"unexpected status: {resp['failures']}")
 
         result = resp["tasks"][0]
-        print(result["lastStatus"])
         if result["lastStatus"] == "STOPPED":
             run.exit_code = result["containers"][0]["exitCode"]
+            # TODO: handle cases where we need to use containers[0][reason]
             run.end = datetime.datetime.utcnow().isoformat()
             run.status = Status.Error if run.exit_code else Status.Success
+            run.logs = self.get_logs(run)
             await self.persister.save_run(run)
+
+        elif run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
+            run.logs = self.get_logs(run)
+            self.stop(run)
+            run.status = Status.TimedOut
+            await self.persister.save_run(run)
+
         elif result["lastStatus"] == "RUNNING":
-            if run.status != Status.Running:
+            if update_logs:
+                run.logs = self.get_logs(run)
+            if run.status != Status.Running or update_logs:
                 run.status = Status.Running
                 await self.persister.save_run(run)
         elif result["lastStatus"] in ("PENDING", "PROVISIONING"):
             if run.status != Status.Pending:
                 run.status = Status.Pending
                 await self.persister.save_run(run)
+
         return run
 
     def stop(self, run):
         self.ecs.stop_task(cluster=self.cluster_name, task=run.run_info["task_arn"])
 
+    def get_logs(self, run):
+        return "\n".join(l["message"] for l in self.iter_logs(run))
+
+    def iter_logs(self, run):
+        logs = boto3.client('logs')
+        arn_uuid = run.run_info["task_arn"].split("/")[-1]
+        log_arn = f'{run.task}/{run.task}/{arn_uuid}'
+
+        next_token = None
+
+        while True:
+            extra = {'nextToken': next_token} if next_token else {}
+            try:
+                events = logs.get_log_events(logGroupName=self.log_group,
+                                             logStreamName=log_arn, **extra)
+            except ClientError:
+                yield {'message': 'no logs'}
+                break
+            next_token = events['nextForwardToken']
+
+            if not events['events']:
+                break
+
+            yield from events["events"]
+
+            if not next_token:
+                break
+
     async def cleanup(self):
-        # TODO
-        return 0
+        n = 0
+        for r in await self.persister.get_runs(status=[Status.Pending, Status.Running]):
+            self.ecs.stop_task(cluster=self.cluster_name, task=r.run_info["task_arn"])
+            n += 1
+        return n

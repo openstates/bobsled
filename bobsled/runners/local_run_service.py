@@ -17,7 +17,7 @@ class LocalRunService(RunService):
 
     async def cleanup(self):
         n = 0
-        for r in await self.persister.get_runs():
+        for r in await self.persister.get_runs(status=[Status.Pending, Status.Running]):
             c = self._get_container(r)
             if c:
                 c.remove(force=True)
@@ -65,7 +65,6 @@ class LocalRunService(RunService):
             container.remove()
 
         elif run.status == Status.Running:
-            # handle timeouts and update_logs params together
             if run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
                 run.logs = container.logs().decode()
                 container.remove(force=True)

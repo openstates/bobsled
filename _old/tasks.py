@@ -1,15 +1,3 @@
-import os
-import glob
-import json
-from functools import lru_cache
-import yaml
-import boto3
-from botocore.exceptions import ClientError
-
-from .dynamo import Run
-from . import config
-
-
 def checkout_tasks():
     os.system('GIT_SSH_COMMAND="ssh -i deploy.key" '
               'git clone git@github.com:{}/{}.git --depth 1'.format(
