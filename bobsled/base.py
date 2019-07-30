@@ -100,7 +100,7 @@ class RunService:
 
     async def stop_run(self, run_id):
         run = await self.persister.get_run(run_id)
-        if run.status == Status.Running:
+        if not run.status.is_terminal():
             self.stop(run)
             run.status = Status.UserKilled
             run.end = datetime.datetime.utcnow().isoformat()

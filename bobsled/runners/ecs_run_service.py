@@ -1,10 +1,12 @@
+import datetime
 import boto3
 from botocore.exceptions import ClientError
-from ..base import RunService
+from ..base import RunService, Status
 
 
 class ECSRunService(RunService):
-    def __init__(self, cluster_name, subnet_id, security_group_id, log_group):
+    def __init__(self, persister, cluster_name, subnet_id, security_group_id, log_group):
+        self.persister = persister
         self.cluster_name = cluster_name
         self.subnet_id = subnet_id
         self.security_group_id = security_group_id
@@ -118,13 +120,14 @@ class ECSRunService(RunService):
 
         # note: what ECS calls a task, we call a run
         arn = run.run_info["task_arn"]
-        task = self.ecs.describe_tasks(self.cluster_name, tasks=[arn])
+        resp = self.ecs.describe_tasks(cluster=self.cluster_name, tasks=[arn])
 
         if resp["failures"]:
             # can be MISSING or ??? (TODO: handle)
-            raise ValueError(f"unexpected status: {failure}")
+            raise ValueError(f"unexpected status: {resp['failures']}")
 
         result = resp["tasks"][0]
+        print(result["lastStatus"])
         if result["lastStatus"] == "STOPPED":
             run.exit_code = result["containers"][0]["exitCode"]
             run.end = datetime.datetime.utcnow().isoformat()
@@ -134,11 +137,15 @@ class ECSRunService(RunService):
             if run.status != Status.Running:
                 run.status = Status.Running
                 await self.persister.save_run(run)
-        elif result["lastStatus"] == "PENDING":
+        elif result["lastStatus"] in ("PENDING", "PROVISIONING"):
             if run.status != Status.Pending:
                 run.status = Status.Pending
                 await self.persister.save_run(run)
         return run
 
     def stop(self, run):
-        self.ecs.stop_task(self.cluster_name, run.run_info["task_arn"])
+        self.ecs.stop_task(cluster=self.cluster_name, task=run.run_info["task_arn"])
+
+    async def cleanup(self):
+        # TODO
+        return 0
