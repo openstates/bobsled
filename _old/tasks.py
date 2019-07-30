@@ -5,31 +5,6 @@ def checkout_tasks():
               ))
 
 
-def get_all_ssm_parameters(path):
-    ssm = boto3.client('ssm')
-    resp = ssm.get_parameters_by_path(Path=path, WithDecryption=True)
-    yield from resp['Parameters']
-
-    while True:
-        try:
-            next_token = resp['NextToken']
-        except KeyError:
-            break
-
-        resp = ssm.get_parameters_by_path(Path=path, WithDecryption=True, NextToken=next_token)
-        yield from resp['Parameters']
-
-
-@lru_cache()
-def get_env(name):
-    env = {}
-    prefix = '/bobsled/{}/'.format(name)
-    for param in get_all_ssm_parameters(prefix):
-        key = param['Name']
-        value = param['Value']
-        env[key.replace(prefix, '')] = value
-    return env
-
 def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     events = boto3.client('events')
     lamb = boto3.client('lambda')
