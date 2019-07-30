@@ -60,5 +60,6 @@ class Bobsled:
         self.run = RunCls(persister=PersisterCls(**settings["persister"]["args"]),
                           **settings["runner"]["args"])
         self.auth = AuthCls(**settings["auth"]["args"])
+        self.run.initialize(self.tasks)
 
 bobsled = Bobsled()

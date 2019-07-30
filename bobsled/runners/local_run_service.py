@@ -15,6 +15,9 @@ class LocalRunService(RunService):
             except docker.errors.NotFound:
                 return None
 
+    def initialize(self, tasks):
+        pass
+
     async def cleanup(self):
         n = 0
         for r in await self.persister.get_runs(status=[Status.Pending, Status.Running]):

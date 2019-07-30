@@ -13,6 +13,10 @@ class ECSRunService(RunService):
         self.log_group = log_group
         self.ecs = boto3.client("ecs")
 
+    def initialize(self, tasks):
+        for task in tasks:
+            self.register_task(task)
+
     def register_task(self, task):
         region = self.ecs.meta.region_name
         log_stream_prefix = task.name.lower()
@@ -96,8 +100,6 @@ class ECSRunService(RunService):
             print(f'{task.name}: creating new task')
 
     def start_task(self, task):
-        # TODO: move registration to an up front call
-        self.register_task(task)
         resp = self.ecs.run_task(
             cluster=self.cluster_name,
             count=1,
