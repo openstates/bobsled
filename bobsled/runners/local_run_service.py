@@ -32,6 +32,13 @@ class LocalRunService(RunService):
         )
         return {"container_id": container.id}
 
+    def stop(self, run):
+        container = self._get_container(run)
+        if not container:
+            print("MISSING CONTAINER")
+            return
+        container.remove(force=True)
+
     async def update_status(self, run_id, update_logs=False):
         run = await self.persister.get_run(run_id)
 
@@ -53,6 +60,7 @@ class LocalRunService(RunService):
 
             run.logs = container.logs().decode()
             run.end = datetime.datetime.utcnow().isoformat()
+            run.exit_code = resp["StatusCode"]
             await self.persister.save_run(run)
             container.remove()
 
@@ -68,30 +76,3 @@ class LocalRunService(RunService):
                 run.logs = container.logs().decode()
                 await self.persister.save_run(run)
         return run
-
-    async def get_run(self, run_id):
-        return await self.update_status(run_id, update_logs=True)
-
-    async def get_runs(self, *, status=None, task_name=None, update_status=False):
-        runs = await self.persister.get_runs(status=status, task_name=task_name)
-        if update_status:
-            for run in runs:
-                await self.update_status(run.uuid)
-        # todo:? refresh runs dict?
-        return runs
-
-    async def stop_run(self, run_id):
-        run = await self.persister.get_run(run_id)
-        if run.status == Status.Running:
-            container = self._get_container(run)
-            if not container:
-                print("MISSING CONTAINER")
-                return
-            container.remove(force=True)
-            run.status = Status.UserKilled
-            run.end = datetime.datetime.utcnow().isoformat()
-            await self.persister.save_run(run)
-
-    def register_crons(self, tasks):
-        # TODO
-        pass

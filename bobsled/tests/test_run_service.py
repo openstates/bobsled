@@ -47,7 +47,7 @@ async def test_stop_run(Cls):
     assert "still alive..." in run.logs
     await rs.stop_run(run.uuid)
 
-    run = await rs.get_run(run.uuid)
+    run = await rs.update_status(run.uuid, update_logs=True)
     assert run.status == Status.UserKilled
     assert await rs.cleanup() == 0
 

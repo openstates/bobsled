@@ -89,3 +89,19 @@ class RunService:
         )
         await self.persister.add_run(run)
         return run
+
+    async def get_runs(self, *, status=None, task_name=None, update_status=False):
+        runs = await self.persister.get_runs(status=status, task_name=task_name)
+        if update_status:
+            for run in runs:
+                await self.update_status(run.uuid)
+        # todo:? refresh runs dict?
+        return runs
+
+    async def stop_run(self, run_id):
+        run = await self.persister.get_run(run_id)
+        if run.status == Status.Running:
+            self.stop(run)
+            run.status = Status.UserKilled
+            run.end = datetime.datetime.utcnow().isoformat()
+            await self.persister.save_run(run)

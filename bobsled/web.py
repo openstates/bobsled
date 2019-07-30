@@ -111,7 +111,7 @@ async def run_task(request):
 @requires(['authenticated'])
 async def run_detail(request):
     run_id = request.path_params['run_id']
-    run = await bobsled.run.get_run(run_id)
+    run = await bobsled.run.update_status(run_id, update_logs=True)
     rundata = _run2dict(run)
     return JSONResponse(rundata)
 
@@ -130,7 +130,7 @@ async def websocket_endpoint(websocket):
     await websocket.accept()
     run_id = websocket.path_params["run_id"]
     while True:
-        run = await bobsled.run.get_run(run_id)
+        run = await bobsled.run.update_status(run_id, update_logs=True)
         rundict = _run2dict(run)
         await websocket.send_json(rundict)
         if run.status not in (Status.Running, Status.Pending):
