@@ -24,6 +24,7 @@ def ecs_run_service():
             log_group="bobsled",
         )
 
+
 # workaround until pytest.skip works w/ async (coming in 0.11)
 if os.environ.get("TEST_CLUSTER"):
     runners = [local_run_service, ecs_run_service]

@@ -18,9 +18,10 @@ class ECSRunService(RunService):
 
     def initialize(self, tasks):
         for task in tasks:
-            self.register_task(task)
+            self._register_task(task)
+            self._make_cron_rule(task)
 
-    def register_task(self, task):
+    def _register_task(self, task):
         region = self.ecs.meta.region_name
         log_stream_prefix = task.name.lower()
 
@@ -97,7 +98,6 @@ class ECSRunService(RunService):
             role_arn = "arn:aws:iam::{}:role/{}".format(
                 account_id, "ecs-fargate-bobsled"
             )
-            print(task.cpu, task.memory)
             response = self.ecs.register_task_definition(
                 family=task.name,
                 containerDefinitions=[main_container],
@@ -223,3 +223,50 @@ class ECSRunService(RunService):
             self.ecs.stop_task(cluster=self.cluster_name, task=r.run_info["task_arn"])
             n += 1
         return n
+
+    def _make_cron_rule(self, task):
+        events = boto3.client('events')
+
+        # TODO
+        schedule = "@hourly"
+        task_arn = "abc"
+
+        enabled = 'ENABLED' if task.enabled else 'DISABLED'
+        create = False
+
+        try:
+            old_rule = events.describe_rule(Name=task.name)
+            updating = []
+            if schedule != old_rule['ScheduleExpression']:
+                updating.append('schedule')
+            if enabled != old_rule['State']:
+                updating.append('enabled')
+            if updating:
+                create = True
+        except ClientError:
+            create = True
+
+        if create:
+            rule = events.put_rule(
+                Name=task.name,
+                ScheduleExpression=schedule,
+                State=enabled,
+                Description=f'run {task.name} at {schedule}',
+            )
+            events.put_targets(
+                Rule=rule,
+                Targets=[
+                    {
+                        "TaskDefinitionArn": task_arn,
+                        "TaskCount": 1,
+                        "LaunchType": "FARGATE",
+                        "NetworkConfiguration": {
+                            "awsvpcConfiguration": {
+                                "Subnets": [self.subnet_id],
+                                "SecurityGroups": [self.security_group_id],
+                                "AssignPublicIp": "ENABLED",
+                            }
+                        }
+                    }
+                ]
+            )
