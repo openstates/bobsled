@@ -2,15 +2,17 @@ language: python
 dist: xenial
 sudo: false
 python:
-    - "3.7"
+  - "3.7"
 install: 
-    - pip install poetry
-    - poetry install
-    # - npm ci
-    # - npm run build
+  - pip install poetry
+  - poetry install
+  # - npm ci
+  # - npm run build
+before_script:
+  - echo "secret_key: 123" > bobsled.yml
 script: 
-    - poetry run pytest
-    - poetry run flake8
+  - poetry run pytest
+  - poetry run flake8
 notifications:
-    email:
-        - dev@jamesturk.net
+  email:
+    - dev@jamesturk.net
