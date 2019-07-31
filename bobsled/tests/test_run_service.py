@@ -1,5 +1,6 @@
 import os
 import time
+from unittest.mock import Mock
 import pytest
 from ..base import Task, Status
 from ..runners import LocalRunService, ECSRunService, MemoryRunPersister
@@ -30,6 +31,18 @@ else:
     runners = [local_run_service]
 
 
+async def _wait_to_finish(rs, run, seconds):
+    ticks = 0
+    while ticks < seconds * 10:
+        await rs.update_status(run.uuid)
+        n_running = len(await rs.get_runs(status=[Status.Running, Status.Pending]))
+        if n_running == 0:
+            break
+        time.sleep(0.1)
+        ticks += 1
+    return n_running
+
+
 @pytest.mark.parametrize("Cls", runners)
 @pytest.mark.asyncio
 async def test_simple_run(Cls):
@@ -41,15 +54,7 @@ async def test_simple_run(Cls):
 
     assert run.status == Status.Running
 
-    # wait for a while
-    ticks = 0
-    while ticks < 60000:
-        await rs.update_status(run.uuid)
-        n_running = len(await rs.get_runs(status=[Status.Running, Status.Pending]))
-        if n_running == 0:
-            break
-        time.sleep(0.1)
-        ticks += 1
+    n_running = await _wait_to_finish(rs, run, 60)
 
     assert n_running == 0
     runs = await rs.get_runs(status=Status.Success)
@@ -89,12 +94,9 @@ async def test_cleanup(Cls):
 
 
 # doesn't need to be tested on multiple services since logic is in base class
-@pytest.mark.parametrize("Cls", [local_run_service])
 @pytest.mark.asyncio
-async def test_already_running(Cls):
-    rs = Cls()
-    if not rs:
-        pytest.skip("ECS not configured")
+async def test_already_running():
+    rs = local_run_service()
     task = Task("forever", image="forever")
     await rs.run_task(task)
     with pytest.raises(AlreadyRunning):
@@ -114,16 +116,34 @@ async def test_timeout(Cls):
 
     assert run.status == Status.Running
 
-    # wait a maximum of 2 seconds
-    ticks = 0
-    while ticks < 20:
-        await rs.update_status(run.uuid)
-        n_running = len(await rs.get_runs(status=[Status.Running, Status.Pending]))
-        if n_running == 0:
-            break
-        time.sleep(0.1)
-        ticks += 1
+    n_running = await _wait_to_finish(rs, run, 2)
 
     assert n_running == 0
     assert len(await rs.get_runs(status=Status.TimedOut)) == 1
     assert await rs.cleanup() == 0
+
+
+@pytest.mark.asyncio
+async def test_callback_on_success():
+    callback = Mock()
+    rs = LocalRunService(MemoryRunPersister(), [callback])
+    task = Task("hello-world", image="hello-world")
+    run = await rs.run_task(task)
+
+    n_running = await _wait_to_finish(rs, run, 10)
+
+    assert n_running == 0
+    callback.on_success.assert_called_once_with(run, rs.persister)
+
+
+@pytest.mark.asyncio
+async def test_callback_on_error():
+    callback = Mock()
+    rs = LocalRunService(MemoryRunPersister(), [callback])
+    task = Task("failure", image="alpine", entrypoint="sh -c 'exit 1'")
+    run = await rs.run_task(task)
+
+    n_running = await _wait_to_finish(rs, run, 10)
+
+    assert n_running == 0
+    callback.on_error.assert_called_once_with(run, rs.persister)

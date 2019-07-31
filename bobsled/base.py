@@ -80,6 +80,14 @@ class RunService:
         await self.persister.add_run(run)
         return run
 
+    async def trigger_callbacks(self, run):
+        if run.status == Status.Success:
+            for callback in self.callbacks:
+                callback.on_success(run, self.persister)
+        elif run.status == Status.Error:
+            for callback in self.callbacks:
+                callback.on_error(run, self.persister)
+
     async def get_runs(self, *, status=None, task_name=None, update_status=False):
         runs = await self.persister.get_runs(status=status, task_name=task_name)
         if update_status:

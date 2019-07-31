@@ -4,9 +4,10 @@ from ..base import RunService, Status
 
 
 class LocalRunService(RunService):
-    def __init__(self, persister):
+    def __init__(self, persister, callbacks=None):
         self.client = docker.from_env()
         self.persister = persister
+        self.callbacks = callbacks or []
 
     def _get_container(self, run):
         if run.status == Status.Running:
@@ -63,6 +64,7 @@ class LocalRunService(RunService):
             run.end = datetime.datetime.utcnow().isoformat()
             run.exit_code = resp["StatusCode"]
             await self.persister.save_run(run)
+            await self.trigger_callbacks(run)
             container.remove()
 
         elif run.status == Status.Running:
@@ -74,6 +76,7 @@ class LocalRunService(RunService):
                 container.remove(force=True)
                 run.status = Status.TimedOut
                 await self.persister.save_run(run)
+                await self.trigger_callbacks(run)
 
             elif update_logs:
                 run.logs = container.logs().decode()

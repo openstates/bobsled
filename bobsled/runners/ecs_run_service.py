@@ -6,9 +6,10 @@ from ..base import RunService, Status
 
 class ECSRunService(RunService):
     def __init__(
-        self, persister, cluster_name, subnet_id, security_group_id, log_group
+        self, persister, callbacks=None, *, cluster_name, subnet_id, security_group_id, log_group
     ):
         self.persister = persister
+        self.callbacks = callbacks or []
         self.cluster_name = cluster_name
         self.subnet_id = subnet_id
         self.security_group_id = security_group_id
@@ -155,6 +156,7 @@ class ECSRunService(RunService):
             run.status = Status.Error if run.exit_code else Status.Success
             run.logs = self.get_logs(run)
             await self.persister.save_run(run)
+            await self.trigger_callbacks(run)
 
         elif (
             run.run_info["timeout_at"]
@@ -164,17 +166,22 @@ class ECSRunService(RunService):
             self.stop(run)
             run.status = Status.TimedOut
             await self.persister.save_run(run)
+            await self.trigger_callbacks(run)
 
         elif result["lastStatus"] == "RUNNING":
-            if update_logs:
-                run.logs = self.get_logs(run)
-            if run.status != Status.Running or update_logs:
+            if run.status != Status.Running:
                 run.status = Status.Running
+                run.logs = self.get_logs(run)
+                await self.persister.save_run(run)
+                await self.trigger_callbacks(run)
+            elif update_logs:
+                run.logs = self.get_logs(run)
                 await self.persister.save_run(run)
         elif result["lastStatus"] in ("PENDING", "PROVISIONING"):
             if run.status != Status.Pending:
                 run.status = Status.Pending
                 await self.persister.save_run(run)
+                await self.trigger_callbacks(run)
 
         return run
 
