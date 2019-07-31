@@ -9,6 +9,7 @@ install:
   - pip install poetry
   - poetry install
   - docker pull hello-world
+  - docker pull jamesturk/bobsled-forever
   # - npm ci
   # - npm run build
 env:

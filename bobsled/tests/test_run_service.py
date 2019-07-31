@@ -70,7 +70,7 @@ async def test_stop_run(Cls):
     if not rs:
         pytest.skip("ECS not configured")
     # run forever task, then kill it
-    task = Task("forever", image="forever")
+    task = Task("forever", image="jamesturk/bobsled-forever")
     run = await rs.run_task(task)
     run = await rs.update_status(run.uuid, update_logs=True)
     await rs.stop_run(run.uuid)
@@ -87,7 +87,7 @@ async def test_cleanup(Cls):
     if not rs:
         pytest.skip("ECS not configured")
     # run forever task
-    task = Task("forever", image="forever")
+    task = Task("forever", image="jamesturk/bobsled-forever")
     await rs.run_task(task)
 
     assert await rs.cleanup() == 1
@@ -97,7 +97,7 @@ async def test_cleanup(Cls):
 @pytest.mark.asyncio
 async def test_already_running():
     rs = local_run_service()
-    task = Task("forever", image="forever")
+    task = Task("forever", image="jamesturk/bobsled-forever")
     await rs.run_task(task)
     with pytest.raises(AlreadyRunning):
         await rs.run_task(task)
@@ -111,7 +111,7 @@ async def test_timeout(Cls):
     rs = Cls()
     if not rs:
         pytest.skip("ECS not configured")
-    task = Task("timeout", image="forever", timeout_minutes=(1 / 60.0))
+    task = Task("timeout", image="jamesturk/bobsled-forever", timeout_minutes=(1 / 60.0))
     run = await rs.run_task(task)
 
     assert run.status == Status.Running
