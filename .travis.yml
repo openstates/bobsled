@@ -8,8 +8,9 @@ install:
   - poetry install
   # - npm ci
   # - npm run build
-before_script:
-  - 'echo "secret_key: 123" > bobsled.yml'
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  BOBSLED_SETTINGS_FILE: bobsled/tests/testconfig.yml
 script: 
   - poetry run pytest
   - poetry run flake8

@@ -15,7 +15,7 @@ DEFAULT_SETTINGS = {
     "persister": {"provider": "MemoryRunPersister", "args": {}},
     "auth": {
         "provider": "YamlAuthStorage",
-        "args": {"filename": "bobsled/tests/users.yml"},
+        "args": {"filename": "users.yml"},
     },
     "on_error": [{"callback": "github_on_error"}],
     "on_success": [],

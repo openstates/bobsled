@@ -4,7 +4,7 @@ import boto3
 from ..environments import YamlEnvironmentStorage, ParameterStoreEnvironmentStorage
 from ..base import Environment
 
-ENV_FILE = os.path.join(os.path.dirname(__file__), "testenv.yml")
+ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
 def test_get_environments_yaml():

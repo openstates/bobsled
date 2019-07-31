@@ -1,0 +1,13 @@
+secret_key: "290r2dlkjfa0q2i2jfoi20329032ugna093"
+environments:
+  provider: YamlEnvironmentStorage
+  args:
+    filename: bobsled/tests/environments.yml
+tasks:
+  provider: YamlTaskStorage
+  args:
+    filename: bobsled/tests/tasks.yml
+auth:
+  provider: YamlAuthStorage
+  args:
+    filename: bobsled/tests/users.yml
