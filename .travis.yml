@@ -9,7 +9,7 @@ install:
   # - npm ci
   # - npm run build
 before_script:
-  - echo "secret_key: 123" > bobsled.yml
+  - 'echo "secret_key: 123" > bobsled.yml'
 script: 
   - poetry run pytest
   - poetry run flake8
