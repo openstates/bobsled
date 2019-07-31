@@ -23,8 +23,14 @@ def ecs_run_service():
             log_group="bobsled",
         )
 
+# workaround until pytest.skip works w/ async (coming in 0.11)
+if os.environ.get("TEST_CLUSTER"):
+    runners = [local_run_service, ecs_run_service]
+else:
+    runners = [local_run_service]
 
-@pytest.mark.parametrize("Cls", [local_run_service, ecs_run_service])
+
+@pytest.mark.parametrize("Cls", runners)
 @pytest.mark.asyncio
 async def test_simple_run(Cls):
     rs = Cls()
@@ -52,7 +58,7 @@ async def test_simple_run(Cls):
     assert await rs.cleanup() == 0
 
 
-@pytest.mark.parametrize("Cls", [local_run_service, ecs_run_service])
+@pytest.mark.parametrize("Cls", runners)
 @pytest.mark.asyncio
 async def test_stop_run(Cls):
     rs = Cls()
@@ -69,7 +75,7 @@ async def test_stop_run(Cls):
     assert await rs.cleanup() == 0
 
 
-@pytest.mark.parametrize("Cls", [local_run_service, ecs_run_service])
+@pytest.mark.parametrize("Cls", runners)
 @pytest.mark.asyncio
 async def test_cleanup(Cls):
     rs = Cls()
@@ -97,7 +103,7 @@ async def test_already_running(Cls):
     assert await rs.cleanup() == 1
 
 
-@pytest.mark.parametrize("Cls", [local_run_service, ecs_run_service])
+@pytest.mark.parametrize("Cls", runners)
 @pytest.mark.asyncio
 async def test_timeout(Cls):
     rs = Cls()
