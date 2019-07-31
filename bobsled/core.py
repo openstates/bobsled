@@ -8,39 +8,17 @@ from bobsled import environments, tasks, runners, auth
 DEFAULT_SETTINGS = {
     "environments": {
         "provider": "YamlEnvironmentStorage",
-        "args": {
-            "filename": "environments.yml",
-        },
+        "args": {"filename": "environments.yml"},
     },
-    "tasks": {
-        "provider": "YamlTaskStorage",
-        "args": {
-            "filename": "tasks.yml",
-        }
-    },
-    "runner": {
-        "provider": "LocalRunService",
-        "args": {
-        }
-    },
-    "persister": {
-        "provider": "MemoryRunPersister",
-        "args": {
-        }
-    },
+    "tasks": {"provider": "YamlTaskStorage", "args": {"filename": "tasks.yml"}},
+    "runner": {"provider": "LocalRunService", "args": {}},
+    "persister": {"provider": "MemoryRunPersister", "args": {}},
     "auth": {
         "provider": "YamlAuthStorage",
-        "args": {
-            "filename": "bobsled/tests/users.yml",
-        }
+        "args": {"filename": "bobsled/tests/users.yml"},
     },
-    "on_error": [
-        {
-            "callback": "github_on_error",
-        },
-    ],
-    "on_success": [
-    ],
+    "on_error": [{"callback": "github_on_error"}],
+    "on_success": [],
     "secret_key": None,
 }
 
@@ -64,9 +42,12 @@ class Bobsled:
 
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
-        self.run = RunCls(persister=PersisterCls(**settings["persister"]["args"]),
-                          **settings["runner"]["args"])
+        self.run = RunCls(
+            persister=PersisterCls(**settings["persister"]["args"]),
+            **settings["runner"]["args"]
+        )
         self.auth = AuthCls(**settings["auth"]["args"])
         self.run.initialize(self.tasks)
+
 
 bobsled = Bobsled()

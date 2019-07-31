@@ -15,4 +15,3 @@ class YamlAuthStorage:
         user = self.users.get(username)
         if user and argon2.verify(password, user.password):
             return user
-

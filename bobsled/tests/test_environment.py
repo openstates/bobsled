@@ -14,7 +14,9 @@ def test_get_environments_yaml():
 
 def test_get_environment_yaml():
     env = YamlEnvironmentStorage(ENV_FILE)
-    assert env.get_environment("one") == Environment("one", {"number": 123, "word": "hello"})
+    assert env.get_environment("one") == Environment(
+        "one", {"number": 123, "word": "hello"}
+    )
 
 
 def _populate_paramstore():
@@ -35,4 +37,6 @@ def test_get_environments_ssm():
 def test_get_environment_ssm():
     _populate_paramstore()
     env = ParameterStoreEnvironmentStorage("/bobsledtest")
-    assert env.get_environment("one") == Environment("one", {"number": "123", "word": "hello"})
+    assert env.get_environment("one") == Environment(
+        "one", {"number": "123", "word": "hello"}
+    )

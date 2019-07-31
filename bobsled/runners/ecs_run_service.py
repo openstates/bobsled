@@ -5,7 +5,9 @@ from ..base import RunService, Status
 
 
 class ECSRunService(RunService):
-    def __init__(self, persister, cluster_name, subnet_id, security_group_id, log_group):
+    def __init__(
+        self, persister, cluster_name, subnet_id, security_group_id, log_group
+    ):
         self.persister = persister
         self.cluster_name = cluster_name
         self.subnet_id = subnet_id
@@ -22,19 +24,19 @@ class ECSRunService(RunService):
         log_stream_prefix = task.name.lower()
 
         main_container = {
-            'name': task.name,
-            'image': task.image,
-            'essential': True,
-            'entryPoint': task.entrypoint.split(),
-            'logConfiguration': {
+            "name": task.name,
+            "image": task.image,
+            "essential": True,
+            "entryPoint": task.entrypoint.split(),
+            "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
                     "awslogs-group": self.log_group,
                     "awslogs-region": region,
                     "awslogs-stream-prefix": log_stream_prefix,
-                }
+                },
             },
-            'environment': [],
+            "environment": [],
         }
 
         # add env to main_container
@@ -42,33 +44,45 @@ class ECSRunService(RunService):
         existing = None
         try:
             resp = self.ecs.describe_task_definition(taskDefinition=task.name)
-            existing = resp['taskDefinition']
+            existing = resp["taskDefinition"]
 
-            if str(task.memory) != existing['memory']:
-                print('{}: changing memory: {} => {}'.format(
-                    task.name, existing['memory'], task.memory)
-                      )
+            if str(task.memory) != existing["memory"]:
+                print(
+                    "{}: changing memory: {} => {}".format(
+                        task.name, existing["memory"], task.memory
+                    )
+                )
                 create = True
-            if str(task.cpu) != existing['cpu']:
-                print('{}: changing cpu: {} => {}'.format(task.name, existing['cpu'], task.cpu))
+            if str(task.cpu) != existing["cpu"]:
+                print(
+                    "{}: changing cpu: {} => {}".format(
+                        task.name, existing["cpu"], task.cpu
+                    )
+                )
                 create = True
 
-            for key in ('entryPoint', 'environment', 'image', 'name',
-                        'essential', 'logConfiguration'):
+            for key in (
+                "entryPoint",
+                "environment",
+                "image",
+                "name",
+                "essential",
+                "logConfiguration",
+            ):
 
                 # check if values differ for this key
-                oldval = existing['containerDefinitions'][0][key]
+                oldval = existing["containerDefinitions"][0][key]
                 newval = main_container[key]
-                if key == 'environment':
+                if key == "environment":
                     s_oldval = sorted([tuple(i.items()) for i in oldval])
                     s_newval = sorted([tuple(i.items()) for i in newval])
-                    differ = (s_oldval != s_newval)
+                    differ = s_oldval != s_newval
                 else:
-                    differ = (oldval != newval)
+                    differ = oldval != newval
 
                 if differ:
                     create = True
-                    print(f'{task.name}: changing {key}: {oldval} => {newval}')
+                    print(f"{task.name}: changing {key}: {oldval} => {newval}")
         except ClientError:
             create = True
 
@@ -77,27 +91,27 @@ class ECSRunService(RunService):
         #     create = True
 
         if create:
-            account_id = boto3.client('sts').get_caller_identity().get('Account')
+            account_id = boto3.client("sts").get_caller_identity().get("Account")
             # TODO: create this role?
-            role_arn = 'arn:aws:iam::{}:role/{}'.format(account_id, 'ecs-fargate-bobsled')
+            role_arn = "arn:aws:iam::{}:role/{}".format(
+                account_id, "ecs-fargate-bobsled"
+            )
             print(task.cpu, task.memory)
             response = self.ecs.register_task_definition(
                 family=task.name,
-                containerDefinitions=[
-                    main_container
-                ],
+                containerDefinitions=[main_container],
                 cpu=str(task.cpu),
                 memory=str(task.memory),
-                networkMode='awsvpc',
+                networkMode="awsvpc",
                 executionRoleArn=role_arn,
-                requiresCompatibilities=['FARGATE'],
+                requiresCompatibilities=["FARGATE"],
             )
             return response
         elif existing:
             pass
             # print(f'{task.name}: definition matches {task.name}:{existing["revision"]}')
         else:
-            print(f'{task.name}: creating new task')
+            print(f"{task.name}: creating new task")
 
     def start_task(self, task):
         resp = self.ecs.run_task(
@@ -107,10 +121,10 @@ class ECSRunService(RunService):
             startedBy="bobsled",
             launchType="FARGATE",
             networkConfiguration={
-                'awsvpcConfiguration': {
-                    'subnets': [self.subnet_id],
-                    'securityGroups': [self.security_group_id],
-                    'assignPublicIp': 'ENABLED',
+                "awsvpcConfiguration": {
+                    "subnets": [self.subnet_id],
+                    "securityGroups": [self.security_group_id],
+                    "assignPublicIp": "ENABLED",
                 }
             },
         )
@@ -142,7 +156,10 @@ class ECSRunService(RunService):
             run.logs = self.get_logs(run)
             await self.persister.save_run(run)
 
-        elif run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
+        elif (
+            run.run_info["timeout_at"]
+            and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]
+        ):
             run.logs = self.get_logs(run)
             self.stop(run)
             run.status = Status.TimedOut
@@ -168,23 +185,24 @@ class ECSRunService(RunService):
         return "\n".join(l["message"] for l in self.iter_logs(run))
 
     def iter_logs(self, run):
-        logs = boto3.client('logs')
+        logs = boto3.client("logs")
         arn_uuid = run.run_info["task_arn"].split("/")[-1]
-        log_arn = f'{run.task}/{run.task}/{arn_uuid}'
+        log_arn = f"{run.task}/{run.task}/{arn_uuid}"
 
         next_token = None
 
         while True:
-            extra = {'nextToken': next_token} if next_token else {}
+            extra = {"nextToken": next_token} if next_token else {}
             try:
-                events = logs.get_log_events(logGroupName=self.log_group,
-                                             logStreamName=log_arn, **extra)
+                events = logs.get_log_events(
+                    logGroupName=self.log_group, logStreamName=log_arn, **extra
+                )
             except ClientError:
-                yield {'message': 'no logs'}
+                yield {"message": "no logs"}
                 break
-            next_token = events['nextForwardToken']
+            next_token = events["nextForwardToken"]
 
-            if not events['events']:
+            if not events["events"]:
                 break
 
             yield from events["events"]

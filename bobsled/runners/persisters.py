@@ -62,6 +62,7 @@ def _db_to_run(r):
         uuid=r.uuid,
     )
 
+
 def _run_to_db(r):
     values = attr.asdict(r)
     values["status"] = values["status"].name

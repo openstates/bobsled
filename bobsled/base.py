@@ -5,6 +5,7 @@ import datetime
 import typing
 from .exceptions import AlreadyRunning
 
+
 class Status(enum.Enum):
     Pending = 1
     Running = 2
@@ -40,13 +41,13 @@ class Task:
     timeout_minutes: int = 0
     triggers: typing.List[Trigger] = []
 
+
 # memory options
 # 256 (.25 vCPU) : 512 (0.5 GB), 1024 (1 GB), 2048 (2 GB)
 # 512 (.5 vCPU) : 1024 (1 GB), 2048 (2 GB), 3072 (3 GB), 4096 (4 GB)
 # 1024 (1 vCPU) : 2048 (2 GB), 3072 (3 GB), 4096 (4 GB), 5120 (5 GB), 6144 (6 GB), 7168 (7 GB), 8192 (8 GB)
 # 2048 (2 vCPU) : Between 4096 (4 GB) and 16384 (16 GB) in increments of 1024 (1 GB)
 # 4096 (4 vCPU) : Between 8192 (8 GB) and 30720 (30 GB) in increments of 1024 (1 GB)
-
 
 
 @attr.s(auto_attribs=True)
@@ -78,15 +79,12 @@ class RunService:
         now = datetime.datetime.utcnow()
         timeout_at = ""
         if task.timeout_minutes:
-            timeout_at = (now + datetime.timedelta(minutes=task.timeout_minutes)).isoformat()
+            timeout_at = (
+                now + datetime.timedelta(minutes=task.timeout_minutes)
+            ).isoformat()
         run_info["timeout_at"] = timeout_at
 
-        run = Run(
-            task.name,
-            Status.Running,
-            start=now.isoformat(),
-            run_info=run_info,
-        )
+        run = Run(task.name, Status.Running, start=now.isoformat(), run_info=run_info)
         await self.persister.add_run(run)
         return run
 

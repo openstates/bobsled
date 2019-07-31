@@ -29,9 +29,7 @@ class LocalRunService(RunService):
 
     def start_task(self, task):
         container = self.client.containers.run(
-            task.image,
-            task.entrypoint if task.entrypoint else None,
-            detach=True
+            task.image, task.entrypoint if task.entrypoint else None, detach=True
         )
         return {"container_id": container.id}
 
@@ -68,7 +66,10 @@ class LocalRunService(RunService):
             container.remove()
 
         elif run.status == Status.Running:
-            if run.run_info["timeout_at"] and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]:
+            if (
+                run.run_info["timeout_at"]
+                and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]
+            ):
                 run.logs = container.logs().decode()
                 container.remove(force=True)
                 run.status = Status.TimedOut

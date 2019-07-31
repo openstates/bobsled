@@ -103,7 +103,7 @@ async def test_timeout(Cls):
     rs = Cls()
     if not rs:
         pytest.skip("ECS not configured")
-    task = Task("timeout", image="forever", timeout_minutes=(1/60.))
+    task = Task("timeout", image="forever", timeout_minutes=(1 / 60.0))
     run = await rs.run_task(task)
 
     assert run.status == Status.Running

@@ -5,7 +5,6 @@ import jwt
 from ..web import app, bobsled
 
 
-
 def test_index():
     client = TestClient(app)
     client.post("/login", {"username": "sample", "password": "password"})
@@ -37,6 +36,6 @@ def test_websocket():
     client.post("/login", {"username": "sample", "password": "password"})
     response = client.get("/api/task/full-example/run")
     uuid = response.json()["uuid"]
-    with client.websocket_connect(f'/ws/logs/{uuid}') as websocket:
+    with client.websocket_connect(f"/ws/logs/{uuid}") as websocket:
         data = websocket.receive_json()
-        assert data['logs'] == 'hello alpine\n'
+        assert data["logs"] == "hello alpine\n"

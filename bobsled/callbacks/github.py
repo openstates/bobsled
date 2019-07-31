@@ -32,7 +32,7 @@ class GithubIssueCallback:
             self.make_issue(latest_run, count, r)
 
     def get_existing_issue(self):
-        existing_issues = self.repo_obj.iter_issues(labels='automatic', state='open')
+        existing_issues = self.repo_obj.iter_issues(labels="automatic", state="open")
         for issue in existing_issues:
             if issue.title.startswith(latest_run.task):
                 return issue
@@ -41,6 +41,8 @@ class GithubIssueCallback:
         if self.get_existing_issue():
             return
 
-        body = f'''{latest_run.task} has failed {count} since {failure.start}'''
-        title = f'{latest_run.task} failing since at least {failure.start}'
-        issue = self.repo_obj.create_issue(title=title, body=body, labels=['automatic', 'ready'])
+        body = f"""{latest_run.task} has failed {count} since {failure.start}"""
+        title = f"{latest_run.task} failing since at least {failure.start}"
+        issue = self.repo_obj.create_issue(
+            title=title, body=body, labels=["automatic", "ready"]
+        )
