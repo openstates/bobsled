@@ -1,4 +1,3 @@
-from unittest.mock import patch
 import pytest
 from ..base import Run, Status
 from ..runners import MemoryRunPersister

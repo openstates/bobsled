@@ -4,16 +4,13 @@ import attr
 from starlette.applications import Starlette
 from starlette.authentication import (
     AuthenticationBackend,
-    AuthenticationError,
     SimpleUser,
-    UnauthenticatedUser,
     AuthCredentials,
     requires,
 )
 from starlette.templating import Jinja2Templates
 from starlette.staticfiles import StaticFiles
 from starlette.responses import JSONResponse, RedirectResponse
-from starlette.endpoints import WebSocketEndpoint
 from starlette.middleware.authentication import AuthenticationMiddleware
 import uvicorn
 import jwt

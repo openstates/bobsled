@@ -12,7 +12,7 @@ class GithubIssueCallback:
         self.repo_obj = gh.repository(self.user, self.repo)
 
     async def on_success(self, latest_run, persister):
-        issue = self.get_existing_issue()
+        issue = self.get_existing_issue(latest_run.task)
         if issue:
             issue.create_comment(f"closed via successful run on {latest_run.start}")
             issue.close()
@@ -31,18 +31,18 @@ class GithubIssueCallback:
         if count >= ERR_COUNT:
             self.make_issue(latest_run, count, r)
 
-    def get_existing_issue(self):
+    def get_existing_issue(self, task_name):
         existing_issues = self.repo_obj.iter_issues(labels="automatic", state="open")
         for issue in existing_issues:
-            if issue.title.startswith(latest_run.task):
+            if issue.title.startswith(task_name):
                 return issue
 
     def make_issue(self, latest_run, count, failure):
-        if self.get_existing_issue():
+        if self.get_existing_issue(latest_run.task):
             return
 
         body = f"""{latest_run.task} has failed {count} since {failure.start}"""
         title = f"{latest_run.task} failing since at least {failure.start}"
-        issue = self.repo_obj.create_issue(
+        self.repo_obj.create_issue(
             title=title, body=body, labels=["automatic", "ready"]
         )

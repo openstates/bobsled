@@ -1,8 +1,6 @@
-import pytest
 from starlette.testclient import TestClient
-import jwt
 
-from ..web import app, bobsled
+from ..web import app
 
 
 def test_index():
@@ -28,7 +26,7 @@ def test_run_and_detail():
     response = client.get("/api/task/hello-world/run")
     uuid = response.json()["uuid"]
     detail = client.get(f"/api/run/{uuid}")
-    assert response.json()["uuid"] == uuid
+    assert detail.json()["uuid"] == uuid
 
 
 def test_websocket():

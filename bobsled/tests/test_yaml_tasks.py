@@ -1,6 +1,5 @@
 import os
 from ..tasks import YamlTaskStorage
-from ..base import Task
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks.yml")
 

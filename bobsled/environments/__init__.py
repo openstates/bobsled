@@ -1,2 +1,2 @@
-from .yaml_environment import YamlEnvironmentStorage
-from .paramstore_environment import ParameterStoreEnvironmentStorage
+from .yaml_environment import YamlEnvironmentStorage    # noqa
+from .paramstore_environment import ParameterStoreEnvironmentStorage    # noqa

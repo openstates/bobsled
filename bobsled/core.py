@@ -1,6 +1,5 @@
 import os
 import copy
-import importlib
 import yaml
 
 from bobsled import environments, tasks, runners, auth

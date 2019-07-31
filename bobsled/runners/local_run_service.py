@@ -1,6 +1,6 @@
 import datetime
 import docker
-from ..base import RunService, Run, Status
+from ..base import RunService, Status
 
 
 class LocalRunService(RunService):

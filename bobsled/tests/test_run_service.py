@@ -1,7 +1,7 @@
 import os
 import time
 import pytest
-from ..base import Task, Run, Status
+from ..base import Task, Status
 from ..runners import LocalRunService, ECSRunService, MemoryRunPersister
 from ..exceptions import AlreadyRunning
 
@@ -77,7 +77,7 @@ async def test_cleanup(Cls):
         pytest.skip("ECS not configured")
     # run forever task
     task = Task("forever", image="forever")
-    run = await rs.run_task(task)
+    await rs.run_task(task)
 
     assert await rs.cleanup() == 1
 
