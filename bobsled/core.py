@@ -34,6 +34,13 @@ DEFAULT_SETTINGS = {
             "filename": "bobsled/tests/users.yml",
         }
     },
+    "on_error": [
+        {
+            "callback": "github_on_error",
+        },
+    ],
+    "on_success": [
+    ],
     "secret_key": None,
 }
 

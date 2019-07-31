@@ -1,10 +1,3 @@
-def checkout_tasks():
-    os.system('GIT_SSH_COMMAND="ssh -i deploy.key" '
-              'git clone git@github.com:{}/{}.git --depth 1'.format(
-                  config.GITHUB_USER, config.GITHUB_TASK_REPO
-              ))
-
-
 def make_cron_rule(name, schedule, enabled, force=False, verbose=False):
     events = boto3.client('events')
     lamb = boto3.client('lambda')
