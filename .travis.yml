@@ -8,6 +8,7 @@ python:
 install: 
   - pip install poetry
   - poetry install
+  - docker pull hello-world
   # - npm ci
   # - npm run build
 env:
