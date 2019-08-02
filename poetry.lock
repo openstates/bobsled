@@ -768,7 +768,7 @@ description = "The little ASGI library that shines."
 name = "starlette"
 optional = false
 python-versions = ">=3.6"
-version = "0.12.4"
+version = "0.12.7"
 
 [[package]]
 category = "main"
@@ -881,7 +881,7 @@ version = "4.6.0"
 setuptools = "*"
 
 [metadata]
-content-hash = "e03ca911ffc149c873d228ee9a21b036e54a5b1ce05ebdc011ec7aca0a92d42b"
+content-hash = "d2683e041d93bbe2a977ed1e3a3c86e36e553321ae20ee9d1e3b2e32109da277"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -957,7 +957,7 @@ s3transfer = ["6efc926738a3cd576c2a79725fed9afde92378aa5c6a957e3af010cb019fac9d"
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 sqlalchemy = ["c30925d60af95443458ebd7525daf791f55762b106049ae71e18f8dd58084c2f"]
 sshpubkeys = ["9f73d51c2ef1e68cd7bde0825df29b3c6ec89f4ce24ebca3bf9eaa4a23a284db", "b388399caeeccdc145f06fd0d2665eeecc545385c60b55c282a15a022215af80"]
-starlette = ["23f1de058ffcc053e9bddd87f49bb8bcda709ed2787d038819f6d8561e71f8d4"]
+starlette = ["849553e6dc8dd4faac5d4383219bdf49b199f3f09d60ce374c2a00a42ab7c77d"]
 uritemplate = ["01c69f4fe8ed503b2951bef85d996a9d22434d2431584b5b107b2981ff416fbd", "1b9c467a940ce9fb9f50df819e8ddd14696f89b9a8cc87ac77952ba416e0a8fd", "c02643cebe23fc8adb5e6becffe201185bf06c40bda5c0b4028a93f1527d011d"]
 urllib3 = ["b246607a25ac80bedac05c6f282e3cdaf3afb65420fd024ac94435cabe6e18d1", "dbe59173209418ae49d485b87d1681aefa36252ee85884c31346debd19463232"]
 uvicorn = ["5320b48629564fa914fe8120542608c91f98fcd2278e8454bda9db08467519d1"]
