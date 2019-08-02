@@ -4,7 +4,9 @@ full-example:
   image: alpine
   tags: ["a", "b", "c"]
   entrypoint: "echo 'hello alpine'"
-  memory: 256
+  memory: 512
   enabled: true
+  triggers:
+    - cron: 0 4 * * ?
 forever:
   image: forever

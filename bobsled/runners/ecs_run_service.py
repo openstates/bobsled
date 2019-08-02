@@ -6,7 +6,15 @@ from ..base import RunService, Status
 
 class ECSRunService(RunService):
     def __init__(
-        self, persister, callbacks=None, *, cluster_name, subnet_id, security_group_id, log_group
+        self,
+        persister,
+        callbacks=None,
+        *,
+        cluster_name,
+        subnet_id,
+        security_group_id,
+        log_group,
+        role_arn,
     ):
         self.persister = persister
         self.callbacks = callbacks or []
@@ -14,7 +22,12 @@ class ECSRunService(RunService):
         self.subnet_id = subnet_id
         self.security_group_id = security_group_id
         self.log_group = log_group
+        self.role_arn = role_arn
         self.ecs = boto3.client("ecs")
+
+        self.cluster_arn = self.ecs.describe_clusters(clusters=[self.cluster_name])[
+            "clusters"
+        ][0]["clusterArn"]
 
     def initialize(self, tasks):
         for task in tasks:
@@ -225,48 +238,62 @@ class ECSRunService(RunService):
         return n
 
     def _make_cron_rule(self, task):
-        events = boto3.client('events')
+        events = boto3.client("events")
 
-        # TODO
-        schedule = "@hourly"
-        task_arn = "abc"
+        schedule = None
+        for trigger in task.triggers:
+            if trigger["cron"]:
+                schedule = (
+                    f"cron({trigger['cron']} *)"
+                )  # ECS cron requires year, add a *
+                break
+        if not schedule:
+            return
 
-        enabled = 'ENABLED' if task.enabled else 'DISABLED'
+        resp = self.ecs.describe_task_definition(taskDefinition=task.name)
+        task_def_arn = resp["taskDefinition"]["taskDefinitionArn"]
+
+        enabled = "ENABLED" if task.enabled else "DISABLED"
         create = False
 
         try:
             old_rule = events.describe_rule(Name=task.name)
             updating = []
-            if schedule != old_rule['ScheduleExpression']:
-                updating.append('schedule')
-            if enabled != old_rule['State']:
-                updating.append('enabled')
+            if schedule != old_rule["ScheduleExpression"]:
+                updating.append("schedule")
+            if enabled != old_rule["State"]:
+                updating.append("enabled")
             if updating:
                 create = True
         except ClientError:
             create = True
 
         if create:
-            rule = events.put_rule(
+            events.put_rule(
                 Name=task.name,
                 ScheduleExpression=schedule,
                 State=enabled,
-                Description=f'run {task.name} at {schedule}',
+                Description=f"run {task.name} at {schedule}",
             )
             events.put_targets(
-                Rule=rule,
+                Rule=task.name,
                 Targets=[
                     {
-                        "TaskDefinitionArn": task_arn,
-                        "TaskCount": 1,
-                        "LaunchType": "FARGATE",
-                        "NetworkConfiguration": {
-                            "awsvpcConfiguration": {
-                                "Subnets": [self.subnet_id],
-                                "SecurityGroups": [self.security_group_id],
-                                "AssignPublicIp": "ENABLED",
-                            }
-                        }
+                        "Id": "run-target",
+                        "Arn": self.cluster_arn,
+                        "RoleArn": self.role_arn,
+                        "EcsParameters": {
+                            "TaskDefinitionArn": task_def_arn,
+                            "TaskCount": 1,
+                            "LaunchType": "FARGATE",
+                            "NetworkConfiguration": {
+                                "awsvpcConfiguration": {
+                                    "Subnets": [self.subnet_id],
+                                    "SecurityGroups": [self.security_group_id],
+                                    "AssignPublicIp": "ENABLED",
+                                }
+                            },
+                        },
                     }
-                ]
+                ],
             )

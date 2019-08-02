@@ -2,8 +2,10 @@ import os
 import time
 from unittest.mock import Mock
 import pytest
+import boto3
 from ..base import Task, Status
 from ..runners import LocalRunService, ECSRunService, MemoryRunPersister
+from ..tasks import YamlTaskStorage
 from ..exceptions import AlreadyRunning
 
 
@@ -15,6 +17,7 @@ def ecs_run_service():
     cluster_name = os.environ.get("TEST_CLUSTER")
     subnet_id = os.environ.get("TEST_SUBNET")
     security_group_id = os.environ.get("TEST_SECURITY_GROUP")
+    role_arn = os.environ.get("TEST_ROLE_ARN")
     if cluster_name and subnet_id and security_group_id:
         return ECSRunService(
             MemoryRunPersister(),
@@ -22,6 +25,7 @@ def ecs_run_service():
             subnet_id=subnet_id,
             security_group_id=security_group_id,
             log_group="bobsled",
+            role_arn=role_arn,
         )
 
 
@@ -148,3 +152,17 @@ async def test_callback_on_error():
 
     assert n_running == 0
     callback.on_error.assert_called_once_with(run, rs.persister)
+
+
+def test_ecs_initialize():
+    ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks.yml")
+    tasks = YamlTaskStorage(ENV_FILE)
+    ers = ecs_run_service()
+    if not ers:
+        pytest.skip("No ECS Configuration")
+    ers.initialize(tasks.get_tasks())
+
+    # check that there's a registered cron?
+    events = boto3.client('events')
+    rule = events.describe_rule(Name="full-example")
+    assert rule['ScheduleExpression'] == 'cron(0 4 * * ? *)'
