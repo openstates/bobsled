@@ -116,7 +116,9 @@ async def test_timeout(Cls):
     rs = Cls()
     if not rs:
         pytest.skip("ECS not configured")
-    task = Task("timeout", image="jamesturk/bobsled-forever", timeout_minutes=(1 / 60.0))
+    task = Task(
+        "timeout", image="jamesturk/bobsled-forever", timeout_minutes=(1 / 60.0)
+    )
     run = await rs.run_task(task)
 
     assert run.status == Status.Running
@@ -163,6 +165,6 @@ def test_ecs_initialize():
     ers.initialize(tasks.get_tasks())
 
     # check that there's a registered cron?
-    events = boto3.client('events')
+    events = boto3.client("events")
     rule = events.describe_rule(Name="full-example")
-    assert rule['ScheduleExpression'] == 'cron(0 4 * * ? *)'
+    assert rule["ScheduleExpression"] == "cron(0 4 * * ? *)"

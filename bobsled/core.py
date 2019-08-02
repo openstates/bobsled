@@ -12,10 +12,7 @@ DEFAULT_SETTINGS = {
     "tasks": {"provider": "YamlTaskStorage", "args": {"filename": "tasks.yml"}},
     "runner": {"provider": "LocalRunService", "args": {}},
     "persister": {"provider": "MemoryRunPersister", "args": {}},
-    "auth": {
-        "provider": "YamlAuthStorage",
-        "args": {"filename": "users.yml"},
-    },
+    "auth": {"provider": "YamlAuthStorage", "args": {"filename": "users.yml"}},
     "on_error": [{"callback": "github_on_error"}],
     "on_success": [],
     "secret_key": None,
