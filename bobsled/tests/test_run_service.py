@@ -6,11 +6,14 @@ import boto3
 from ..base import Task, Status
 from ..runners import LocalRunService, ECSRunService, MemoryRunPersister
 from ..tasks import YamlTaskStorage
+from ..environments import YamlEnvironmentStorage
 from ..exceptions import AlreadyRunning
+
+ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
 def local_run_service():
-    return LocalRunService(MemoryRunPersister())
+    return LocalRunService(MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE))
 
 
 def ecs_run_service():
@@ -21,6 +24,7 @@ def ecs_run_service():
     if cluster_name and subnet_id and security_group_id:
         return ECSRunService(
             MemoryRunPersister(),
+            YamlEnvironmentStorage(ENV_FILE),
             cluster_name=cluster_name,
             subnet_id=subnet_id,
             security_group_id=security_group_id,
@@ -65,6 +69,26 @@ async def test_simple_run(Cls):
     runs = await rs.get_runs(status=Status.Success)
     assert len(runs) == 1
     assert "Hello from Docker" in runs[0].logs
+    assert await rs.cleanup() == 0
+
+
+@pytest.mark.parametrize("Cls", runners)
+@pytest.mark.asyncio
+async def test_run_environment(Cls):
+    rs = Cls()
+    if not rs:
+        pytest.skip("ECS not configured")
+    task = Task("env-test", image="alpine", entrypoint="env", environment="two")
+    run = await rs.run_task(task)
+
+    assert run.status == Status.Running
+
+    n_running = await _wait_to_finish(rs, run, 60)
+
+    assert n_running == 0
+    runs = await rs.get_runs(status=Status.Success)
+    assert len(runs) == 1
+    assert "INJECTION" in runs[0].logs
     assert await rs.cleanup() == 0
 
 
@@ -133,7 +157,9 @@ async def test_timeout(Cls):
 @pytest.mark.asyncio
 async def test_callback_on_success():
     callback = Mock()
-    rs = LocalRunService(MemoryRunPersister(), [callback])
+    rs = LocalRunService(
+        MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE), [callback]
+    )
     task = Task("hello-world", image="hello-world")
     run = await rs.run_task(task)
 
@@ -146,7 +172,9 @@ async def test_callback_on_success():
 @pytest.mark.asyncio
 async def test_callback_on_error():
     callback = Mock()
-    rs = LocalRunService(MemoryRunPersister(), [callback])
+    rs = LocalRunService(
+        MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE), [callback]
+    )
     task = Task("failure", image="alpine", entrypoint="sh -c 'exit 1'")
     run = await rs.run_task(task)
 

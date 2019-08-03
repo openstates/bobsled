@@ -2,4 +2,4 @@ one:
   number: 123
   word: hello
 two:
-  foo: bar
+  foo: "INJECTION"

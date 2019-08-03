@@ -40,6 +40,7 @@ class Bobsled:
         self.tasks = TaskCls(**settings["tasks"]["args"])
         self.run = RunCls(
             persister=PersisterCls(**settings["persister"]["args"]),
+            environment=self.env,
             **settings["runner"]["args"]
         )
         self.auth = AuthCls(**settings["auth"]["args"])

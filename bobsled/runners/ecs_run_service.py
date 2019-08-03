@@ -8,6 +8,7 @@ class ECSRunService(RunService):
     def __init__(
         self,
         persister,
+        environment,
         callbacks=None,
         *,
         cluster_name,
@@ -17,6 +18,7 @@ class ECSRunService(RunService):
         role_arn,
     ):
         self.persister = persister
+        self.environment = environment
         self.callbacks = callbacks or []
         self.cluster_name = cluster_name
         self.subnet_id = subnet_id

@@ -4,9 +4,10 @@ from ..base import RunService, Status
 
 
 class LocalRunService(RunService):
-    def __init__(self, persister, callbacks=None):
+    def __init__(self, persister, environment, callbacks=None):
         self.client = docker.from_env()
         self.persister = persister
+        self.environment = environment
         self.callbacks = callbacks or []
 
     def _get_container(self, run):
@@ -29,8 +30,13 @@ class LocalRunService(RunService):
         return n
 
     def start_task(self, task):
+        if task.environment:
+            env = self.environment.get_environment(task.environment)
         container = self.client.containers.run(
-            task.image, task.entrypoint if task.entrypoint else None, detach=True
+            task.image,
+            task.entrypoint if task.entrypoint else None,
+            detach=True,
+            environment=env.values,
         )
         return {"container_id": container.id}
 

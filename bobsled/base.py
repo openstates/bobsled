@@ -35,6 +35,7 @@ class Task:
     image: str
     tags: typing.List[str] = []
     entrypoint: str = ""
+    environment: str = ""
     memory: int = 512
     cpu: int = 256
     enabled: bool = True
