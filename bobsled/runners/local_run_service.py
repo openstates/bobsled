@@ -30,13 +30,14 @@ class LocalRunService(RunService):
         return n
 
     def start_task(self, task):
+        env = {}
         if task.environment:
-            env = self.environment.get_environment(task.environment)
+            env = self.environment.get_environment(task.environment).values
         container = self.client.containers.run(
             task.image,
             task.entrypoint if task.entrypoint else None,
             detach=True,
-            environment=env.values,
+            environment=env,
         )
         return {"container_id": container.id}
 
