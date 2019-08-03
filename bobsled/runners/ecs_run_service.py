@@ -40,6 +40,7 @@ class ECSRunService(RunService):
         region = self.ecs.meta.region_name
         log_stream_prefix = task.name.lower()
 
+        env_list = []
         if task.environment:
             env = self.environment.get_environment(task.environment)
             env_list = [{"name": k, "value": v} for k, v in env.values.items()]
