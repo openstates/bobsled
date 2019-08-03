@@ -202,7 +202,7 @@ class ECSRunService(RunService):
     def iter_logs(self, run):
         logs = boto3.client("logs")
         arn_uuid = run.run_info["task_arn"].split("/")[-1]
-        log_arn = f"{run.task}/{run.task}/{arn_uuid}"
+        log_arn = f"{run.task.lower()}/{run.task}/{arn_uuid}"
 
         next_token = None
 

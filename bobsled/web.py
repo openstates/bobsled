@@ -26,9 +26,12 @@ class JWTSessionAuthBackend(AuthenticationBackend):
 
         if not jwt_token:
             return
-        data = jwt.decode(
-            jwt_token, bobsled.settings["secret_key"], algorithms=["HS256"]
-        )
+        try:
+            data = jwt.decode(
+                jwt_token, bobsled.settings["secret_key"], algorithms=["HS256"]
+            )
+        except jwt.InvalidSignatureError:
+            return
 
         return AuthCredentials(["authenticated"]), SimpleUser(data["username"])
 

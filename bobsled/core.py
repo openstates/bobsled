@@ -43,7 +43,7 @@ class Bobsled:
             **settings["runner"]["args"]
         )
         self.auth = AuthCls(**settings["auth"]["args"])
-        self.run.initialize(self.tasks)
+        self.run.initialize(self.tasks.get_tasks())
 
 
 bobsled = Bobsled()
