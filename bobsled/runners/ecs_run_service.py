@@ -106,18 +106,13 @@ class ECSRunService(RunService):
         #     create = True
 
         if create:
-            account_id = boto3.client("sts").get_caller_identity().get("Account")
-            # TODO: create this role?
-            role_arn = "arn:aws:iam::{}:role/{}".format(
-                account_id, "ecs-fargate-bobsled"
-            )
             response = self.ecs.register_task_definition(
                 family=task.name,
                 containerDefinitions=[main_container],
                 cpu=str(task.cpu),
                 memory=str(task.memory),
                 networkMode="awsvpc",
-                executionRoleArn=role_arn,
+                executionRoleArn=self.role_arn,
                 requiresCompatibilities=["FARGATE"],
             )
             return response
