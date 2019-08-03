@@ -40,6 +40,10 @@ class ECSRunService(RunService):
         region = self.ecs.meta.region_name
         log_stream_prefix = task.name.lower()
 
+        if task.environment:
+            env = self.environment.get_environment(task.environment)
+            env_list = [{"name": k, "value": v} for k, v in env.values.items()]
+
         main_container = {
             "name": task.name,
             "image": task.image,
@@ -53,7 +57,7 @@ class ECSRunService(RunService):
                     "awslogs-stream-prefix": log_stream_prefix,
                 },
             },
-            "environment": [],
+            "environment": env_list,
         }
 
         # add env to main_container
