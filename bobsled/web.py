@@ -37,7 +37,9 @@ class JWTSessionAuthBackend(AuthenticationBackend):
         return AuthCredentials(["authenticated"]), SimpleUser(data["username"])
 
 
-templates = Jinja2Templates(directory="bobsled/templates")
+templates = Jinja2Templates(
+    directory=os.path.join(os.path.dirname(__file__), "templates")
+)
 
 app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
