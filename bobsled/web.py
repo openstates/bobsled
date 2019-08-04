@@ -43,9 +43,8 @@ app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
 app.mount(
     "/static",
-    StaticFiles(
-        directory=os.path.join(os.path.dirname(__file__), "..", "static"), name="static"
-    ),
+    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "static")),
+    name="static",
 )
 
 
