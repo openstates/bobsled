@@ -1,3 +1,4 @@
+import os
 import datetime
 import asyncio
 import attr
@@ -40,7 +41,12 @@ templates = Jinja2Templates(directory="bobsled/templates")
 
 app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount(
+    "/static",
+    StaticFiles(
+        directory=os.path.join(os.path.dirname(__file__), "..", "static"), name="static"
+    ),
+)
 
 
 @app.route("/login", methods=["GET", "POST"])
