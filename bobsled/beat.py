@@ -31,8 +31,8 @@ def next_cron(cronstr, after=None):
         after = datetime.datetime.utcnow()
     next_time = None
 
-    for minute in minutes:
-        for hour in hours:
+    for hour in hours:
+        for minute in minutes:
             next_time = after.replace(hour=hour, minute=minute, second=0, microsecond=0)
             if next_time > after:
                 return next_time
@@ -42,17 +42,39 @@ def next_cron(cronstr, after=None):
     return next_time
 
 
+def next_run_for_task(task):
+    for trigger in task.triggers:
+        if 'cron' in trigger:
+            return next_cron(trigger['cron'])
+
+
 async def run_service():
     await bobsled.run.persister.connect()
+
+    next_run_list = {}
     for task in bobsled.tasks.get_tasks():
-        for trigger in task.triggers:
-            if 'cron' in trigger:
-                print(task, next_cron(trigger['cron']))
+        if not task.enabled:
+            continue
+        next_run = next_run_for_task(task)
+        if next_run:
+            next_run_list[task.name] = next_run
+            print(task.name, "next run at", next_run)
+
     while True:
         pending = await bobsled.run.get_runs(status=Status.Pending)
         running = await bobsled.run.get_runs(status=Status.Running)
-        print(f"pending={len(pending)} running={len(running)}")
-        await asyncio.sleep(10)
+
+        # TODO: could improve by basing next run time on last run instead of using utcnow
+        utcnow = datetime.datetime.utcnow()
+        for task_name, next_run in next_run_list.items():
+            if next_run <= utcnow:
+                run = await bobsled.run.run_task(task)
+                task = bobsled.tasks.get_task(task_name)
+                next_run_list[task_name] = next_run_for_task(task)
+                print(f"started {task_name}: {run}.  next run at {next_run_list[task_name]}")
+
+        print(f"{utcnow}: pending={len(pending)} running={len(running)}")
+        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
