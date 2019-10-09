@@ -34,7 +34,7 @@ class ECSRunService(RunService):
     def initialize(self, tasks):
         for task in tasks:
             self._register_task(task)
-            self._make_cron_rule(task)
+            # self._make_cron_rule(task)
 
     def _register_task(self, task):
         region = self.ecs.meta.region_name
@@ -240,6 +240,12 @@ class ECSRunService(RunService):
         return n
 
     def _make_cron_rule(self, task):
+        """
+        registers a cron rule with ECS
+
+        currently inactive code since ECS scheduling doesn't have a clean way to
+        add a run entry in the run persister.
+        """
         events = boto3.client("events")
 
         schedule = None
