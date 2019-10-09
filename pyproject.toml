@@ -6,7 +6,7 @@ authors = ["James Turk <dev@jamesturk.net>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-attrs = "^19.1"
+attrs = "^19.2"
 pytest = "^5.0"
 pyyaml = "^5.1"
 docker = "^4.1"
