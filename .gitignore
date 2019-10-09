@@ -13,6 +13,7 @@ static/bundles
 bobsled.yml
 environments.yml
 tasks.yml
+users.yml
 
 *.db
 
