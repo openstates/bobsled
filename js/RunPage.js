@@ -3,9 +3,10 @@ import React from "react";
 class RunPage extends React.Component {
   constructor(props) {
     super(props);
+    const protocol = window.location.protocol == "https:" ? "wss://" : "ws://"
     this.state = {
       ws: new WebSocket(
-        "ws://" + window.location.host + "/ws/logs/" + this.props.match.params.run_id
+        protocol + window.location.host + "/ws/logs/" + this.props.match.params.run_id
       ),
     };
     this.stopRun = this.stopRun.bind(this);
