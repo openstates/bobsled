@@ -5,7 +5,7 @@ class RunPage extends React.Component {
     super(props);
     this.state = {
       ws: new WebSocket(
-        "ws://localhost:8000/ws/logs/" + this.props.match.params.run_id
+        "ws://" + window.location.host + "/ws/logs/" + this.props.match.params.run_id
       ),
     };
     this.stopRun = this.stopRun.bind(this);
