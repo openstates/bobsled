@@ -158,9 +158,13 @@ class ECSRunService(RunService):
 
         if resp["failures"]:
             if resp["failures"][0]["reason"] == "MISSING":
-                print("missing")
-                return
-            # can be MISSING or ??? (TODO: handle)
+                run.exit_code = -999
+                run.end = datetime.datetime.utcnow().isoformat()
+                run.status = Status.Error
+                run.logs = self.get_logs(run)
+                await self.persister.save_run(run)
+                return run
+                # TODO: improve handling, should we call callbacks on missing?
             raise ValueError(f"unexpected status: {resp['failures']}")
 
         result = resp["tasks"][0]
