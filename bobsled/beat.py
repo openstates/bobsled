@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import zmq
 from .base import Status
 from .core import bobsled
 
@@ -51,6 +52,11 @@ def next_run_for_task(task):
 async def run_service():
     await bobsled.run.persister.connect()
 
+    context = zmq.Context()
+    # TODO: evaluate using PAIR instead?
+    socket = context.socket(zmq.PUB)
+    socket.bind("tcp://*:5555")
+
     next_run_list = {}
     for task in bobsled.tasks.get_tasks():
         if not task.enabled:
@@ -71,9 +77,14 @@ async def run_service():
                 run = await bobsled.run.run_task(task)
                 task = bobsled.tasks.get_task(task_name)
                 next_run_list[task_name] = next_run_for_task(task)
-                print(f"started {task_name}: {run}.  next run at {next_run_list[task_name]}")
+                msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
+                socket.send_string(msg)
+                print(msg)
 
-        print(f"{utcnow}: pending={len(pending)} running={len(running)}")
+        msg = f"{utcnow}: pending={len(pending)} running={len(running)}"
+        socket.send_string(msg)
+        print(msg)
+
         await asyncio.sleep(60)
 
 
