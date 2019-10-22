@@ -55,7 +55,7 @@ async def run_service():
     context = zmq.Context()
     # TODO: evaluate using PAIR instead?
     socket = context.socket(zmq.PUB)
-    socket.bind("tcp://*:5555")
+    socket.bind("ipc:///tmp/bobsled-beat")
 
     next_run_list = {}
     for task in bobsled.tasks.get_tasks():
