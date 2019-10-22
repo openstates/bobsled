@@ -1,13 +1,11 @@
 import React from "react";
+import { local_websocket } from "./utils.js";
 
 class RunPage extends React.Component {
   constructor(props) {
     super(props);
-    const protocol = window.location.protocol == "https:" ? "wss://" : "ws://"
     this.state = {
-      ws: new WebSocket(
-        protocol + window.location.host + "/ws/logs/" + this.props.match.params.run_id
-      ),
+      ws: local_websocket("/ws/logs/" + this.props.match.params.run_id),
     };
     this.stopRun = this.stopRun.bind(this);
   }

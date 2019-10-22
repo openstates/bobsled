@@ -2,6 +2,8 @@ import os
 import datetime
 import asyncio
 import attr
+import zmq
+import zmq.asyncio
 from starlette.applications import Starlette
 from starlette.authentication import (
     AuthenticationBackend,
@@ -40,6 +42,7 @@ class JWTSessionAuthBackend(AuthenticationBackend):
 templates = Jinja2Templates(
     directory=os.path.join(os.path.dirname(__file__), "templates")
 )
+
 
 app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
@@ -141,6 +144,21 @@ async def stop_run(request):
     run_id = request.path_params["run_id"]
     await bobsled.run.stop_run(run_id)
     return JSONResponse({})
+
+
+@app.websocket_route("/ws/beat")
+@requires(["authenticated"])
+async def beat_websocket(websocket):
+    context = zmq.asyncio.Context.instance()
+    socket = context.socket(zmq.SUB)
+    socket.connect("ipc:///tmp/bobsled-beat")
+    socket.subscribe(b"")
+
+    await websocket.accept()
+    while True:
+        msg = await socket.recv_string()
+        await websocket.send_json({"msg": msg})
+    await websocket.close()
 
 
 @app.websocket_route("/ws/logs/{run_id}")

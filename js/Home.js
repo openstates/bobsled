@@ -1,17 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
+import { local_websocket } from "./utils.js";
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       tasks: [],
-      runs: []
+      runs: [],
+      ws: local_websocket("/ws/beat"),
     };
   }
 
   componentDidMount() {
+    this.state.ws.onmessage = evt => {
+      const message = JSON.parse(evt.data);
+      console.log(message);
+    };
+
     fetch("/api/index")
       .then(response => response.json())
       .then(data => this.setState(data));
