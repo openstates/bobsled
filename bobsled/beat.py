@@ -69,9 +69,18 @@ async def run_service():
     while True:
         pending = await bobsled.run.get_runs(status=Status.Pending)
         running = await bobsled.run.get_runs(status=Status.Running)
+        utcnow = datetime.datetime.utcnow()
+
+        msg = f"{utcnow}: pending={len(pending)} running={len(running)}"
+        socket.send_string(msg)
+        print(msg)
+
+        # parallel updates from all running tasks
+        await asyncio.gather(*[
+            bobsled.run.update_status(run.uuid, update_logs=True) for run in running
+        ])
 
         # TODO: could improve by basing next run time on last run instead of using utcnow
-        utcnow = datetime.datetime.utcnow()
         for task_name, next_run in next_run_list.items():
             if next_run <= utcnow:
                 run = await bobsled.run.run_task(task)
@@ -80,10 +89,6 @@ async def run_service():
                 msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
                 socket.send_string(msg)
                 print(msg)
-
-        msg = f"{utcnow}: pending={len(pending)} running={len(running)}"
-        socket.send_string(msg)
-        print(msg)
 
         await asyncio.sleep(60)
 
