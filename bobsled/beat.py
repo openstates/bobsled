@@ -51,13 +51,19 @@ def next_run_for_task(task):
             return next_cron(trigger["cron"])
 
 
+LOG_FILE = "/tmp/bobsled-beat.log"
+SOCKET_FILE = "/tmp/bobsled-beat"
+
+
 async def run_service():
     await bobsled.run.persister.connect()
+
+    lf = open(LOG_FILE, "w")
 
     context = zmq.Context()
     # TODO: evaluate using PAIR instead?
     socket = context.socket(zmq.PUB)
-    socket.bind("ipc:///tmp/bobsled-beat")
+    socket.bind("ipc://" + SOCKET_FILE)
 
     next_run_list = {}
     for task in bobsled.tasks.get_tasks():
@@ -66,7 +72,7 @@ async def run_service():
         next_run = next_run_for_task(task)
         if next_run:
             next_run_list[task.name] = next_run
-            print(task.name, "next run at", next_run)
+            print(task.name, "next run at", next_run, file=lf, flush=True)
 
     while True:
         pending = await bobsled.run.get_runs(status=Status.Pending)
@@ -75,7 +81,7 @@ async def run_service():
 
         msg = f"{utcnow}: pending={len(pending)} running={len(running)}"
         socket.send_string(msg)
-        print(msg)
+        print(msg, file=lf, flush=True)
 
         # parallel updates from all running tasks
         await asyncio.gather(
@@ -90,7 +96,7 @@ async def run_service():
                 next_run_list[task_name] = next_run_for_task(task)
                 msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
                 socket.send_string(msg)
-                print(msg)
+                print(msg, file=lf, flush=True)
 
         await asyncio.sleep(60)
 
