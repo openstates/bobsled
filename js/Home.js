@@ -1,11 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
+import { local_websocket } from "./utils.js";
 
-function local_websocket(path) {
-  const protocol = window.location.protocol == "https:" ? "wss://" : "ws://";
-  return new WebSocket(protocol + window.location.host + path);
-}
 
 class Home extends React.Component {
   constructor(props) {
