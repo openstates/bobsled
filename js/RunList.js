@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import React from "react";
 
-
 function RunList(props) {
   let rows = props.runs.map(run => (
     <tr key={run.uuid}>
@@ -31,6 +30,5 @@ function RunList(props) {
     </div>
   );
 }
-
 
 export default RunList;

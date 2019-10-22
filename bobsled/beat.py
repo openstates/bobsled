@@ -12,7 +12,7 @@ def parse_cron_segment(segment, star_equals):
         return sorted([int(n) for n in segment.split(",")])
     elif "-" in segment:
         start, end = segment.split("-")
-        return list(range(int(start), int(end)+1))
+        return list(range(int(start), int(end) + 1))
     elif segment.isdigit():
         return [int(segment)]
 
@@ -39,14 +39,16 @@ def next_cron(cronstr, after=None):
                 return next_time
 
     # no next time today, set to the first time but the next day
-    next_time = next_time.replace(hour=hours[0], minute=minutes[0]) + datetime.timedelta(days=1)
+    next_time = next_time.replace(
+        hour=hours[0], minute=minutes[0]
+    ) + datetime.timedelta(days=1)
     return next_time
 
 
 def next_run_for_task(task):
     for trigger in task.triggers:
-        if 'cron' in trigger:
-            return next_cron(trigger['cron'])
+        if "cron" in trigger:
+            return next_cron(trigger["cron"])
 
 
 async def run_service():
@@ -76,9 +78,9 @@ async def run_service():
         print(msg)
 
         # parallel updates from all running tasks
-        await asyncio.gather(*[
-            bobsled.run.update_status(run.uuid, update_logs=True) for run in running
-        ])
+        await asyncio.gather(
+            *[bobsled.run.update_status(run.uuid, update_logs=True) for run in running]
+        )
 
         # TODO: could improve by basing next run time on last run instead of using utcnow
         for task_name, next_run in next_run_list.items():

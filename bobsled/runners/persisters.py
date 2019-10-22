@@ -52,14 +52,14 @@ runs = sqlalchemy.Table(
 
 def _db_to_run(r):
     return Run(
-        task=r['task'],
-        status=Status[r['status']],
-        start=r['start'],
-        end=r['end'],
-        logs=r['logs'],
-        exit_code=r['exit_code'],
-        run_info=json.loads(r['run_info_json']),
-        uuid=r['uuid'],
+        task=r["task"],
+        status=Status[r["status"]],
+        start=r["start"],
+        end=r["end"],
+        logs=r["logs"],
+        exit_code=r["exit_code"],
+        run_info=json.loads(r["run_info_json"]),
+        uuid=r["uuid"],
     )
 
 

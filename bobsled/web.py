@@ -152,7 +152,7 @@ async def beat_websocket(websocket):
     context = zmq.asyncio.Context.instance()
     socket = context.socket(zmq.SUB)
     socket.connect("ipc:///tmp/bobsled-beat")
-    socket.subscribe(b'')
+    socket.subscribe(b"")
 
     await websocket.accept()
     while True:

@@ -3,14 +3,13 @@ import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
 import { local_websocket } from "./utils.js";
 
-
 class Home extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       tasks: [],
       runs: [],
-      ws: local_websocket("/ws/beat")
+      ws: local_websocket("/ws/beat"),
     };
   }
 
