@@ -44,10 +44,6 @@ templates = Jinja2Templates(
 )
 
 
-context = zmq.asyncio.Context.instance()
-socket = context.socket(zmq.SUB)
-socket.connect("tcp://localhost:5555")
-
 app = Starlette(debug=True)
 app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
 app.mount(
@@ -153,11 +149,14 @@ async def stop_run(request):
 @app.websocket_route("/ws/beat")
 @requires(["authenticated"])
 async def beat_websocket(websocket):
+    context = zmq.asyncio.Context.instance()
+    socket = context.socket(zmq.SUB)
+    socket.connect("tcp://localhost:5555")
+    socket.subscribe(b'')
+
     await websocket.accept()
     while True:
-        print('in loop waiting')
         msg = await socket.recv_string()
-        print('received from socket', msg)
         await websocket.send_json({"msg": msg})
     await websocket.close()
 
