@@ -64,8 +64,9 @@ class User:
 
 class RunService:
     async def run_task(self, task):
-        # TODO handle waiting
-        running = await self.get_runs(status=Status.Running, task_name=task.name)
+        running = await self.get_runs(
+            status=[Status.Pending, Status.Running], task_name=task.name
+        )
         if running:
             raise AlreadyRunning()
         run_info = self.start_task(task)
