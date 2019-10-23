@@ -3,6 +3,7 @@ import datetime
 import zmq
 from .base import Status
 from .core import bobsled
+from .exceptions import AlreadyRunning
 
 
 def parse_cron_segment(segment, star_equals):
@@ -91,10 +92,14 @@ async def run_service():
         # TODO: could improve by basing next run time on last run instead of using utcnow
         for task_name, next_run in next_run_list.items():
             if next_run <= utcnow:
-                run = await bobsled.run.run_task(task)
-                task = bobsled.tasks.get_task(task_name)
+                # update next run time
                 next_run_list[task_name] = next_run_for_task(task)
-                msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
+                try:
+                    run = await bobsled.run.run_task(task)
+                    task = bobsled.tasks.get_task(task_name)
+                    msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
+                except AlreadyRunning:
+                    msg = f"{task_name}: already running.  next run at {next_run_list[task_name]}"
                 socket.send_string(msg)
                 print(msg, file=lf, flush=True)
 
