@@ -62,7 +62,6 @@ async def run_service():
     lf = open(LOG_FILE, "w")
 
     context = zmq.Context()
-    # TODO: evaluate using PAIR instead?
     socket = context.socket(zmq.PUB)
     socket.bind("ipc://" + SOCKET_FILE)
 
@@ -86,7 +85,10 @@ async def run_service():
 
         # parallel updates from all running tasks
         await asyncio.gather(
-            *[bobsled.run.update_status(run.uuid, update_logs=True) for run in running + pending]
+            *[
+                bobsled.run.update_status(run.uuid, update_logs=True)
+                for run in running + pending
+            ]
         )
 
         # TODO: could improve by basing next run time on last run instead of using utcnow
