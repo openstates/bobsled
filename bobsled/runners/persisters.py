@@ -24,14 +24,19 @@ class MemoryRunPersister:
         if run:
             return run[0]
 
-    async def get_runs(self, *, status=None, task_name=None):
+    async def get_runs(self, *, status=None, task_name=None, latest=None):
         runs = [r for r in self.runs]
         if isinstance(status, Status):
             runs = [r for r in runs if r.status == status]
         elif isinstance(status, list):
             runs = [r for r in runs if r.status in status]
+        elif status:
+            raise ValueError("status must be Status or list")
         if task_name:
             runs = [r for r in runs if r.task == task_name]
+        if latest:
+            # runs are in order, so just grab the tail
+            runs = runs[-latest:]
         return runs
 
 
@@ -95,13 +100,19 @@ class DatabaseRunPersister:
         if row:
             return _db_to_run(row)
 
-    async def get_runs(self, *, status=None, task_name=None):
+    async def get_runs(self, *, status=None, task_name=None, latest=None):
         query = runs.select()
+        query = query.order_by(runs.c.start.desc())
         if isinstance(status, Status):
             query = query.where(runs.c.status == status.name)
         elif isinstance(status, list):
             query = query.where(runs.c.status.in_(s.name for s in status))
+        elif status:
+            raise ValueError("status must be Status or list")
         if task_name:
             query = query.where(runs.c.task == task_name)
+        if latest:
+            query = query.limit(latest)
         rows = await self.database.fetch_all(query=query)
-        return [_db_to_run(r) for r in rows]
+
+        return [_db_to_run(r) for r in reversed(rows)]

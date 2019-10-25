@@ -55,11 +55,30 @@ async def test_bad_get(cls):
 async def test_get_runs(cls):
     p = cls()
     await p.connect()
-    await p.add_run(Run("running", Status.Running))
-    await p.add_run(Run("running too", Status.Running))
-    await p.add_run(Run("stopped", Status.Success))
+    await p.add_run(Run("stopped", Status.Success, start="2010-01-01"))
+    await p.add_run(Run("running too", Status.Running, start="2015-01-01"))
+    await p.add_run(Run("running", Status.Running, start="2019-01-01"))
     assert len(await p.get_runs()) == 3
+    # status param
     assert len(await p.get_runs(status=Status.Running)) == 2
+    assert len(await p.get_runs(status=[Status.Running, Status.Success])) == 3
+    # task_name param
     assert len(await p.get_runs(task_name="stopped")) == 1
     assert len(await p.get_runs(task_name="empty")) == 0
-    assert len(await p.get_runs(status=[Status.Running, Status.Success])) == 3
+    # check ordering
+    assert [r.task for r in await p.get_runs()] == ["stopped", "running too", "running"]
+
+
+@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.asyncio
+async def test_get_runs_latest_n(cls):
+    p = cls()
+    await p.connect()
+    await p.add_run(Run("one", Status.Success, start="2010-01-01"))
+    await p.add_run(Run("two", Status.Running, start="2015-01-01"))
+    await p.add_run(Run("three", Status.Running, start="2019-01-01"))
+
+    # latest param
+    latest_one = await p.get_runs(latest=1)
+    assert len(latest_one) == 1
+    assert latest_one[0].task == "three"
