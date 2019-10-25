@@ -95,7 +95,8 @@ class RunService:
         if update_status:
             for run in runs:
                 await self.update_status(run.uuid)
-        # todo:? refresh runs dict?
+        # sort runs old to new
+        runs.sort(key=lambda r: r.start)
         return runs
 
     async def stop_run(self, run_id):
