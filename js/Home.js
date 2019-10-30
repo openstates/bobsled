@@ -10,13 +10,14 @@ class Home extends React.Component {
       tasks: [],
       runs: [],
       ws: local_websocket("/ws/beat"),
+      beatStatus: "...",
     };
   }
 
   componentDidMount() {
     this.state.ws.onmessage = evt => {
       const message = JSON.parse(evt.data);
-      console.log(message);
+      this.setState({beatStatus: this.state.beatStatus + "\n" + message.msg});
     };
 
     fetch("/api/index")
@@ -66,6 +67,13 @@ class Home extends React.Component {
           </table>
 
           <RunList title="Currently Running" runs={this.state.runs} />
+
+          <div>
+            <h3 className="title is-3">Beat Status</h3>
+            <pre>
+              { this.state.beatStatus }
+            </pre>
+          </div>
         </div>
       </section>
     );
