@@ -73,7 +73,11 @@ class TaskPage extends React.Component {
                   </tr>
                   <tr>
                     <th>Timeout</th>
-                    <td>{this.state.task.timeout ? this.state.task.timeout : "none"}</td>
+                    <td>
+                      {this.state.task.timeout
+                        ? this.state.task.timeout
+                        : "none"}
+                    </td>
                   </tr>
                   <tr>
                     <th>Enabled</th>

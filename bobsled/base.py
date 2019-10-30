@@ -106,8 +106,12 @@ class RunService:
             for callback in self.callbacks:
                 callback.on_error(run, self.persister)
 
-    async def get_runs(self, *, status=None, task_name=None, update_status=False):
-        runs = await self.persister.get_runs(status=status, task_name=task_name)
+    async def get_runs(
+        self, *, status=None, task_name=None, latest=None, update_status=False
+    ):
+        runs = await self.persister.get_runs(
+            status=status, task_name=task_name, latest=latest
+        )
         if update_status:
             for run in runs:
                 await self.update_status(run.uuid)

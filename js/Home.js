@@ -24,6 +24,18 @@ class Home extends React.Component {
       .then(data => this.setState(data));
   }
 
+  renderRunStatus(run) {
+    if (!run) {
+      return "";
+    } else {
+      return (
+        <Link to={"/run/" + run.uuid}>
+          {run.status} at {run.start.substr(0, 16)}
+        </Link>
+      );
+    }
+  }
+
   render() {
     let rows = this.state.tasks.map(task => {
       return (
@@ -33,6 +45,7 @@ class Home extends React.Component {
           </td>
           <td>{task.tags}</td>
           <td>{task.enabled ? "yes" : "no"}</td>
+          <td>{this.renderRunStatus(task.latest_run)}</td>
         </tr>
       );
     });
@@ -46,6 +59,7 @@ class Home extends React.Component {
                 <th>Task</th>
                 <th>Tags</th>
                 <th>Enabled</th>
+                <th>Latest Run</th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
