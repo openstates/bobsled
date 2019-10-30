@@ -62,6 +62,19 @@ class User:
     permissions: typing.List[str] = []
 
 
+class EnvironmentStorage:
+    def get_environments(self):
+        return list(self.environments.values())
+
+    def get_environment(self, name):
+        return self.environments[name]
+
+    def mask_variables(self, string):
+        for env_name, env in self.environments.items():
+            for var, value in env.items():
+                string = string.replace(value, f"**{env_name}/{var.upper()}**")
+
+
 class RunService:
     async def run_task(self, task):
         running = await self.get_runs(

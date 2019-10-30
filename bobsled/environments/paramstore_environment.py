@@ -1,6 +1,6 @@
 from collections import defaultdict
 import boto3
-from ..base import Environment
+from ..base import Environment, EnvironmentStorage
 
 
 def get_all_ssm_parameters(path):
@@ -20,7 +20,7 @@ def get_all_ssm_parameters(path):
         yield from resp["Parameters"]
 
 
-class ParameterStoreEnvironmentStorage:
+class ParameterStoreEnvironmentStorage(EnvironmentStorage):
     def __init__(self, prefix):
         self.prefix = prefix
         envs = defaultdict(dict)
@@ -32,9 +32,3 @@ class ParameterStoreEnvironmentStorage:
         self.environments = {}
         for name, values in envs.items():
             self.environments[name] = Environment(name, values)
-
-    def get_environments(self):
-        return list(self.environments.values())
-
-    def get_environment(self, name):
-        return self.environments[name]
