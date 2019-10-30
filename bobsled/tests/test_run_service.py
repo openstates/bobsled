@@ -89,7 +89,7 @@ async def test_run_environment(Cls):
     assert n_running == 0
     runs = await rs.get_runs(status=Status.Success)
     assert len(runs) == 1
-    assert "**TWO/FOO**" in runs[0].logs        # injection happened and was masked
+    assert "**TWO/FOO**" in runs[0].logs  # injection happened and was masked
     assert await rs.cleanup() == 0
 
 
