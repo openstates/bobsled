@@ -72,7 +72,9 @@ class EnvironmentStorage:
     def mask_variables(self, string):
         for env_name, env in self.environments.items():
             for var, value in env.values.items():
-                string = string.replace(str(value), f"**{env_name.upper()}/{var.upper()}**")
+                string = string.replace(
+                    str(value), f"**{env_name.upper()}/{var.upper()}**"
+                )
         return string
 
 

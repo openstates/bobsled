@@ -67,7 +67,7 @@ class LocalRunService(RunService):
             else:
                 run.status = Status.Success
 
-            run.logs = container.logs().decode()
+            run.logs = self.environment.mask_variables(container.logs().decode())
             run.end = datetime.datetime.utcnow().isoformat()
             run.exit_code = resp["StatusCode"]
             await self.persister.save_run(run)
@@ -79,13 +79,13 @@ class LocalRunService(RunService):
                 run.run_info["timeout_at"]
                 and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]
             ):
-                run.logs = container.logs().decode()
+                run.logs = self.environment.mask_variables(container.logs().decode())
                 container.remove(force=True)
                 run.status = Status.TimedOut
                 await self.persister.save_run(run)
                 await self.trigger_callbacks(run)
 
             elif update_logs:
-                run.logs = container.logs().decode()
+                run.logs = self.environment.mask_variables(container.logs().decode())
                 await self.persister.save_run(run)
         return run

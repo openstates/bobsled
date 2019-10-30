@@ -208,7 +208,9 @@ class ECSRunService(RunService):
         self.ecs.stop_task(cluster=self.cluster_name, task=run.run_info["task_arn"])
 
     def get_logs(self, run):
-        return "\n".join(l["message"] for l in self.iter_logs(run))
+        return self.environment.mask_variables(
+            "\n".join(l["message"] for l in self.iter_logs(run))
+        )
 
     def iter_logs(self, run):
         logs = boto3.client("logs")

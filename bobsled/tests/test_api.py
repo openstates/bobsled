@@ -36,4 +36,4 @@ def test_websocket():
     uuid = response.json()["uuid"]
     with client.websocket_connect(f"/ws/logs/{uuid}") as websocket:
         data = websocket.receive_json()
-        assert data["logs"] == "hello alpine\n"
+        assert data["logs"] == "**ONE/WORD** alpine\n"
