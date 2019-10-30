@@ -52,16 +52,28 @@ class TaskPage extends React.Component {
                     <td>{this.state.task.image}</td>
                   </tr>
                   <tr>
+                    <th>Tags</th>
+                    <td>{this.state.task.tags}</td>
+                  </tr>
+                  <tr>
                     <th>Entrypoint</th>
                     <td>{this.state.task.entrypoint}</td>
+                  </tr>
+                  <tr>
+                    <th>Environment</th>
+                    <td>{this.state.task.environment}</td>
                   </tr>
                   <tr>
                     <th>Memory</th>
                     <td>{this.state.task.memory}</td>
                   </tr>
                   <tr>
-                    <th>Tags</th>
-                    <td>{this.state.task.tags}</td>
+                    <th>CPU</th>
+                    <td>{this.state.task.cpu}</td>
+                  </tr>
+                  <tr>
+                    <th>Timeout</th>
+                    <td>{this.state.task.timeout ? this.state.task.timeout : "none"}</td>
                   </tr>
                   <tr>
                     <th>Enabled</th>
