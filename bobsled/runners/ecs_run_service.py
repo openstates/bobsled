@@ -258,8 +258,8 @@ class ECSRunService(RunService):
         for trigger in task.triggers:
             if trigger["cron"]:
                 schedule = (
-                    f"cron({trigger['cron']} *)"
-                )  # ECS cron requires year, add a *
+                    f"cron({trigger['cron']} *)"  # ECS cron requires year, add a *
+                )
                 break
         if not schedule:
             return

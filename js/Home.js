@@ -17,7 +17,7 @@ class Home extends React.Component {
   componentDidMount() {
     this.state.ws.onmessage = evt => {
       const message = JSON.parse(evt.data);
-      this.setState({beatStatus: this.state.beatStatus + "\n" + message.msg});
+      this.setState({ beatStatus: this.state.beatStatus + "\n" + message.msg });
     };
 
     fetch("/api/index")
@@ -70,9 +70,7 @@ class Home extends React.Component {
 
           <div>
             <h3 className="title is-3">Beat Status</h3>
-            <pre>
-              { this.state.beatStatus }
-            </pre>
+            <pre>{this.state.beatStatus}</pre>
           </div>
         </div>
       </section>

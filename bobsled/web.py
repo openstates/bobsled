@@ -120,11 +120,7 @@ async def api_index(request):
 @requires(["authenticated"], redirect="login")
 async def latest_runs(request):
     return JSONResponse(
-        {
-            "runs": [
-                _run2dict(r) for r in await bobsled.run.get_runs(latest=100)
-            ],
-        }
+        {"runs": [_run2dict(r) for r in await bobsled.run.get_runs(latest=100)]}
     )
 
 

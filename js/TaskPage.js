@@ -87,7 +87,11 @@ class TaskPage extends React.Component {
               </table>
             </div>
 
-            <RunList title="Recent Runs" runs={this.state.runs} hideTask="true" />
+            <RunList
+              title="Recent Runs"
+              runs={this.state.runs}
+              hideTask="true"
+            />
           </div>
         </div>
       </section>
