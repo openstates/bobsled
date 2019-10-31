@@ -14,3 +14,12 @@ def test_get_task():
     task = tasks.get_task("full-example")
     assert task.name == "full-example"
     assert task.tags == ["a", "b", "c"]
+
+
+def test_get_tasks_github():
+    tasks = YamlTaskStorage(
+        filename="bobsled/tests/tasks.yml",
+        github_user="jamesturk",
+        github_repo="bobsled",
+    )
+    assert len(tasks.get_tasks()) == 3
