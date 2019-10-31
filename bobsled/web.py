@@ -80,6 +80,7 @@ async def login(request):
 
 
 @app.route("/")
+@app.route("/latest_runs")
 @app.route("/task/{task_name}")
 @app.route("/run/{run_id}")
 @requires(["authenticated"])
@@ -110,6 +111,18 @@ async def api_index(request):
             "tasks": tasks,
             "runs": [
                 _run2dict(r) for r in await bobsled.run.get_runs(status=Status.Running)
+            ],
+        }
+    )
+
+
+@app.route("/api/latest_runs")
+@requires(["authenticated"])
+async def latest_runs(request):
+    return JSONResponse(
+        {
+            "runs": [
+                _run2dict(r) for r in await bobsled.run.get_runs(latest=100)
             ],
         }
     )

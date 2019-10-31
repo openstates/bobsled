@@ -7,6 +7,11 @@ function RunList(props) {
       <td>
         <Link to={"/run/" + run.uuid}>{run.uuid}</Link>
       </td>
+      {props.hideTask === "true" ? null :
+      <td>
+        <Link to={"/task/" + run.task}>{run.task}</Link>
+      </td>
+      }
       <td>{run.status}</td>
       <td>{run.start}</td>
       <td>{run.end}</td>
@@ -20,6 +25,7 @@ function RunList(props) {
         <thead>
           <tr>
             <th>UUID</th>
+            {props.hideTask === "true" ? null : <th>Task</th>}
             <th>Status</th>
             <th>Start</th>
             <th>End</th>
