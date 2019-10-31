@@ -83,7 +83,7 @@ async def login(request):
 @app.route("/latest_runs")
 @app.route("/task/{task_name}")
 @app.route("/run/{run_id}")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def index(request):
     return templates.TemplateResponse("base.html", {"request": request})
 
@@ -95,7 +95,7 @@ def _run2dict(run):
 
 
 @app.route("/api/index")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def api_index(request):
     tasks = [attr.asdict(t) for t in bobsled.tasks.get_tasks()]
     results = await asyncio.gather(
@@ -117,7 +117,7 @@ async def api_index(request):
 
 
 @app.route("/api/latest_runs")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def latest_runs(request):
     return JSONResponse(
         {
@@ -129,7 +129,7 @@ async def latest_runs(request):
 
 
 @app.route("/api/task/{task_name}")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def task_overview(request):
     task_name = request.path_params["task_name"]
     task = bobsled.tasks.get_task(task_name)
@@ -140,7 +140,7 @@ async def task_overview(request):
 
 
 @app.route("/api/task/{task_name}/run")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def run_task(request):
     task_name = request.path_params["task_name"]
     task = bobsled.tasks.get_task(task_name)
@@ -152,7 +152,7 @@ async def run_task(request):
 
 
 @app.route("/api/run/{run_id}")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def run_detail(request):
     run_id = request.path_params["run_id"]
     run = await bobsled.run.update_status(run_id, update_logs=True)
@@ -161,7 +161,7 @@ async def run_detail(request):
 
 
 @app.route("/api/run/{run_id}/stop")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def stop_run(request):
     run_id = request.path_params["run_id"]
     await bobsled.run.stop_run(run_id)
@@ -169,7 +169,7 @@ async def stop_run(request):
 
 
 @app.websocket_route("/ws/beat")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def beat_websocket(websocket):
     context = zmq.asyncio.Context.instance()
     socket = context.socket(zmq.SUB)
@@ -184,7 +184,7 @@ async def beat_websocket(websocket):
 
 
 @app.websocket_route("/ws/logs/{run_id}")
-@requires(["authenticated"])
+@requires(["authenticated"], redirect="login")
 async def websocket_endpoint(websocket):
     await websocket.accept()
     run_id = websocket.path_params["run_id"]
