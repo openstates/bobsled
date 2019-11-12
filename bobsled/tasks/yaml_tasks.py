@@ -4,12 +4,19 @@ from ..base import Task
 
 
 class YamlTaskStorage:
-    def __init__(self, filename, github_user=None, github_repo=None):
+    def __init__(
+        self, *, filename=None, github_user=None, github_repo=None, dirname=None
+    ):
         if github_user and github_repo:
             gh = github3.GitHub()
             repo = gh.repository(github_user, github_repo)
-            contents = repo.file_contents(filename).decoded
-            data = yaml.safe_load(contents)
+            if filename:
+                contents = repo.file_contents(filename).decoded
+                data = yaml.safe_load(contents)
+            elif dirname:
+                for fname, contents in repo.directory_contents(dirname):
+                    if contents.decoded:
+                        data.extend(yaml.safe_load(contents.decoded))
         else:
             with open(filename) as f:
                 data = yaml.safe_load(f)
