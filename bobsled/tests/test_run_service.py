@@ -189,7 +189,7 @@ async def test_callback_on_error():
 
 def test_ecs_initialize():
     ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
-    tasks = YamlTaskStorage(ENV_FILE)
+    tasks = YamlTaskStorage(filename=ENV_FILE)
     ers = ecs_run_service()
     if not ers:
         pytest.skip("No ECS Configuration")
