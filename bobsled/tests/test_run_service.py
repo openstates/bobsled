@@ -13,7 +13,9 @@ ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
 def local_run_service():
-    return LocalRunService(MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE))
+    return LocalRunService(
+        MemoryRunPersister(), YamlEnvironmentStorage(filename=ENV_FILE)
+    )
 
 
 def ecs_run_service():
