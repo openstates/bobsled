@@ -6,7 +6,7 @@ environments:
 tasks:
   provider: YamlTaskStorage
   args:
-    filename: bobsled/tests/tasks.yml
+    filename: bobsled/tests/tasks/tasks.yml
 auth:
   provider: YamlAuthStorage
   args:
