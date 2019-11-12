@@ -27,6 +27,6 @@ def test_get_tasks_github():
 
 def test_get_tasks_github_dir():
     tasks = YamlTaskStorage(
-        github_user="jamesturk", github_repo="bobsled", dirname="bobsled/tests/tasks",
+        github_user="jamesturk", github_repo="bobsled", dirname="bobsled/tests/tasks"
     )
     assert len(tasks.get_tasks()) == 4
