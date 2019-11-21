@@ -97,8 +97,8 @@ async def run_service():
                 # update next run time
                 next_run_list[task_name] = next_run_for_task(task)
                 try:
-                    run = await bobsled.run.run_task(task)
                     task = bobsled.tasks.get_task(task_name)
+                    run = await bobsled.run.run_task(task)
                     msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
                 except AlreadyRunning:
                     msg = f"{task_name}: already running.  next run at {next_run_list[task_name]}"
