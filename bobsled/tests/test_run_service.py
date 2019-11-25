@@ -1,6 +1,7 @@
 import os
 import time
 from unittest.mock import Mock
+import asyncio
 import pytest
 import boto3
 from ..base import Task, Status
@@ -159,7 +160,11 @@ async def test_timeout(Cls):
 
 @pytest.mark.asyncio
 async def test_callback_on_success():
-    callback = Mock()
+    class Callback:
+        on_success = Mock(return_value=asyncio.sleep(0))
+
+    callback = Callback()
+
     rs = LocalRunService(
         MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE), [callback]
     )
@@ -174,7 +179,10 @@ async def test_callback_on_success():
 
 @pytest.mark.asyncio
 async def test_callback_on_error():
-    callback = Mock()
+    class Callback:
+        on_error = Mock(return_value=asyncio.sleep(0))
+
+    callback = Callback()
     rs = LocalRunService(
         MemoryRunPersister(), YamlEnvironmentStorage(ENV_FILE), [callback]
     )

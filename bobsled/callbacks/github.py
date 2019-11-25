@@ -22,7 +22,7 @@ class GithubIssueCallback:
 
         latest_runs = await persister.get_runs(task_name=latest_run.task, latest=5)
         count = 0
-        for r in latest_runs[::-1]:
+        for r in latest_runs:
             if r.status == Status.Error:
                 count += 1
             else:
