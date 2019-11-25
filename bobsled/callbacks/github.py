@@ -20,9 +20,9 @@ class GithubIssueCallback:
     async def on_error(self, latest_run, persister):
         ERR_COUNT = 3
 
-        latest_runs = (await persister.get_runs(task_name=latest_run.task))[:5]
+        latest_runs = await persister.get_runs(task_name=latest_run.task, latest=5)
         count = 0
-        for r in latest_runs:
+        for r in latest_runs[::-1]:
             if r.status == Status.Error:
                 count += 1
             else:
@@ -32,7 +32,7 @@ class GithubIssueCallback:
             self.make_issue(latest_run, count, r)
 
     def get_existing_issue(self, task_name):
-        existing_issues = self.repo_obj.iter_issues(labels="automatic", state="open")
+        existing_issues = self.repo_obj.issues(labels="automatic", state="open")
         for issue in existing_issues:
             if issue.title.startswith(task_name):
                 return issue

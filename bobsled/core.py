@@ -2,7 +2,7 @@ import os
 import copy
 import yaml
 
-from bobsled import environments, tasks, runners, auth
+from bobsled import environments, tasks, runners, auth, callbacks
 
 DEFAULT_SETTINGS = {
     "environments": {
@@ -13,8 +13,7 @@ DEFAULT_SETTINGS = {
     "runner": {"provider": "LocalRunService", "args": {}},
     "persister": {"provider": "MemoryRunPersister", "args": {}},
     "auth": {"provider": "YamlAuthStorage", "args": {"filename": "users.yml"}},
-    "on_error": [{"callback": "github_on_error"}],
-    "on_success": [],
+    "callbacks": [],
     "secret_key": None,
 }
 
@@ -36,11 +35,17 @@ class Bobsled:
         PersisterCls = getattr(runners, settings["persister"]["provider"])
         AuthCls = getattr(auth, settings["auth"]["provider"])
 
+        callback_classes = []
+        for cb in settings["callbacks"]:
+            PluginCls = getattr(callbacks, cb["plugin"])
+            callback_classes.append(PluginCls(**cb["args"]))
+
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
         self.run = RunCls(
             persister=PersisterCls(**settings["persister"]["args"]),
             environment=self.env,
+            callbacks=callback_classes,
             **settings["runner"]["args"]
         )
         self.auth = AuthCls(**settings["auth"]["args"])

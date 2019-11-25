@@ -101,10 +101,10 @@ class RunService:
     async def trigger_callbacks(self, run):
         if run.status == Status.Success:
             for callback in self.callbacks:
-                callback.on_success(run, self.persister)
+                await callback.on_success(run, self.persister)
         elif run.status == Status.Error:
             for callback in self.callbacks:
-                callback.on_error(run, self.persister)
+                await callback.on_error(run, self.persister)
 
     async def get_runs(
         self, *, status=None, task_name=None, latest=None, update_status=False
