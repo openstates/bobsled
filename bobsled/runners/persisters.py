@@ -61,7 +61,7 @@ def _db_to_run(r):
         status=Status[r["status"]],
         start=r["start"],
         end=r["end"],
-        logs=r["logs"],
+        logs=r.get("logs", ""),
         exit_code=r["exit_code"],
         run_info=json.loads(r["run_info_json"]),
         uuid=r["uuid"],
@@ -101,7 +101,17 @@ class DatabaseRunPersister:
             return _db_to_run(row)
 
     async def get_runs(self, *, status=None, task_name=None, latest=None):
-        query = runs.select()
+        query = sqlalchemy.select(
+            [
+                runs.c.uuid,
+                runs.c.task,
+                runs.c.status,
+                runs.c.start,
+                runs.c.end,
+                runs.c.exit_code,
+                runs.c.run_info_json,
+            ]
+        )
         query = query.order_by(runs.c.start.desc())
         if isinstance(status, Status):
             query = query.where(runs.c.status == status.name)
