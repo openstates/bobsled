@@ -56,12 +56,15 @@ runs = sqlalchemy.Table(
 
 
 def _db_to_run(r):
+    logs = ""
+    if "logs" in r:
+        logs = r["logs"]
     return Run(
         task=r["task"],
         status=Status[r["status"]],
         start=r["start"],
         end=r["end"],
-        logs=r.get("logs", ""),
+        logs=logs,
         exit_code=r["exit_code"],
         run_info=json.loads(r["run_info_json"]),
         uuid=r["uuid"],
