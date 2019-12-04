@@ -2,7 +2,7 @@ import os
 import copy
 import yaml
 
-from bobsled import environments, tasks, runners, auth, callbacks
+from bobsled import storages, environments, tasks, runners, auth, callbacks
 
 DEFAULT_SETTINGS = {
     "environments": {
@@ -11,7 +11,7 @@ DEFAULT_SETTINGS = {
     },
     "tasks": {"provider": "YamlTaskStorage", "args": {"filename": "tasks.yml"}},
     "runner": {"provider": "LocalRunService", "args": {}},
-    "persister": {"provider": "MemoryRunPersister", "args": {}},
+    "storage": {"provider": "InMemoryStorage", "args": {}},
     "auth": {"provider": "YamlAuthStorage", "args": {"filename": "users.yml"}},
     "callbacks": [],
     "secret_key": None,
@@ -32,7 +32,7 @@ class Bobsled:
         EnvCls = getattr(environments, settings["environments"]["provider"])
         TaskCls = getattr(tasks, settings["tasks"]["provider"])
         RunCls = getattr(runners, settings["runner"]["provider"])
-        PersisterCls = getattr(runners, settings["persister"]["provider"])
+        StorageCls = getattr(storages, settings["storage"]["provider"])
         AuthCls = getattr(auth, settings["auth"]["provider"])
 
         callback_classes = []
@@ -43,7 +43,7 @@ class Bobsled:
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
         self.run = RunCls(
-            persister=PersisterCls(**settings["persister"]["args"]),
+            storage=StorageCls(**settings["storage"]["args"]),
             environment=self.env,
             callbacks=callback_classes,
             **settings["runner"]["args"]
