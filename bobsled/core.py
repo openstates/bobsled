@@ -40,10 +40,11 @@ class Bobsled:
             PluginCls = getattr(callbacks, cb["plugin"])
             callback_classes.append(PluginCls(**cb["args"]))
 
+        self.storage = StorageCls(**settings["storage"]["args"])
         self.env = EnvCls(**settings["environments"]["args"])
         self.tasks = TaskCls(**settings["tasks"]["args"])
         self.run = RunCls(
-            storage=StorageCls(**settings["storage"]["args"]),
+            storage=self.storage,
             environment=self.env,
             callbacks=callback_classes,
             **settings["runner"]["args"]

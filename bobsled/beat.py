@@ -57,7 +57,7 @@ SOCKET_FILE = "/tmp/bobsled-beat"
 
 
 async def run_service():
-    await bobsled.run.persister.connect()
+    await bobsled.storage.connect()
 
     lf = open(LOG_FILE, "w")
 

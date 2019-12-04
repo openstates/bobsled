@@ -173,7 +173,7 @@ async def test_callback_on_success():
     n_running = await _wait_to_finish(rs, run, 10)
 
     assert n_running == 0
-    callback.on_success.assert_called_once_with(run, rs.persister)
+    callback.on_success.assert_called_once_with(run, rs.storage)
 
 
 @pytest.mark.asyncio
@@ -191,7 +191,7 @@ async def test_callback_on_error():
     n_running = await _wait_to_finish(rs, run, 10)
 
     assert n_running == 0
-    callback.on_error.assert_called_once_with(run, rs.persister)
+    callback.on_error.assert_called_once_with(run, rs.storage)
 
 
 def test_ecs_initialize():

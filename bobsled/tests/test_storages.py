@@ -4,7 +4,7 @@ from ..storages import InMemoryStorage, DatabaseStorage
 from ..base import Run, Status
 
 
-def db_persister():
+def db_storage():
     try:
         os.remove("test.db")
     except OSError:
@@ -13,7 +13,7 @@ def db_persister():
     return db
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_simple_add_then_get(cls):
     p = cls()
@@ -26,7 +26,7 @@ async def test_simple_add_then_get(cls):
     assert r.status == r2.status
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_update(cls):
     p = cls()
@@ -41,7 +41,7 @@ async def test_update(cls):
     assert r2.exit_code == 0
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_bad_get(cls):
     p = cls()
@@ -50,7 +50,7 @@ async def test_bad_get(cls):
     assert r is None
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_get_runs(cls):
     p = cls()
@@ -69,7 +69,7 @@ async def test_get_runs(cls):
     assert [r.task for r in await p.get_runs()] == ["stopped", "running too", "running"]
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_get_runs_latest_n(cls):
     p = cls()
