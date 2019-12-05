@@ -36,11 +36,11 @@ class InMemoryStorage:
             runs = runs[-latest:]
         return runs
 
-    def get_tasks(self):
+    async def get_tasks(self):
         return list(self.tasks.values())
 
-    def get_task(self, name):
+    async def get_task(self, name):
         return self.tasks[name]
 
-    def set_tasks(self, tasks):
+    async def set_tasks(self, tasks):
         self.tasks = {task.name: task for task in tasks}

@@ -93,7 +93,10 @@ async def test_task_storage(cls):
         Task(name="one", image="img1"),
         Task(name="two", image="img2"),
     ]
-    s.set_tasks(tasks)
+    await s.set_tasks(tasks)
 
-    assert s.get_tasks() == tasks
-    assert s.get_task("one").image == "img1"
+    retr_tasks = await s.get_tasks()
+    # order-indepdendent comparison
+    assert {t.name for t in retr_tasks} == {"one", "two"}
+    task = await s.get_task("one")
+    assert task == tasks[0]
