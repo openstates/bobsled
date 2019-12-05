@@ -4,9 +4,9 @@ from ..base import RunService, Status
 
 
 class LocalRunService(RunService):
-    def __init__(self, persister, environment, callbacks=None):
+    def __init__(self, storage, environment, callbacks=None):
         self.client = docker.from_env()
-        self.persister = persister
+        self.storage = storage
         self.environment = environment
         self.callbacks = callbacks or []
 
@@ -22,7 +22,7 @@ class LocalRunService(RunService):
 
     async def cleanup(self):
         n = 0
-        for r in await self.persister.get_runs(status=[Status.Pending, Status.Running]):
+        for r in await self.storage.get_runs(status=[Status.Pending, Status.Running]):
             c = self._get_container(r)
             if c:
                 c.remove(force=True)
@@ -49,7 +49,7 @@ class LocalRunService(RunService):
         container.remove(force=True)
 
     async def update_status(self, run_id, update_logs=False):
-        run = await self.persister.get_run(run_id)
+        run = await self.storage.get_run(run_id)
 
         if run.status.is_terminal():
             return run
@@ -70,7 +70,7 @@ class LocalRunService(RunService):
             run.logs = self.environment.mask_variables(container.logs().decode())
             run.end = datetime.datetime.utcnow().isoformat()
             run.exit_code = resp["StatusCode"]
-            await self.persister.save_run(run)
+            await self.storage.save_run(run)
             await self.trigger_callbacks(run)
             container.remove()
 
@@ -82,10 +82,10 @@ class LocalRunService(RunService):
                 run.logs = self.environment.mask_variables(container.logs().decode())
                 container.remove(force=True)
                 run.status = Status.TimedOut
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
                 await self.trigger_callbacks(run)
 
             elif update_logs:
                 run.logs = self.environment.mask_variables(container.logs().decode())
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
         return run

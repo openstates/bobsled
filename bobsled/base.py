@@ -78,6 +78,17 @@ class EnvironmentStorage:
         return string
 
 
+class TaskProvider:
+    async def update_tasks(self):
+        raise NotImplementedError
+
+    async def get_tasks(self):
+        return await self.storage.get_tasks()
+
+    async def get_task(self, name):
+        return await self.storage.get_task(name)
+
+
 class RunService:
     async def run_task(self, task):
         running = await self.get_runs(
@@ -95,21 +106,21 @@ class RunService:
         run_info["timeout_at"] = timeout_at
 
         run = Run(task.name, Status.Running, start=now.isoformat(), run_info=run_info)
-        await self.persister.add_run(run)
+        await self.storage.add_run(run)
         return run
 
     async def trigger_callbacks(self, run):
         if run.status == Status.Success:
             for callback in self.callbacks:
-                await callback.on_success(run, self.persister)
+                await callback.on_success(run, self.storage)
         elif run.status == Status.Error:
             for callback in self.callbacks:
-                await callback.on_error(run, self.persister)
+                await callback.on_error(run, self.storage)
 
     async def get_runs(
         self, *, status=None, task_name=None, latest=None, update_status=False
     ):
-        runs = await self.persister.get_runs(
+        runs = await self.storage.get_runs(
             status=status, task_name=task_name, latest=latest
         )
         if update_status:
@@ -120,9 +131,9 @@ class RunService:
         return runs
 
     async def stop_run(self, run_id):
-        run = await self.persister.get_run(run_id)
+        run = await self.storage.get_run(run_id)
         if not run.status.is_terminal():
             self.stop(run)
             run.status = Status.UserKilled
             run.end = datetime.datetime.utcnow().isoformat()
-            await self.persister.save_run(run)
+            await self.storage.save_run(run)
