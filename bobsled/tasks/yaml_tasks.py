@@ -20,9 +20,9 @@ class YamlTaskProvider(TaskProvider):
         self.github_repo = github_repo
         self.dirname = dirname
         self.github_api_key = github_api_key
-        self.update_tasks()
+        # await self.update_tasks()
 
-    def update_tasks(self):
+    async def update_tasks(self):
         if self.github_user and self.github_repo:
             gh = github3.GitHub(token=self.github_api_key)
             repo = gh.repository(self.github_user, self.github_repo)
@@ -39,4 +39,4 @@ class YamlTaskProvider(TaskProvider):
                 data = yaml.safe_load(f)
 
         tasks = [Task(name=name, **taskdef) for name, taskdef in data.items()]
-        self.storage.set_tasks(tasks)
+        await self.storage.set_tasks(tasks)

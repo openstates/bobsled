@@ -58,6 +58,7 @@ SOCKET_FILE = "/tmp/bobsled-beat"
 
 async def run_service():
     await bobsled.storage.connect()
+    await bobsled.tasks.update_tasks()
 
     lf = open(LOG_FILE, "w")
 
@@ -66,7 +67,7 @@ async def run_service():
     socket.bind("ipc://" + SOCKET_FILE)
 
     next_run_list = {}
-    for task in bobsled.tasks.get_tasks():
+    for task in await bobsled.tasks.get_tasks():
         if not task.enabled:
             continue
         next_run = next_run_for_task(task)
@@ -97,7 +98,7 @@ async def run_service():
                 # update next run time
                 next_run_list[task_name] = next_run_for_task(task)
                 try:
-                    task = bobsled.tasks.get_task(task_name)
+                    task = await bobsled.tasks.get_task(task_name)
                     run = await bobsled.run.run_task(task)
                     msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
                 except AlreadyRunning:

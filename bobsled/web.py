@@ -97,7 +97,7 @@ def _run2dict(run):
 @app.route("/api/index")
 @requires(["authenticated"], redirect="login")
 async def api_index(request):
-    tasks = [attr.asdict(t) for t in bobsled.tasks.get_tasks()]
+    tasks = [attr.asdict(t) for t in await bobsled.tasks.get_tasks()]
     results = await asyncio.gather(
         *[bobsled.run.get_runs(task_name=t["name"], latest=1) for t in tasks]
     )
@@ -128,7 +128,7 @@ async def latest_runs(request):
 @requires(["authenticated"], redirect="login")
 async def task_overview(request):
     task_name = request.path_params["task_name"]
-    task = bobsled.tasks.get_task(task_name)
+    task = await bobsled.tasks.get_task(task_name)
     runs = await bobsled.run.get_runs(task_name=task_name, update_status=True)
     return JSONResponse(
         {"task": attr.asdict(task), "runs": [_run2dict(r) for r in runs]}
@@ -139,7 +139,7 @@ async def task_overview(request):
 @requires(["authenticated"], redirect="login")
 async def run_task(request):
     task_name = request.path_params["task_name"]
-    task = bobsled.tasks.get_task(task_name)
+    task = await bobsled.tasks.get_task(task_name)
     try:
         run = await bobsled.run.run_task(task)
     except AlreadyRunning:
@@ -197,6 +197,7 @@ async def websocket_endpoint(websocket):
 @app.on_event("startup")
 async def initdb():
     await bobsled.storage.connect()
+    await bobsled.tasks.update_tasks()
 
 
 if __name__ == "__main__":
