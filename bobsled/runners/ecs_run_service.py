@@ -7,7 +7,7 @@ from ..base import RunService, Status
 class ECSRunService(RunService):
     def __init__(
         self,
-        persister,
+        storage,
         environment,
         callbacks=None,
         *,
@@ -17,7 +17,7 @@ class ECSRunService(RunService):
         log_group,
         role_arn,
     ):
-        self.persister = persister
+        self.storage = storage
         self.environment = environment
         self.callbacks = callbacks or []
         self.cluster_name = cluster_name
@@ -147,7 +147,7 @@ class ECSRunService(RunService):
         return {"task_arn": resp["tasks"][0]["taskArn"]}
 
     async def update_status(self, run_id, update_logs=False):
-        run = await self.persister.get_run(run_id)
+        run = await self.storage.get_run(run_id)
 
         if run.status.is_terminal():
             return run
@@ -162,7 +162,7 @@ class ECSRunService(RunService):
                 run.end = datetime.datetime.utcnow().isoformat()
                 run.status = Status.Error
                 run.logs = self.get_logs(run)
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
                 return run
                 # TODO: improve handling, should we call callbacks on missing?
             raise ValueError(f"unexpected status: {resp['failures']}")
@@ -174,7 +174,7 @@ class ECSRunService(RunService):
             run.end = datetime.datetime.utcnow().isoformat()
             run.status = Status.Error if run.exit_code else Status.Success
             run.logs = self.get_logs(run)
-            await self.persister.save_run(run)
+            await self.storage.save_run(run)
             await self.trigger_callbacks(run)
 
         elif (
@@ -184,22 +184,22 @@ class ECSRunService(RunService):
             run.logs = self.get_logs(run)
             self.stop(run)
             run.status = Status.TimedOut
-            await self.persister.save_run(run)
+            await self.storage.save_run(run)
             await self.trigger_callbacks(run)
 
         elif result["lastStatus"] == "RUNNING":
             if run.status != Status.Running:
                 run.status = Status.Running
                 run.logs = self.get_logs(run)
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
                 await self.trigger_callbacks(run)
             elif update_logs:
                 run.logs = self.get_logs(run)
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
         elif result["lastStatus"] in ("PENDING", "PROVISIONING"):
             if run.status != Status.Pending:
                 run.status = Status.Pending
-                await self.persister.save_run(run)
+                await self.storage.save_run(run)
                 await self.trigger_callbacks(run)
 
         return run
@@ -240,7 +240,7 @@ class ECSRunService(RunService):
 
     async def cleanup(self):
         n = 0
-        for r in await self.persister.get_runs(status=[Status.Pending, Status.Running]):
+        for r in await self.storage.get_runs(status=[Status.Pending, Status.Running]):
             self.ecs.stop_task(cluster=self.cluster_name, task=r.run_info["task_arn"])
             n += 1
         return n
@@ -250,7 +250,7 @@ class ECSRunService(RunService):
         registers a cron rule with ECS
 
         currently inactive code since ECS scheduling doesn't have a clean way to
-        add a run entry in the run persister.
+        add a run entry in the storage.
         """
         events = boto3.client("events")
 

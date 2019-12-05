@@ -1,19 +1,19 @@
 import os
 import pytest
-from ..runners import MemoryRunPersister, DatabaseRunPersister
-from ..base import Run, Status
+from ..storages import InMemoryStorage, DatabaseStorage
+from ..base import Run, Status, Task
 
 
-def db_persister():
+def db_storage():
     try:
         os.remove("test.db")
     except OSError:
         pass
-    db = DatabaseRunPersister("sqlite:///test.db")
+    db = DatabaseStorage("sqlite:///test.db")
     return db
 
 
-@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_simple_add_then_get(cls):
     p = cls()
@@ -26,7 +26,7 @@ async def test_simple_add_then_get(cls):
     assert r.status == r2.status
 
 
-@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_update(cls):
     p = cls()
@@ -41,7 +41,7 @@ async def test_update(cls):
     assert r2.exit_code == 0
 
 
-@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_bad_get(cls):
     p = cls()
@@ -50,7 +50,7 @@ async def test_bad_get(cls):
     assert r is None
 
 
-@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_get_runs(cls):
     p = cls()
@@ -69,7 +69,7 @@ async def test_get_runs(cls):
     assert [r.task for r in await p.get_runs()] == ["stopped", "running too", "running"]
 
 
-@pytest.mark.parametrize("cls", [MemoryRunPersister, db_persister])
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
 @pytest.mark.asyncio
 async def test_get_runs_latest_n(cls):
     p = cls()
@@ -82,3 +82,21 @@ async def test_get_runs_latest_n(cls):
     latest_one = await p.get_runs(latest=1)
     assert len(latest_one) == 1
     assert latest_one[0].task == "three"
+
+
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.asyncio
+async def test_task_storage(cls):
+    s = cls()
+    await s.connect()
+    tasks = [
+        Task(name="one", image="img1"),
+        Task(name="two", image="img2"),
+    ]
+    await s.set_tasks(tasks)
+
+    retr_tasks = await s.get_tasks()
+    # order-indepdendent comparison
+    assert {t.name for t in retr_tasks} == {"one", "two"}
+    task = await s.get_task("one")
+    assert task == tasks[0]
