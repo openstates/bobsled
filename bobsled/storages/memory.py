@@ -4,6 +4,7 @@ from ..base import Status
 class InMemoryStorage:
     def __init__(self):
         self.runs = []
+        self.tasks = {}
 
     async def connect(self):
         pass
@@ -34,3 +35,12 @@ class InMemoryStorage:
             # runs are in order, so just grab the tail
             runs = runs[-latest:]
         return runs
+
+    def get_tasks(self):
+        return list(self.tasks.values())
+
+    def get_task(self, name):
+        return self.tasks[name]
+
+    def update_tasks(self, tasks):
+        self.tasks = {task.name: task for task in tasks}

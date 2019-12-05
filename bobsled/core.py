@@ -9,7 +9,7 @@ DEFAULT_SETTINGS = {
         "provider": "YamlEnvironmentStorage",
         "args": {"filename": "environments.yml"},
     },
-    "tasks": {"provider": "YamlTaskStorage", "args": {"filename": "tasks.yml"}},
+    "tasks": {"provider": "YamlTaskProvider", "args": {"filename": "tasks.yml"}},
     "runner": {"provider": "LocalRunService", "args": {}},
     "storage": {"provider": "InMemoryStorage", "args": {}},
     "auth": {"provider": "YamlAuthStorage", "args": {"filename": "users.yml"}},
@@ -42,7 +42,7 @@ class Bobsled:
 
         self.storage = StorageCls(**settings["storage"]["args"])
         self.env = EnvCls(**settings["environments"]["args"])
-        self.tasks = TaskCls(**settings["tasks"]["args"])
+        self.tasks = TaskCls(storage=self.storage, **settings["tasks"]["args"])
         self.run = RunCls(
             storage=self.storage,
             environment=self.env,

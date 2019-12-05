@@ -1,38 +1,42 @@
 import yaml
 import github3
-from ..base import Task
+from ..base import Task, TaskProvider
 
 
-class YamlTaskStorage:
+class YamlTaskProvider(TaskProvider):
     def __init__(
         self,
         *,
+        storage,
         filename=None,
         github_user=None,
         github_repo=None,
         dirname=None,
         github_api_key=None,
     ):
-        if github_user and github_repo:
-            gh = github3.GitHub(token=github_api_key)
-            repo = gh.repository(github_user, github_repo)
-            if filename:
-                contents = repo.file_contents(filename).decoded
+        self.storage = storage
+        self.filename = filename
+        self.github_user = github_user
+        self.github_repo = github_repo
+        self.dirname = dirname
+        self.github_api_key = github_api_key
+        self.update_tasks()
+
+    def update_tasks(self):
+        if self.github_user and self.github_repo:
+            gh = github3.GitHub(token=self.github_api_key)
+            repo = gh.repository(self.github_user, self.github_repo)
+            if self.filename:
+                contents = repo.file_contents(self.filename).decoded
                 data = yaml.safe_load(contents)
-            elif dirname:
+            elif self.dirname:
                 data = {}
-                for fname, contents in repo.directory_contents(dirname):
+                for fname, contents in repo.directory_contents(self.dirname):
                     contents.refresh()
                     data.update(yaml.safe_load(contents.decoded))
         else:
-            with open(filename) as f:
+            with open(self.filename) as f:
                 data = yaml.safe_load(f)
-        self.tasks = {}
-        for name, taskdef in data.items():
-            self.tasks[name] = Task(name=name, **taskdef)
 
-    def get_tasks(self):
-        return list(self.tasks.values())
-
-    def get_task(self, name):
-        return self.tasks[name]
+        tasks = [Task(name=name, **taskdef) for name, taskdef in data.items()]
+        self.storage.update_tasks(tasks)

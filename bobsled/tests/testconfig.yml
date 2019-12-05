@@ -4,7 +4,7 @@ environments:
   args:
     filename: bobsled/tests/environments.yml
 tasks:
-  provider: YamlTaskStorage
+  provider: YamlTaskProvider
   args:
     filename: bobsled/tests/tasks/tasks.yml
 auth:

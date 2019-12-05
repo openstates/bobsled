@@ -1,1 +1,1 @@
-from .yaml_tasks import YamlTaskStorage  # noqa
+from .yaml_tasks import YamlTaskProvider  # noqa

@@ -78,6 +78,17 @@ class EnvironmentStorage:
         return string
 
 
+class TaskProvider:
+    def update_tasks(self):
+        raise NotImplementedError
+
+    def get_tasks(self):
+        return self.storage.get_tasks()
+
+    def get_task(self, name):
+        return self.storage.get_task(name)
+
+
 class RunService:
     async def run_task(self, task):
         running = await self.get_runs(
