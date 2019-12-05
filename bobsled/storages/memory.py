@@ -42,5 +42,5 @@ class InMemoryStorage:
     def get_task(self, name):
         return self.tasks[name]
 
-    def update_tasks(self, tasks):
+    def set_tasks(self, tasks):
         self.tasks = {task.name: task for task in tasks}

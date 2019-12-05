@@ -1,7 +1,7 @@
 import os
 import pytest
 from ..storages import InMemoryStorage, DatabaseStorage
-from ..base import Run, Status
+from ..base import Run, Status, Task
 
 
 def db_storage():
@@ -82,3 +82,18 @@ async def test_get_runs_latest_n(cls):
     latest_one = await p.get_runs(latest=1)
     assert len(latest_one) == 1
     assert latest_one[0].task == "three"
+
+
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.asyncio
+async def test_task_storage(cls):
+    s = cls()
+    await s.connect()
+    tasks = [
+        Task(name="one", image="img1"),
+        Task(name="two", image="img2"),
+    ]
+    s.set_tasks(tasks)
+
+    assert s.get_tasks() == tasks
+    assert s.get_task("one").image == "img1"

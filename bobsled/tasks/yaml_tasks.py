@@ -39,4 +39,4 @@ class YamlTaskProvider(TaskProvider):
                 data = yaml.safe_load(f)
 
         tasks = [Task(name=name, **taskdef) for name, taskdef in data.items()]
-        self.storage.update_tasks(tasks)
+        self.storage.set_tasks(tasks)
