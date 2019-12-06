@@ -9,3 +9,9 @@ class YamlEnvironmentProvider(EnvironmentProvider):
         self.environments = {}
         for name, values in data.items():
             self.environments[name] = Environment(name, values)
+
+    def get_environment_names(self):
+        return list(self.environments.keys())
+
+    def get_environment(self, name):
+        return self.environments[name]

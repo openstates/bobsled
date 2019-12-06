@@ -1,4 +1,3 @@
-from collections import defaultdict
 import boto3
 from ..base import Environment, EnvironmentProvider
 
@@ -23,12 +22,18 @@ def get_all_ssm_parameters(path):
 class ParameterStoreEnvironmentProvider(EnvironmentProvider):
     def __init__(self, prefix):
         self.prefix = prefix
-        envs = defaultdict(dict)
-        for param in get_all_ssm_parameters(prefix):
-            env, key = param["Name"].replace(prefix, "").lstrip("/").split("/")
-            value = param["Value"]
-            envs[env][key] = value
 
-        self.environments = {}
-        for name, values in envs.items():
-            self.environments[name] = Environment(name, values)
+    def get_environment_names(self):
+        names = set()
+        for param in get_all_ssm_parameters(self.prefix):
+            env, _ = param["Name"].replace(self.prefix, "").lstrip("/").split("/")
+            names.add(env)
+        return list(names)
+
+    def get_environment(self, name):
+        env = {}
+        for param in get_all_ssm_parameters(self.prefix + "/" + name):
+            _, _, _, key = param["Name"].split("/", 4)
+            value = param["Value"]
+            env[key] = value
+        return Environment(name, env)

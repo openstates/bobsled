@@ -7,9 +7,9 @@ from ..base import Environment
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
-def test_get_environments_yaml():
+def test_get_environment_names_yaml():
     env = YamlEnvironmentProvider(ENV_FILE)
-    assert len(env.get_environments()) == 2
+    assert len(env.get_environment_names()) == 2
 
 
 def test_get_environment_yaml():
@@ -32,10 +32,10 @@ def _populate_paramstore():
 
 
 @moto.mock_ssm
-def test_get_environments_ssm():
+def test_get_environment_names_ssm():
     _populate_paramstore()
     env = ParameterStoreEnvironmentProvider("/bobsledtest")
-    assert len(env.get_environments()) == 2
+    assert len(env.get_environment_names()) == 2
 
 
 @moto.mock_ssm
@@ -44,6 +44,22 @@ def test_get_environment_ssm():
     env = ParameterStoreEnvironmentProvider("/bobsledtest")
     assert env.get_environment("one") == Environment(
         "one", {"number": "123", "word": "hello"}
+    )
+
+
+@moto.mock_ssm
+def test_get_environment_changes_ssm():
+    _populate_paramstore()
+    env = ParameterStoreEnvironmentProvider("/bobsledtest")
+    assert env.get_environment("one") == Environment(
+        "one", {"number": "123", "word": "hello"}
+    )
+    ssm = boto3.client("ssm")
+    ssm.put_parameter(
+        Name="/bobsledtest/one/number", Value="456", Type="SecureString", Overwrite=True
+    )
+    assert env.get_environment("one") == Environment(
+        "one", {"number": "456", "word": "hello"}
     )
 
 

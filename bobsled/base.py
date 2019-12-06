@@ -63,14 +63,9 @@ class User:
 
 
 class EnvironmentProvider:
-    def get_environments(self):
-        return list(self.environments.values())
-
-    def get_environment(self, name):
-        return self.environments[name]
-
     def mask_variables(self, string):
-        for env_name, env in self.environments.items():
+        for env_name in self.get_environment_names():
+            env = self.get_environment(env_name)
             for var, value in env.values.items():
                 string = string.replace(
                     str(value), f"**{env_name.upper()}/{var.upper()}**"
