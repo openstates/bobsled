@@ -100,3 +100,26 @@ async def test_task_storage(cls):
     assert {t.name for t in retr_tasks} == {"one", "two"}
     task = await s.get_task("one")
     assert task == tasks[0]
+
+
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.asyncio
+async def test_task_storage_updates(cls):
+    s = cls()
+    await s.connect()
+    tasks = [
+        Task(name="one", image="img1"),
+        Task(name="two", image="img2"),
+    ]
+    await s.set_tasks(tasks)
+
+    tasks = [
+        Task(name="one", image="newimg"),
+        Task(name="three", image="img3"),
+    ]
+    await s.set_tasks(tasks)
+    retr_tasks = await s.get_tasks()
+    # order-indepdendent comparison
+    assert {t.name for t in retr_tasks} == {"one", "three"}
+    task = await s.get_task("one")
+    assert task == tasks[0]

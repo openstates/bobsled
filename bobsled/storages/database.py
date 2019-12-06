@@ -130,7 +130,16 @@ class DatabaseStorage:
             return _db_to_task(row)
 
     async def set_tasks(self, tasks):
+        seen = set()
         for task in tasks:
+            seen.add(task.name)
             dbtask = _task_to_db(task)
-            query = Tasks.insert()
-            await self.database.execute(query=query, values=dbtask)
+            query = Tasks.update().where(Tasks.c.name == task.name).values(**dbtask)
+            res = await self.database.execute(query=query)
+            if not res:
+                query = Tasks.insert()
+                await self.database.execute(query=query, values=dbtask)
+
+        # delete the other tasks
+        query = Tasks.delete().where(~Tasks.c.name.in_(seen))
+        await self.database.execute(query)
