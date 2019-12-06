@@ -62,7 +62,7 @@ class User:
     permissions: typing.List[str] = []
 
 
-class EnvironmentStorage:
+class EnvironmentProvider:
     def get_environments(self):
         return list(self.environments.values())
 

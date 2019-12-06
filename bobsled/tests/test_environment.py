@@ -1,26 +1,26 @@
 import os
 import moto
 import boto3
-from ..environments import YamlEnvironmentStorage, ParameterStoreEnvironmentStorage
+from ..environments import YamlEnvironmentProvider, ParameterStoreEnvironmentProvider
 from ..base import Environment
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
 def test_get_environments_yaml():
-    env = YamlEnvironmentStorage(ENV_FILE)
+    env = YamlEnvironmentProvider(ENV_FILE)
     assert len(env.get_environments()) == 2
 
 
 def test_get_environment_yaml():
-    env = YamlEnvironmentStorage(ENV_FILE)
+    env = YamlEnvironmentProvider(ENV_FILE)
     assert env.get_environment("one") == Environment(
         "one", {"number": 123, "word": "hello"}
     )
 
 
 def test_mask_variables_yaml():
-    env = YamlEnvironmentStorage(ENV_FILE)
+    env = YamlEnvironmentProvider(ENV_FILE)
     assert env.mask_variables("hello this is a test") == "**ONE/WORD** this is a test"
 
 
@@ -34,14 +34,14 @@ def _populate_paramstore():
 @moto.mock_ssm
 def test_get_environments_ssm():
     _populate_paramstore()
-    env = ParameterStoreEnvironmentStorage("/bobsledtest")
+    env = ParameterStoreEnvironmentProvider("/bobsledtest")
     assert len(env.get_environments()) == 2
 
 
 @moto.mock_ssm
 def test_get_environment_ssm():
     _populate_paramstore()
-    env = ParameterStoreEnvironmentStorage("/bobsledtest")
+    env = ParameterStoreEnvironmentProvider("/bobsledtest")
     assert env.get_environment("one") == Environment(
         "one", {"number": "123", "word": "hello"}
     )
@@ -50,5 +50,5 @@ def test_get_environment_ssm():
 @moto.mock_ssm
 def test_mask_variables_ssm():
     _populate_paramstore()
-    env = ParameterStoreEnvironmentStorage("/bobsledtest")
+    env = ParameterStoreEnvironmentProvider("/bobsledtest")
     assert env.mask_variables("hello this is a test") == "**ONE/WORD** this is a test"

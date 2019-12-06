@@ -8,14 +8,16 @@ from ..base import Task, Status
 from ..storages import InMemoryStorage
 from ..runners import LocalRunService, ECSRunService
 from ..tasks import YamlTaskProvider
-from ..environments import YamlEnvironmentStorage
+from ..environments import YamlEnvironmentProvider
 from ..exceptions import AlreadyRunning
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 
 
 def local_run_service():
-    return LocalRunService(InMemoryStorage(), YamlEnvironmentStorage(filename=ENV_FILE))
+    return LocalRunService(
+        InMemoryStorage(), YamlEnvironmentProvider(filename=ENV_FILE)
+    )
 
 
 def ecs_run_service():
@@ -26,7 +28,7 @@ def ecs_run_service():
     if cluster_name and subnet_id and security_group_id:
         return ECSRunService(
             InMemoryStorage(),
-            YamlEnvironmentStorage(ENV_FILE),
+            YamlEnvironmentProvider(ENV_FILE),
             cluster_name=cluster_name,
             subnet_id=subnet_id,
             security_group_id=security_group_id,
@@ -165,7 +167,7 @@ async def test_callback_on_success():
     callback = Callback()
 
     rs = LocalRunService(
-        InMemoryStorage(), YamlEnvironmentStorage(ENV_FILE), [callback]
+        InMemoryStorage(), YamlEnvironmentProvider(ENV_FILE), [callback]
     )
     task = Task("hello-world", image="hello-world")
     run = await rs.run_task(task)
@@ -183,7 +185,7 @@ async def test_callback_on_error():
 
     callback = Callback()
     rs = LocalRunService(
-        InMemoryStorage(), YamlEnvironmentStorage(ENV_FILE), [callback]
+        InMemoryStorage(), YamlEnvironmentProvider(ENV_FILE), [callback]
     )
     task = Task("failure", image="alpine", entrypoint="sh -c 'exit 1'")
     run = await rs.run_task(task)

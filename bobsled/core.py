@@ -6,7 +6,7 @@ from bobsled import storages, environments, tasks, runners, auth, callbacks
 
 DEFAULT_SETTINGS = {
     "environments": {
-        "provider": "YamlEnvironmentStorage",
+        "provider": "YamlEnvironmentProvider",
         "args": {"filename": "environments.yml"},
     },
     "tasks": {"provider": "YamlTaskProvider", "args": {"filename": "tasks.yml"}},

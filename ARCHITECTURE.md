@@ -4,7 +4,7 @@ environment_service:
 
 ## Interfaces
 
-EnvironmentStorage
+EnvironmentProvider
   get_environments() -> List[Environment]
   get_environment(name: str) -> Environment
 

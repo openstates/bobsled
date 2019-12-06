@@ -1,6 +1,6 @@
 secret_key: "290r2dlkjfa0q2i2jfoi20329032ugna093"
 environments:
-  provider: YamlEnvironmentStorage
+  provider: YamlEnvironmentProvider
   args:
     filename: bobsled/tests/environments.yml
 tasks:
