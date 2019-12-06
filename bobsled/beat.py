@@ -52,19 +52,27 @@ def next_run_for_task(task):
             return next_cron(trigger["cron"])
 
 
+# TODO: make these configurable
 LOG_FILE = "/tmp/bobsled-beat.log"
 SOCKET_FILE = "/tmp/bobsled-beat"
+UPDATE_TASKS_MINS = 120
 
 
 async def run_service():
-    await bobsled.storage.connect()
-    await bobsled.tasks.update_tasks()
+    await bobsled.initialize()
+    next_task_update = datetime.datetime.utcnow() + datetime.timedelta(
+        minutes=UPDATE_TASKS_MINS
+    )
 
     lf = open(LOG_FILE, "w")
 
     context = zmq.Context()
     socket = context.socket(zmq.PUB)
     socket.bind("ipc://" + SOCKET_FILE)
+
+    def _log(msg):
+        socket.send_string(msg)
+        print(msg, file=lf, flush=True)
 
     next_run_list = {}
     for task in await bobsled.tasks.get_tasks():
@@ -73,16 +81,20 @@ async def run_service():
         next_run = next_run_for_task(task)
         if next_run:
             next_run_list[task.name] = next_run
-            print(task.name, "next run at", next_run, file=lf, flush=True)
+            _log(f"{task.name} next run at {next_run}")
 
     while True:
         pending = await bobsled.run.get_runs(status=Status.Pending)
         running = await bobsled.run.get_runs(status=Status.Running)
         utcnow = datetime.datetime.utcnow()
 
-        msg = f"{utcnow}: pending={len(pending)} running={len(running)}"
-        socket.send_string(msg)
-        print(msg, file=lf, flush=True)
+        _log(f"{utcnow}: pending={len(pending)} running={len(running)}")
+
+        if utcnow > next_task_update:
+            _log("updating tasks...")
+            await bobsled.tasks.update_tasks()
+            next_task_update = utcnow + datetime.timedelta(minutes=UPDATE_TASKS_MINS)
+            _log(f"updated tasks, will run again at {next_task_update}")
 
         # parallel updates from all running tasks
         await asyncio.gather(
@@ -103,8 +115,7 @@ async def run_service():
                     msg = f"started {task_name}: {run}.  next run at {next_run_list[task_name]}"
                 except AlreadyRunning:
                     msg = f"{task_name}: already running.  next run at {next_run_list[task_name]}"
-                socket.send_string(msg)
-                print(msg, file=lf, flush=True)
+                _log(msg)
 
         await asyncio.sleep(60)
 

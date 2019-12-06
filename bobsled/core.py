@@ -50,7 +50,12 @@ class Bobsled:
             **settings["runner"]["args"]
         )
         self.auth = AuthCls(**settings["auth"]["args"])
-        self.run.initialize(self.tasks.get_tasks())
+
+    async def initialize(self):
+        await self.storage.connect()
+        await self.tasks.update_tasks()
+        tasks = await bobsled.tasks.get_tasks()
+        self.run.initialize(tasks)
 
 
 bobsled = Bobsled()

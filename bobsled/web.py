@@ -195,9 +195,8 @@ async def websocket_endpoint(websocket):
 
 
 @app.on_event("startup")
-async def initdb():
-    await bobsled.storage.connect()
-    await bobsled.tasks.update_tasks()
+async def init():
+    await bobsled.initialize()
 
 
 if __name__ == "__main__":

@@ -121,7 +121,7 @@ class DatabaseStorage:
     async def get_tasks(self):
         query = Tasks.select()
         rows = await self.database.fetch_all(query=query)
-        return [_db_to_task(r) for r in reversed(rows)]
+        return [_db_to_task(r) for r in rows]
 
     async def get_task(self, name):
         query = Tasks.select().where(Tasks.c.name == name)

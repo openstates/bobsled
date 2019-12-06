@@ -20,7 +20,6 @@ class YamlTaskProvider(TaskProvider):
         self.github_repo = github_repo
         self.dirname = dirname
         self.github_api_key = github_api_key
-        # await self.update_tasks()
 
     async def update_tasks(self):
         if self.github_user and self.github_repo:
