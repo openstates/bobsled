@@ -1,6 +1,19 @@
 from starlette.testclient import TestClient
 
-from ..web import app
+from ..web import app, bobsled
+from ..base import User
+from ..utils import hash_password
+
+
+def setup():
+    # have to get a working check_login, hack for MemoryStorage
+    bobsled.storage.users["sample"] = User("sample", hash_password("password"))
+
+
+# def test_not_logged_in():
+#     with TestClient(app) as client:
+#         response = client.get("/api/index")
+#     assert response.status_code == 403
 
 
 def test_index():
