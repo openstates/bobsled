@@ -1,4 +1,4 @@
-from ..base import Status, User
+from ..base import Status
 from ..utils import hash_password, verify_password
 
 
@@ -48,9 +48,9 @@ class InMemoryStorage:
         self.tasks = {task.name: task for task in tasks}
 
     async def set_password(self, username, password):
-        self.users[username] = User(username, hash_password(password))
+        self.users[username] = hash_password(password)
 
     async def check_password(self, username, password):
-        u = self.users.get(username)
-        if u:
-            return verify_password(password, u.password)
+        phash = self.users.get(username)
+        if phash:
+            return verify_password(password, phash)
