@@ -58,7 +58,7 @@ async def login(request):
     KEY_VALID_HOURS = 24 * 30
     if request.method == "POST":
         form = await request.form()
-        user = bobsled.auth.check_login(form["username"], form["password"])
+        user = bobsled.check_login(form["username"], form["password"])
         if user:
             resp = RedirectResponse("/", status_code=302)
             until = datetime.datetime.utcnow() + datetime.timedelta(

@@ -2,7 +2,8 @@ import os
 import copy
 import yaml
 
-from bobsled import storages, environments, tasks, runners, auth, callbacks
+
+from bobsled import storages, environments, tasks, runners, callbacks
 
 DEFAULT_SETTINGS = {
     "environments": {
@@ -12,7 +13,6 @@ DEFAULT_SETTINGS = {
     "tasks": {"provider": "YamlTaskProvider", "args": {"filename": "tasks.yml"}},
     "runner": {"provider": "LocalRunService", "args": {}},
     "storage": {"provider": "InMemoryStorage", "args": {}},
-    "auth": {"provider": "YamlAuthStorage", "args": {"filename": "users.yml"}},
     "callbacks": [],
     "secret_key": None,
 }
@@ -33,7 +33,6 @@ class Bobsled:
         TaskCls = getattr(tasks, settings["tasks"]["provider"])
         RunCls = getattr(runners, settings["runner"]["provider"])
         StorageCls = getattr(storages, settings["storage"]["provider"])
-        AuthCls = getattr(auth, settings["auth"]["provider"])
 
         callback_classes = []
         for cb in settings["callbacks"]:
@@ -49,7 +48,6 @@ class Bobsled:
             callbacks=callback_classes,
             **settings["runner"]["args"]
         )
-        self.auth = AuthCls(**settings["auth"]["args"])
 
     async def initialize(self):
         await self.storage.connect()

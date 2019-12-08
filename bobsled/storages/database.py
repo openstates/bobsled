@@ -1,8 +1,9 @@
 import json
 import attr
-from databases import Database
 import sqlalchemy
+from databases import Database
 from ..base import Run, Status, Task
+from ..utils import hash_password, verify_password
 
 
 metadata = sqlalchemy.MetaData()
@@ -31,6 +32,12 @@ Tasks = sqlalchemy.Table(
     sqlalchemy.Column("enabled", sqlalchemy.Boolean),
     sqlalchemy.Column("timeout_minutes", sqlalchemy.Integer),
     sqlalchemy.Column("triggers", sqlalchemy.JSON()),
+)
+Users = sqlalchemy.Table(
+    "bobsled_user",
+    metadata,
+    sqlalchemy.Column("username", sqlalchemy.String(length=100)),
+    sqlalchemy.Column("password", sqlalchemy.String(length=100)),
 )
 
 
@@ -143,3 +150,19 @@ class DatabaseStorage:
         # delete the other tasks
         query = Tasks.delete().where(~Tasks.c.name.in_(seen))
         await self.database.execute(query)
+
+    async def set_password(self, username, password):
+        phash = hash_password(password)
+        query = (
+            Users.update().where(Users.c.username == username).values(password=phash)
+        )
+        res = await self.database.execute(query=query)
+        if not res:
+            query = Users.insert().values(username=username, password=phash)
+            await self.database.execute(query=query)
+
+    async def check_password(self, username, password):
+        query = Users.select().where(Users.c.username == username)
+        row = await self.database.fetch_one(query=query)
+        if row:
+            return verify_password(password, row["password"])
