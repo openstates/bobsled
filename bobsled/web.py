@@ -58,16 +58,18 @@ async def login(request):
     KEY_VALID_HOURS = 24 * 30
     if request.method == "POST":
         form = await request.form()
-        user = bobsled.auth.check_login(form["username"], form["password"])
-        if user:
+        logged_in = await bobsled.storage.check_password(
+            form["username"], form["password"]
+        )
+        if logged_in:
             resp = RedirectResponse("/", status_code=302)
             until = datetime.datetime.utcnow() + datetime.timedelta(
                 hours=KEY_VALID_HOURS
             )
             token = jwt.encode(
                 {
-                    "username": user.username,
-                    "permissions": user.permissions,
+                    "username": form["username"],
+                    "permissions": "[]",
                     "until": until.isoformat(),
                 },
                 key=bobsled.settings["secret_key"],

@@ -7,7 +7,3 @@ tasks:
   provider: YamlTaskProvider
   args:
     filename: bobsled/tests/tasks/tasks.yml
-auth:
-  provider: YamlAuthStorage
-  args:
-    filename: bobsled/tests/users.yml

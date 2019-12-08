@@ -123,3 +123,20 @@ async def test_task_storage_updates(cls):
     assert {t.name for t in retr_tasks} == {"one", "three"}
     task = await s.get_task("one")
     assert task == tasks[0]
+
+
+@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.asyncio
+async def test_user_storage(cls):
+    s = cls()
+    await s.connect()
+    # non-existent user
+    check = await s.check_password("someone", "abc")
+    assert not check
+    # wrong password
+    await s.set_password("someone", "xyz")
+    check = await s.check_password("someone", "abc")
+    assert not check
+    # right password
+    check = await s.check_password("someone", "xyz")
+    assert check
