@@ -7,7 +7,7 @@ from ..utils import hash_password, verify_password
 
 
 metadata = sqlalchemy.MetaData()
-runs = sqlalchemy.Table(
+Runs = sqlalchemy.Table(
     "bobsled_run",
     metadata,
     sqlalchemy.Column("uuid", sqlalchemy.String(length=50), primary_key=True),
@@ -83,17 +83,17 @@ class DatabaseStorage:
         metadata.create_all(engine)
 
     async def add_run(self, run):
-        query = runs.insert()
+        query = Runs.insert()
         await self.database.execute(query=query, values=_run_to_db(run))
 
     async def save_run(self, run):
         values = _run_to_db(run)
         uuid = values.pop("uuid")
-        query = runs.update().where(runs.c.uuid == uuid).values(**values)
+        query = Runs.update().where(Runs.c.uuid == uuid).values(**values)
         await self.database.execute(query=query)
 
     async def get_run(self, run_id):
-        query = runs.select().where(runs.c.uuid == run_id)
+        query = Runs.select().where(Runs.c.uuid == run_id)
         row = await self.database.fetch_one(query=query)
         if row:
             return _db_to_run(row)
@@ -101,24 +101,24 @@ class DatabaseStorage:
     async def get_runs(self, *, status=None, task_name=None, latest=None):
         query = sqlalchemy.select(
             [
-                runs.c.uuid,
-                runs.c.task,
-                runs.c.status,
-                runs.c.start,
-                runs.c.end,
-                runs.c.exit_code,
-                runs.c.run_info_json,
+                Runs.c.uuid,
+                Runs.c.task,
+                Runs.c.status,
+                Runs.c.start,
+                Runs.c.end,
+                Runs.c.exit_code,
+                Runs.c.run_info_json,
             ]
         )
-        query = query.order_by(runs.c.start.desc())
+        query = query.order_by(Runs.c.start.desc())
         if isinstance(status, Status):
-            query = query.where(runs.c.status == status.name)
+            query = query.where(Runs.c.status == status.name)
         elif isinstance(status, list):
-            query = query.where(runs.c.status.in_(s.name for s in status))
+            query = query.where(Runs.c.status.in_(s.name for s in status))
         elif status:
             raise ValueError("status must be Status or list")
         if task_name:
-            query = query.where(runs.c.task == task_name)
+            query = query.where(Runs.c.task == task_name)
         if latest:
             query = query.limit(latest)
         rows = await self.database.fetch_all(query=query)
