@@ -7,22 +7,10 @@ from ..utils import hash_password, verify_password
 
 
 metadata = sqlalchemy.MetaData()
-Runs = sqlalchemy.Table(
-    "bobsled_run",
-    metadata,
-    sqlalchemy.Column("uuid", sqlalchemy.String(length=50), primary_key=True),
-    sqlalchemy.Column("status", sqlalchemy.String(length=50)),
-    sqlalchemy.Column("task", sqlalchemy.String(length=100)),
-    sqlalchemy.Column("start", sqlalchemy.String(length=50)),
-    sqlalchemy.Column("end", sqlalchemy.String(length=50)),
-    sqlalchemy.Column("logs", sqlalchemy.String()),
-    sqlalchemy.Column("exit_code", sqlalchemy.Integer),
-    sqlalchemy.Column("run_info_json", sqlalchemy.JSON()),
-)
 Tasks = sqlalchemy.Table(
     "bobsled_task",
     metadata,
-    sqlalchemy.Column("name", sqlalchemy.String(length=100)),
+    sqlalchemy.Column("name", sqlalchemy.String(length=100), primary_key=True),
     sqlalchemy.Column("image", sqlalchemy.String(length=100)),
     sqlalchemy.Column("tags", sqlalchemy.JSON()),
     sqlalchemy.Column("entrypoint", sqlalchemy.String(length=1000)),
@@ -32,6 +20,20 @@ Tasks = sqlalchemy.Table(
     sqlalchemy.Column("enabled", sqlalchemy.Boolean),
     sqlalchemy.Column("timeout_minutes", sqlalchemy.Integer),
     sqlalchemy.Column("triggers", sqlalchemy.JSON()),
+)
+Runs = sqlalchemy.Table(
+    "bobsled_run",
+    metadata,
+    sqlalchemy.Column("uuid", sqlalchemy.String(length=50), primary_key=True),
+    sqlalchemy.Column("status", sqlalchemy.String(length=50)),
+    sqlalchemy.Column(
+        "task", sqlalchemy.String(length=100), sqlalchemy.ForeignKey(Tasks.c.name)
+    ),
+    sqlalchemy.Column("start", sqlalchemy.String(length=50)),
+    sqlalchemy.Column("end", sqlalchemy.String(length=50)),
+    sqlalchemy.Column("logs", sqlalchemy.String()),
+    sqlalchemy.Column("exit_code", sqlalchemy.Integer),
+    sqlalchemy.Column("run_info_json", sqlalchemy.JSON()),
 )
 Users = sqlalchemy.Table(
     "bobsled_user",
@@ -141,9 +143,13 @@ class DatabaseStorage:
         for task in tasks:
             seen.add(task.name)
             dbtask = _task_to_db(task)
-            query = Tasks.update().where(Tasks.c.name == task.name).values(**dbtask)
-            res = await self.database.execute(query=query)
-            if not res:
+
+            query = Tasks.select().where(Tasks.c.name == task.name)
+            res = await self.database.fetch_all(query=query)
+            if res:
+                query = Tasks.update().where(Tasks.c.name == task.name).values(**dbtask)
+                res = await self.database.execute(query=query)
+            else:
                 query = Tasks.insert()
                 await self.database.execute(query=query, values=dbtask)
 
