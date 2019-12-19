@@ -1,7 +1,7 @@
 import os
 import pytest
 from ..storages import InMemoryStorage, DatabaseStorage
-from ..base import Run, Status, Task
+from ..base import Run, Status, Task, Trigger
 
 
 def db_storage():
@@ -90,7 +90,18 @@ async def test_task_storage(cls):
     s = cls()
     await s.connect()
     tasks = [
-        Task(name="one", image="img1"),
+        Task(
+            name="one",
+            image="img1",
+            tags=["yellow", "green"],
+            entrypoint="entrypoint",
+            environment="envname",
+            memory=1024,
+            cpu=512,
+            enabled=False,
+            timeout_minutes=60,
+            triggers=[Trigger(cron="@daily")],
+        ),
         Task(name="two", image="img2"),
     ]
     await s.set_tasks(tasks)

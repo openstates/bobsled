@@ -2,7 +2,7 @@ import json
 import attr
 import sqlalchemy
 from databases import Database
-from ..base import Run, Status, Task
+from ..base import Run, Status, Task, Trigger
 from ..utils import hash_password, verify_password
 
 
@@ -72,7 +72,9 @@ def _task_to_db(t):
 
 
 def _db_to_task(row):
-    return Task(**row)
+    vals = dict(**row)
+    vals["triggers"] = [Trigger(**t) for t in row["triggers"]]
+    return Task(**vals)
 
 
 class DatabaseStorage:
