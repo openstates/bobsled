@@ -41,7 +41,14 @@ class GithubIssueCallback:
         if self.get_existing_issue(latest_run.task):
             return
 
-        body = f"""{latest_run.task} has failed {count} since {failure.start}"""
+        logs = "\n".join(latest_run.logs.splitlines()[-20:])
+        body = f"""{latest_run.task} has failed {count} times since {failure.start}
+
+Logs:
+```
+{logs}
+```
+        """
         title = f"{latest_run.task} failing since at least {failure.start}"
         self.repo_obj.create_issue(
             title=title, body=body, labels=["automatic", "ready"]
