@@ -1,0 +1,45 @@
+version: "3.5"
+
+volumes:
+  bobsled-db:
+
+services:
+  db:
+    image: "postgres:11"
+    hostname: "db"
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_PASSWORD: bobsled
+      POSTGRES_USER: bobsled
+      POSTGRES_DB: bobsled
+    volumes:
+      - bobsled-db:/var/lib/postgresql/data
+
+  web:
+    build: .
+    volumes:
+      - .:/code
+    ports:
+      - "8500:8000"
+    environment:
+      - DATABASE_URL
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: ["poetry", "run", "python", "-m", "bobsled.web"]
+    depends_on:
+      - db
+
+  beat:
+    build: .
+    volumes:
+      - .:/code
+    environment:
+      - DATABASE_URL
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: ["poetry", "run", "python", "-m", "bobsled.beat"]
+    depends_on:
+      - db
