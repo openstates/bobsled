@@ -169,15 +169,15 @@ class ECSRunService(RunService):
 
         result = resp["tasks"][0]
         if result["lastStatus"] == "STOPPED":
+            run.end = datetime.datetime.utcnow().isoformat()
+            run.logs = self.get_logs(run)
             try:
                 run.exit_code = result["containers"][0]["exitCode"]
             except KeyError:
-                # TODO: handle cases where we need to use containers[0][reason]
-                print(result["containers"][0]["reason"])
                 run.exit_code = -400
-            run.end = datetime.datetime.utcnow().isoformat()
+                run.logs = result["containers"][0]["reason"]
             run.status = Status.Error if run.exit_code else Status.Success
-            run.logs = self.get_logs(run)
+
             await self.storage.save_run(run)
             await self.trigger_callbacks(run)
 
