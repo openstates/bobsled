@@ -48,8 +48,7 @@ def next_cron(cronstr, after=None):
 
 def next_run_for_task(task):
     for trigger in task.triggers:
-        if "cron" in trigger:
-            return next_cron(trigger["cron"])
+        return next_cron(trigger.cron)
 
 
 # TODO: make these configurable
