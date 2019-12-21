@@ -130,7 +130,7 @@ class DatabaseStorage:
         return [_db_to_run(r) for r in reversed(rows)]
 
     async def get_tasks(self):
-        query = Tasks.select()
+        query = Tasks.select().order_by(Tasks.c.name.asc())
         rows = await self.database.fetch_all(query=query)
         return [_db_to_task(r) for r in rows]
 

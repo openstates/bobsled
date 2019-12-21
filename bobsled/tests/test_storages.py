@@ -108,7 +108,7 @@ async def test_task_storage(cls):
 
     retr_tasks = await s.get_tasks()
     # order-indepdendent comparison
-    assert {t.name for t in retr_tasks} == {"one", "two"}
+    assert [t.name for t in retr_tasks] == ["one", "two"]
     task = await s.get_task("one")
     assert task == tasks[0]
 
