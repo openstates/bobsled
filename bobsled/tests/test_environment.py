@@ -2,6 +2,7 @@ import os
 import moto
 import boto3
 import pytest
+import inspect
 from ..environments import (
     LocalEnvironmentProvider,
     YamlEnvironmentProvider,
@@ -14,6 +15,20 @@ ENV = {"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}
 local_env = LocalEnvironmentProvider(ENV)
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 yaml_env = YamlEnvironmentProvider(ENV_FILE)
+
+
+@pytest.mark.parametrize(
+    "Cls",
+    [
+        LocalEnvironmentProvider,
+        YamlEnvironmentProvider,
+        ParameterStoreEnvironmentProvider,
+    ],
+)
+def test_environment_settings_args(Cls):
+    settings = Cls.ENVIRONMENT_SETTINGS.values()
+    params = inspect.signature(Cls.__init__).parameters.keys()
+    assert set(settings) == (set(params) - {"self"})
 
 
 @pytest.mark.parametrize("env", [local_env, yaml_env])

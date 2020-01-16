@@ -78,6 +78,8 @@ def _db_to_task(row):
 
 
 class DatabaseStorage:
+    ENVIRONMENT_SETTINGS = {"BOBSLED_DATABASE_URI": "database_uri"}
+
     def __init__(self, database_uri):
         self.database = Database(database_uri)
 
