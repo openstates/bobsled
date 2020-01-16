@@ -3,10 +3,15 @@ from ..base import Status
 
 
 class GithubIssueCallback:
-    def __init__(self, api_key, user, repo):
-        self.api_key = api_key
-        self.user = user
-        self.repo = repo
+    def __init__(
+        self,
+        BOBSLED_GITHUB_API_KEY,
+        BOBSLED_GITHUB_ISSUE_USER,
+        BOBSLED_GITHUB_ISSUE_REPO,
+    ):
+        self.api_key = BOBSLED_GITHUB_API_KEY
+        self.user = BOBSLED_GITHUB_ISSUE_USER
+        self.repo = BOBSLED_GITHUB_ISSUE_REPO
 
         gh = github3.login(token=self.api_key)
         self.repo_obj = gh.repository(self.user, self.repo)

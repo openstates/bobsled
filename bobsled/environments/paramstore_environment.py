@@ -20,8 +20,8 @@ def get_all_ssm_parameters(path):
 
 
 class ParameterStoreEnvironmentProvider(EnvironmentProvider):
-    def __init__(self, prefix):
-        self.prefix = prefix
+    def __init__(self, BOBSLED_ENVIRONMENT_PARAMSTORE_PREFIX):
+        self.prefix = BOBSLED_ENVIRONMENT_PARAMSTORE_PREFIX
 
     def get_environment_names(self):
         names = set()

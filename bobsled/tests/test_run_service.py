@@ -8,15 +8,15 @@ from ..base import Task, Status
 from ..storages import InMemoryStorage
 from ..runners import LocalRunService, ECSRunService
 from ..tasks import YamlTaskProvider
-from ..environments import YamlEnvironmentProvider
+from ..environments import LocalEnvironmentProvider
 from ..exceptions import AlreadyRunning
 
-ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
+ENV = '{"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}'
 
 
 def local_run_service():
     return LocalRunService(
-        InMemoryStorage(), YamlEnvironmentProvider(filename=ENV_FILE)
+        InMemoryStorage(), LocalEnvironmentProvider(BOBSLED_ENVIRONMENT_JSON=ENV)
     )
 
 
@@ -28,7 +28,7 @@ def ecs_run_service():
     if cluster_name and subnet_id and security_group_id:
         return ECSRunService(
             InMemoryStorage(),
-            YamlEnvironmentProvider(ENV_FILE),
+            LocalEnvironmentProvider(BOBSLED_ENVIRONMENT_JSON=ENV),
             cluster_name=cluster_name,
             subnet_id=subnet_id,
             security_group_id=security_group_id,
@@ -166,9 +166,7 @@ async def test_callback_on_success():
 
     callback = Callback()
 
-    rs = LocalRunService(
-        InMemoryStorage(), YamlEnvironmentProvider(ENV_FILE), [callback]
-    )
+    rs = LocalRunService(InMemoryStorage(), LocalEnvironmentProvider(), [callback])
     task = Task("hello-world", image="hello-world")
     run = await rs.run_task(task)
 
@@ -184,9 +182,7 @@ async def test_callback_on_error():
         on_error = Mock(return_value=asyncio.sleep(0))
 
     callback = Callback()
-    rs = LocalRunService(
-        InMemoryStorage(), YamlEnvironmentProvider(ENV_FILE), [callback]
-    )
+    rs = LocalRunService(InMemoryStorage(), LocalEnvironmentProvider(), [callback])
     task = Task("failure", image="alpine", entrypoint="sh -c 'exit 1'")
     run = await rs.run_task(task)
 
@@ -198,7 +194,7 @@ async def test_callback_on_error():
 
 def test_ecs_initialize():
     ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
-    tasks = YamlTaskProvider(storage=InMemoryStorage(), filename=ENV_FILE)
+    tasks = YamlTaskProvider(storage=InMemoryStorage(), BOBSLED_TASKS_FILENAME=ENV_FILE)
     ers = ecs_run_service()
     if not ers:
         pytest.skip("No ECS Configuration")

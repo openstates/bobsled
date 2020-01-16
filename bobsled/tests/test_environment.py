@@ -1,26 +1,35 @@
 import os
 import moto
 import boto3
-from ..environments import YamlEnvironmentProvider, ParameterStoreEnvironmentProvider
+import pytest
+from ..environments import (
+    LocalEnvironmentProvider,
+    YamlEnvironmentProvider,
+    ParameterStoreEnvironmentProvider,
+)
 from ..base import Environment
 
+
+ENV = '{"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}'
+local_env = LocalEnvironmentProvider(ENV)
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
+yaml_env = YamlEnvironmentProvider(ENV_FILE)
 
 
-def test_get_environment_names_yaml():
-    env = YamlEnvironmentProvider(ENV_FILE)
+@pytest.mark.parametrize("env", [local_env, yaml_env])
+def test_get_environment_names(env):
     assert len(env.get_environment_names()) == 2
 
 
-def test_get_environment_yaml():
-    env = YamlEnvironmentProvider(ENV_FILE)
+@pytest.mark.parametrize("env", [local_env, yaml_env])
+def test_get_environment(env):
     assert env.get_environment("one") == Environment(
         "one", {"number": 123, "word": "hello"}
     )
 
 
-def test_mask_variables_yaml():
-    env = YamlEnvironmentProvider(ENV_FILE)
+@pytest.mark.parametrize("env", [local_env, yaml_env])
+def test_mask_variables(env):
     assert env.mask_variables("hello this is a test") == "**ONE/WORD** this is a test"
 
 

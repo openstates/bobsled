@@ -78,8 +78,8 @@ def _db_to_task(row):
 
 
 class DatabaseStorage:
-    def __init__(self, database_uri):
-        self.database = Database(database_uri)
+    def __init__(self, BOBSLED_DATABASE_URI):
+        self.database = Database(BOBSLED_DATABASE_URI)
 
     async def connect(self):
         await self.database.connect()

@@ -14,7 +14,7 @@ install:
   # - npm ci
   # - npm run build
 env:
-  - BOTO_CONFIG=/dev/null AWS_DEFAULT_REGION=us-east-1 BOBSLED_SETTINGS_FILE=bobsled/tests/testconfig.yml
+  - BOTO_CONFIG=/dev/null AWS_DEFAULT_REGION=us-east-1 BOBSLED_SECRET_KEY="secret-stuff-here" BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml"
 script: 
   - poetry run pytest
   - poetry run flake8

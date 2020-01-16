@@ -1,52 +1,38 @@
 import os
-import copy
-import yaml
-
-
 from bobsled import storages, environments, tasks, runners, callbacks
-
-DEFAULT_SETTINGS = {
-    "environments": {
-        "provider": "YamlEnvironmentProvider",
-        "args": {"filename": "environments.yml"},
-    },
-    "tasks": {"provider": "YamlTaskProvider", "args": {"filename": "tasks.yml"}},
-    "runner": {"provider": "LocalRunService", "args": {}},
-    "storage": {"provider": "InMemoryStorage", "args": {}},
-    "callbacks": [],
-    "secret_key": None,
-}
+from bobsled.utils import get_env_config, load_args
 
 
 class Bobsled:
     def __init__(self):
-        filename = os.environ.get("BOBSLED_SETTINGS_FILE", "bobsled.yml")
-        with open(filename) as f:
-            settings = copy.deepcopy(DEFAULT_SETTINGS)
-            settings.update(yaml.safe_load(f))
-
-        if settings["secret_key"] is None:
+        self.settings = {"secret_key": os.environ.get("BOBSLED_SECRET_KEY", None)}
+        if self.settings["secret_key"] is None:
             raise ValueError("must set 'secret_key' setting")
-        self.settings = settings
 
-        EnvCls = getattr(environments, settings["environments"]["provider"])
-        TaskCls = getattr(tasks, settings["tasks"]["provider"])
-        RunCls = getattr(runners, settings["runner"]["provider"])
-        StorageCls = getattr(storages, settings["storage"]["provider"])
+        EnvCls, env_args = get_env_config(
+            "BOBSLED_ENV_PROVIDER", "LocalEnvironmentProvider", environments
+        )
+        StorageCls, storage_args = get_env_config(
+            "BOBSLED_STORAGE_PROVIDER", "InMemoryStorage", storages
+        )
+        TaskCls, task_args = get_env_config(
+            "BOBSLED_TASK_PROVIDER", "YamlTaskProvider", tasks
+        )
+        RunCls, run_args = get_env_config("BOBSLED_RUNNER", "LocalRunService", runners)
 
         callback_classes = []
-        for cb in settings["callbacks"]:
-            PluginCls = getattr(callbacks, cb["plugin"])
-            callback_classes.append(PluginCls(**cb["args"]))
+        if os.environ.get("BOBSLED_ENABLE_GITHUB_ISSUE_CALLBACK"):
+            CallbackCls = callbacks.GithubIssueCallback
+            callback_classes.append(CallbackCls(load_args(CallbackCls)))
 
-        self.storage = StorageCls(**settings["storage"]["args"])
-        self.env = EnvCls(**settings["environments"]["args"])
-        self.tasks = TaskCls(storage=self.storage, **settings["tasks"]["args"])
+        self.storage = StorageCls(**storage_args)
+        self.env = EnvCls(**env_args)
+        self.tasks = TaskCls(storage=self.storage, **task_args)
         self.run = RunCls(
             storage=self.storage,
             environment=self.env,
-            callbacks=callback_classes,
-            **settings["runner"]["args"]
+            # callbacks=callback_classes,
+            **run_args,
         )
 
     async def initialize(self):
