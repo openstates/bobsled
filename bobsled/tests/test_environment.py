@@ -10,7 +10,7 @@ from ..environments import (
 from ..base import Environment
 
 
-ENV = {"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}
+ENV = '{"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}'
 local_env = LocalEnvironmentProvider(ENV)
 ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
 yaml_env = YamlEnvironmentProvider(ENV_FILE)

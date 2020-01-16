@@ -21,6 +21,11 @@ class YamlTaskProvider(TaskProvider):
         self.dirname = BOBSLED_TASKS_DIRNAME
         self.github_api_key = BOBSLED_GITHUB_API_KEY
 
+        if not self.filename and not self.dirname:
+            raise EnvironmentError(
+                "must provide either BOBSLED_TASKS_FILENAME or BOBSLED_TASKS_DIRNAME"
+            )
+
     async def update_tasks(self):
         if self.github_user and self.github_repo:
             gh = github3.GitHub(token=self.github_api_key)
