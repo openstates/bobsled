@@ -14,7 +14,9 @@ class GithubIssueCallback:
     async def on_success(self, latest_run, storage):
         issue = self.get_existing_issue(latest_run.task)
         if issue:
-            issue.create_comment(f"closed via successful run on {latest_run.start}")
+            issue.create_comment(
+                f"closed via successful run on {latest_run.start[:10]}"
+            )
             issue.close()
 
     async def on_error(self, latest_run, storage):
@@ -42,14 +44,14 @@ class GithubIssueCallback:
             return
 
         logs = "\n".join(latest_run.logs.splitlines()[-20:])
-        body = f"""{latest_run.task} has failed {count} times since {failure.start}
+        body = f"""{latest_run.task} has failed {count} times since {failure.start[:10]}
 
 Logs:
 ```
 {logs}
 ```
         """
-        title = f"{latest_run.task} failing since at least {failure.start}"
+        title = f"{latest_run.task} failing since at least {failure.start[:10]}"
         self.repo_obj.create_issue(
             title=title, body=body, labels=["automatic", "ready"]
         )

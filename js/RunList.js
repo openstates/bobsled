@@ -13,8 +13,8 @@ function RunList(props) {
         </td>
       )}
       <td>{run.status}</td>
-      <td>{run.start}</td>
-      <td>{run.end}</td>
+      <td>{run.start.substr(0, 16)}</td>
+      <td>{run.end.substr(0, 16)}</td>
     </tr>
   ));
 
