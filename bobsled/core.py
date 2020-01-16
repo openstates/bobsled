@@ -23,10 +23,7 @@ class Bobsled:
         )
         env_cfg = get_env_json(
             "BOBSLED_ENVIRONMENTS",
-            {
-                "provider": "YamlEnvironmentProvider",
-                "args": {"filename": "environments.yml"},
-            },
+            {"provider": "LocalEnvironmentProvider", "args": {"environments": {}}},
         )
         task_cfg = get_env_json(
             "BOBSLED_TASKS",
