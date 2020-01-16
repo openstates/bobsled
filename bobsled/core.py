@@ -1,6 +1,6 @@
 import os
-from bobsled import storages, environments, tasks, runners  # , callbacks
-from bobsled.utils import get_env_config
+from bobsled import storages, environments, tasks, runners, callbacks
+from bobsled.utils import get_env_config, load_args
 
 
 class Bobsled:
@@ -20,10 +20,10 @@ class Bobsled:
         )
         RunCls, run_args = get_env_config("BOBSLED_RUNNER", "LocalRunService", runners)
 
-        # callback_classes = []
-        # for cb in get_env_json("BOBSLED_CALLBACKS", []):
-        #     PluginCls = getattr(callbacks, cb["plugin"])
-        #     callback_classes.append(PluginCls(**cb["args"]))
+        callback_classes = []
+        if os.environ.get("BOBSLED_ENABLE_GITHUB_ISSUE_CALLBACK"):
+            CallbackCls = callbacks.GithubIssueCallback
+            callback_classes.append(CallbackCls(load_args(CallbackCls)))
 
         self.storage = StorageCls(**storage_args)
         self.env = EnvCls(**env_args)

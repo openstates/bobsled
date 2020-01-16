@@ -11,18 +11,10 @@ def hash_password(password):
     return argon2.hash(password)
 
 
-def get_env_config(key, default, module):
+def load_args(Cls):
     """
-    Get class configuration from the environment.
-
-    Reads the environment variable 'key', and loads the appropriate class from 'module'.
-
-    Then inspects the class and finds out what additional variables need to be loaded via
-    Cls.ENVIRONMENT_SETTINGS
+    Parameters that start with BOBSLED_ are read from environment & returned as kwargs.
     """
-    name = os.environ.get(key, default)
-    Cls = getattr(module, name)
-
     signature = [
         p
         for p in inspect.signature(Cls.__init__).parameters.values()
@@ -36,4 +28,18 @@ def get_env_config(key, default, module):
             )
         elif arg.name in os.environ:
             args[arg.name] = os.environ[arg.name]
+    return args
+
+
+def get_env_config(key, default, module):
+    """
+    Get class configuration from the environment.
+
+    Reads the environment variable 'key', and loads the appropriate class from 'module'.
+
+    Then pulls args from load_args
+    """
+    name = os.environ.get(key, default)
+    Cls = getattr(module, name)
+    args = load_args(Cls)
     return Cls, args
