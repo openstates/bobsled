@@ -23,11 +23,17 @@ def get_env_config(key, default, module):
     name = os.environ.get(key, default)
     Cls = getattr(module, name)
 
-    arg_names = [
+    signature = [
         p
-        for p in inspect.signature(Cls.__init__).parameters
-        if p.startswith("BOBSLED_")
+        for p in inspect.signature(Cls.__init__).parameters.values()
+        if p.name.startswith("BOBSLED_")
     ]
-    args = {arg_name: os.environ[arg_name] for arg_name in arg_names}
-
+    args = {}
+    for arg in signature:
+        if arg.name not in os.environ and arg.default == arg.empty:
+            raise EnvironmentError(
+                f"{Cls} requires {arg.name} to be set in the environment"
+            )
+        elif arg.name in os.environ:
+            args[arg.name] = os.environ[arg.name]
     return Cls, args
