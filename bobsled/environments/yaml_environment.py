@@ -3,10 +3,8 @@ from ..base import Environment, EnvironmentProvider
 
 
 class YamlEnvironmentProvider(EnvironmentProvider):
-    ENVIRONMENT_SETTINGS = {"BOBSLED_ENVIRONMENT_FILENAME": "filename"}
-
-    def __init__(self, filename):
-        with open(filename) as f:
+    def __init__(self, BOBSLED_ENVIRONMENT_FILENAME):
+        with open(BOBSLED_ENVIRONMENT_FILENAME) as f:
             data = yaml.safe_load(f)
         self.environments = {}
         for name, values in data.items():

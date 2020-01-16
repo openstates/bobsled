@@ -4,30 +4,22 @@ from ..base import Task, TaskProvider
 
 
 class YamlTaskProvider(TaskProvider):
-    ENVIRONMENT_SETTINGS = {
-        "BOBSLED_TASKS_FILENAME": "filename",
-        "BOBSLED_TASKS_GITHUB_USER": "github_user",
-        "BOBSLED_TASKS_GITHUB_REPO": "github_repo",
-        "BOBSLED_TASKS_DIRNAME": "dirname",
-        "BOBSLED_GITHUB_API_KEY": "github_api_key",
-    }
-
     def __init__(
         self,
         *,
         storage,
-        filename=None,
-        github_user=None,
-        github_repo=None,
-        dirname=None,
-        github_api_key=None,
+        BOBSLED_TASKS_FILENAME=None,
+        BOBSLED_TASKS_GITHUB_USER=None,
+        BOBSLED_TASKS_GITHUB_REPO=None,
+        BOBSLED_TASKS_DIRNAME=None,
+        BOBSLED_GITHUB_API_KEY=None,
     ):
         self.storage = storage
-        self.filename = filename
-        self.github_user = github_user
-        self.github_repo = github_repo
-        self.dirname = dirname
-        self.github_api_key = github_api_key
+        self.filename = BOBSLED_TASKS_FILENAME
+        self.github_user = BOBSLED_TASKS_GITHUB_USER
+        self.github_repo = BOBSLED_TASKS_GITHUB_REPO
+        self.dirname = BOBSLED_TASKS_DIRNAME
+        self.github_api_key = BOBSLED_GITHUB_API_KEY
 
     async def update_tasks(self):
         if self.github_user and self.github_repo:

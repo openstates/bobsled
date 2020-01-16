@@ -2,11 +2,9 @@ from ..base import Environment, EnvironmentProvider
 
 
 class LocalEnvironmentProvider(EnvironmentProvider):
-    ENVIRONMENT_SETTINGS = {"BOBSLED_ENVIRONMENT_JSON": "environments"}
-
-    def __init__(self, environments):
+    def __init__(self, BOBSLED_ENVIRONMENT_JSON):
         self.environments = {}
-        for name, values in environments.items():
+        for name, values in BOBSLED_ENVIRONMENT_JSON.items():
             self.environments[name] = Environment(name, values)
 
     def get_environment_names(self):

@@ -5,34 +5,26 @@ from ..base import RunService, Status
 
 
 class ECSRunService(RunService):
-    ENVIRONMENT_SETTINGS = {
-        "BOBSLED_ECS_CLUSTER": "cluster_name",
-        "BOBSLED_SUBNET_ID": "subnet_id",
-        "BOBSLED_SECURITY_GROUP_ID": "security_group_id",
-        "BOBSLED_LOG_GROUP": "log_group",
-        "BOBSLED_ROLE_ARN": "role_arn",
-    }
-
     def __init__(
         self,
         storage,
         environment,
         callbacks=None,
         *,
-        cluster_name,
-        subnet_id,
-        security_group_id,
-        log_group,
-        role_arn,
+        BOBSLED_ECS_CLUSTER,
+        BOBSLED_SUBNET_ID,
+        BOBSLED_SECURITY_GROUP_ID,
+        BOBSLED_LOG_GROUP,
+        BOBSLED_ROLE_ARN,
     ):
         self.storage = storage
         self.environment = environment
         self.callbacks = callbacks or []
-        self.cluster_name = cluster_name
-        self.subnet_id = subnet_id
-        self.security_group_id = security_group_id
-        self.log_group = log_group
-        self.role_arn = role_arn
+        self.cluster_name = BOBSLED_ECS_CLUSTER
+        self.subnet_id = BOBSLED_SUBNET_ID
+        self.security_group_id = BOBSLED_SECURITY_GROUP_ID
+        self.log_group = BOBSLED_LOG_GROUP
+        self.role_arn = BOBSLED_ROLE_ARN
         self.ecs = boto3.client("ecs")
 
         self.cluster_arn = self.ecs.describe_clusters(clusters=[self.cluster_name])[

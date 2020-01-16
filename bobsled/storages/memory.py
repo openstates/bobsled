@@ -3,8 +3,6 @@ from ..utils import hash_password, verify_password
 
 
 class InMemoryStorage:
-    ENVIRONMENT_SETTINGS = {}
-
     def __init__(self):
         self.runs = []
         self.tasks = {}

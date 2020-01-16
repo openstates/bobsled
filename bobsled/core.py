@@ -1,26 +1,6 @@
 import os
-
 from bobsled import storages, environments, tasks, runners  # , callbacks
-
-
-def get_env_config(key, default, module):
-    """
-    Get class configuration from the environment.
-
-    Reads the environment variable 'key', and loads the appropriate class from 'module'.
-
-    Then inspects the class and finds out what additional variables need to be loaded via
-    Cls.ENVIRONMENT_SETTINGS
-    """
-    name = os.environ.get(key, default)
-    Cls = getattr(module, name)
-
-    env_cfg = getattr(Cls, "ENVIRONMENT_SETTINGS", {})
-    args = {}
-    for env_var_name, arg_name in env_cfg.items():
-        args[arg_name] = os.environ[env_var_name]
-
-    return Cls, args
+from bobsled.utils import get_env_config
 
 
 class Bobsled:
