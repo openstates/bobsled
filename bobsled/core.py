@@ -1,15 +1,26 @@
 import os
-import json
 
-from bobsled import storages, environments, tasks, runners, callbacks
+from bobsled import storages, environments, tasks, runners  # , callbacks
 
 
-def get_env_json(key, default):
-    val = os.environ.get(key, None)
-    if not val:
-        return default
-    else:
-        return json.loads(val)
+def get_env_config(key, default, module):
+    """
+    Get class configuration from the environment.
+
+    Reads the environment variable 'key', and loads the appropriate class from 'module'.
+
+    Then inspects the class and finds out what additional variables need to be loaded via
+    Cls.ENVIRONMENT_SETTINGS
+    """
+    name = os.environ.get(key, default)
+    Cls = getattr(module, name)
+
+    env_cfg = getattr(Cls, "ENVIRONMENT_SETTINGS", {})
+    args = {}
+    for env_var_name, arg_name in env_cfg.items():
+        args[arg_name] = os.environ[env_var_name]
+
+    return Cls, args
 
 
 class Bobsled:
@@ -18,39 +29,30 @@ class Bobsled:
         if self.settings["secret_key"] is None:
             raise ValueError("must set 'secret_key' setting")
 
-        storage_cfg = get_env_json(
-            "BOBSLED_STORAGE", {"provider": "InMemoryStorage", "args": {}}
+        EnvCls, env_args = get_env_config(
+            "BOBSLED_ENV_PROVIDER", "LocalEnvironmentProvider", environments
         )
-        env_cfg = get_env_json(
-            "BOBSLED_ENVIRONMENTS",
-            {"provider": "LocalEnvironmentProvider", "args": {"environments": {}}},
+        StorageCls, storage_args = get_env_config(
+            "BOBSLED_STORAGE_PROVIDER", "InMemoryStorage", storages
         )
-        task_cfg = get_env_json(
-            "BOBSLED_TASKS",
-            {"provider": "YamlTaskProvider", "args": {"filename": "tasks.yml"}},
+        TaskCls, task_args = get_env_config(
+            "BOBSLED_TASK_PROVIDER", "YamlTaskProvider", tasks
         )
-        run_cfg = get_env_json(
-            "BOBSLED_RUNNER", {"provider": "LocalRunService", "args": {}}
-        )
+        RunCls, run_args = get_env_config("BOBSLED_RUNNER", "LocalRunService", runners)
 
-        EnvCls = getattr(environments, env_cfg["provider"])
-        TaskCls = getattr(tasks, task_cfg["provider"])
-        RunCls = getattr(runners, run_cfg["provider"])
-        StorageCls = getattr(storages, storage_cfg["provider"])
+        # callback_classes = []
+        # for cb in get_env_json("BOBSLED_CALLBACKS", []):
+        #     PluginCls = getattr(callbacks, cb["plugin"])
+        #     callback_classes.append(PluginCls(**cb["args"]))
 
-        callback_classes = []
-        for cb in get_env_json("BOBSLED_CALLBACKS", []):
-            PluginCls = getattr(callbacks, cb["plugin"])
-            callback_classes.append(PluginCls(**cb["args"]))
-
-        self.storage = StorageCls(**storage_cfg["args"])
-        self.env = EnvCls(**env_cfg["args"])
-        self.tasks = TaskCls(storage=self.storage, **task_cfg["args"])
+        self.storage = StorageCls(**storage_args)
+        self.env = EnvCls(**env_args)
+        self.tasks = TaskCls(storage=self.storage, **task_args)
         self.run = RunCls(
             storage=self.storage,
             environment=self.env,
-            callbacks=callback_classes,
-            **run_cfg["args"]
+            # callbacks=callback_classes,
+            **run_args,
         )
 
     async def initialize(self):

@@ -1,5 +1,4 @@
 import os
-import inspect
 import pytest
 from ..storages import InMemoryStorage, DatabaseStorage
 from ..base import Run, Status, Task, Trigger
@@ -12,13 +11,6 @@ def db_storage():
         pass
     db = DatabaseStorage("sqlite:///test.db")
     return db
-
-
-@pytest.mark.parametrize("Cls", [InMemoryStorage, DatabaseStorage])
-def test_environment_settings_args(Cls):
-    settings = Cls.ENVIRONMENT_SETTINGS.values()
-    params = inspect.signature(Cls.__init__).parameters.keys()
-    assert set(settings) == (set(params) - {"self"})
 
 
 @pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])

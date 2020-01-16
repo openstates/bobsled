@@ -4,6 +4,8 @@ from ..base import RunService, Status
 
 
 class LocalRunService(RunService):
+    ENVIRONMENT_SETTINGS = {}
+
     def __init__(self, storage, environment, callbacks=None):
         self.client = docker.from_env()
         self.storage = storage

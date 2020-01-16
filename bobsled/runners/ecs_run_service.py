@@ -5,6 +5,14 @@ from ..base import RunService, Status
 
 
 class ECSRunService(RunService):
+    ENVIRONMENT_SETTINGS = {
+        "BOBSLED_ECS_CLUSTER": "cluster_name",
+        "BOBSLED_SUBNET_ID": "subnet_id",
+        "BOBSLED_SECURITY_GROUP_ID": "security_group_id",
+        "BOBSLED_LOG_GROUP": "log_group",
+        "BOBSLED_ROLE_ARN": "role_arn",
+    }
+
     def __init__(
         self,
         storage,

@@ -4,6 +4,14 @@ from ..base import Task, TaskProvider
 
 
 class YamlTaskProvider(TaskProvider):
+    ENVIRONMENT_SETTINGS = {
+        "BOBSLED_TASKS_FILENAME": "filename",
+        "BOBSLED_TASKS_GITHUB_USER": "github_user",
+        "BOBSLED_TASKS_GITHUB_REPO": "github_repo",
+        "BOBSLED_TASKS_DIRNAME": "dirname",
+        "BOBSLED_GITHUB_API_KEY": "github_api_key",
+    }
+
     def __init__(
         self,
         *,
