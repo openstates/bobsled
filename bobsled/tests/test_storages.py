@@ -118,16 +118,10 @@ async def test_task_storage(cls):
 async def test_task_storage_updates(cls):
     s = cls()
     await s.connect()
-    tasks = [
-        Task(name="one", image="img1"),
-        Task(name="two", image="img2"),
-    ]
+    tasks = [Task(name="one", image="img1"), Task(name="two", image="img2")]
     await s.set_tasks(tasks)
 
-    tasks = [
-        Task(name="one", image="newimg"),
-        Task(name="three", image="img3"),
-    ]
+    tasks = [Task(name="one", image="newimg"), Task(name="three", image="img3")]
     await s.set_tasks(tasks)
     retr_tasks = await s.get_tasks()
     # order-indepdendent comparison
