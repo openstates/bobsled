@@ -13,8 +13,8 @@ Required Settings:
   - BOBSLED_SECRET_KEY
 
 Provider Settings:
-  - BOBSLED_ENV_PROVIDER (*LocalEnvironmentProvider*, )
-  - BOBSLED_STORAGE_PROVIDER (*InMemoryStorage, DatabaseStorage)
+  - BOBSLED_ENVIRONMENT_PROVIDER (*LocalEnvironmentProvider*, )
+  - BOBSLED_STORAGE (*InMemoryStorage, DatabaseStorage)
   - BOBSLED_TASK_PROVIDER (*YamlTaskProvider*)
   - BOBSLED_RUNNER (*LocalRunService, ECSRunService)
 

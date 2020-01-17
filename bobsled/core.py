@@ -10,10 +10,10 @@ class Bobsled:
             raise ValueError("must set 'secret_key' setting")
 
         EnvCls, env_args = get_env_config(
-            "BOBSLED_ENV_PROVIDER", "LocalEnvironmentProvider", environments
+            "BOBSLED_ENVIRONMENT_PROVIDER", "LocalEnvironmentProvider", environments
         )
         StorageCls, storage_args = get_env_config(
-            "BOBSLED_STORAGE_PROVIDER", "InMemoryStorage", storages
+            "BOBSLED_STORAGE", "InMemoryStorage", storages
         )
         TaskCls, task_args = get_env_config(
             "BOBSLED_TASK_PROVIDER", "YamlTaskProvider", tasks
