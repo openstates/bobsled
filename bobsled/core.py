@@ -23,7 +23,7 @@ class Bobsled:
         callback_classes = []
         if os.environ.get("BOBSLED_ENABLE_GITHUB_ISSUE_CALLBACK"):
             CallbackCls = callbacks.GithubIssueCallback
-            callback_classes.append(CallbackCls(load_args(CallbackCls)))
+            callback_classes.append(CallbackCls(**load_args(CallbackCls)))
 
         self.storage = StorageCls(**storage_args)
         self.env = EnvCls(**env_args)
@@ -31,7 +31,7 @@ class Bobsled:
         self.run = RunCls(
             storage=self.storage,
             environment=self.env,
-            # callbacks=callback_classes,
+            callbacks=callback_classes,
             **run_args,
         )
 
