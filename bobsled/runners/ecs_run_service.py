@@ -49,7 +49,7 @@ class ECSRunService(RunService):
             "name": task.name,
             "image": task.image,
             "essential": True,
-            "entryPoint": task.entrypoint.split(),
+            "entryPoint": task.entrypoint,
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {

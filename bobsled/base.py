@@ -34,13 +34,17 @@ class Task:
     name: str
     image: str
     tags: typing.List[str] = []
-    entrypoint: str = ""
+    entrypoint: typing.List[str] = []
     environment: str = ""
     memory: int = 512
     cpu: int = 256
     enabled: bool = True
     timeout_minutes: int = 0
     triggers: typing.List[Trigger] = []
+
+    def __attrs_post_init__(self):
+        if isinstance(self.entrypoint, str):
+            self.entrypoint = self.entrypoint.split()
 
 
 @attr.s(auto_attribs=True)

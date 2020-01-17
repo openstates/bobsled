@@ -13,7 +13,7 @@ Tasks = sqlalchemy.Table(
     sqlalchemy.Column("name", sqlalchemy.String(length=100), primary_key=True),
     sqlalchemy.Column("image", sqlalchemy.String(length=100)),
     sqlalchemy.Column("tags", sqlalchemy.JSON()),
-    sqlalchemy.Column("entrypoint", sqlalchemy.String(length=1000)),
+    sqlalchemy.Column("entrypoint", sqlalchemy.ARRAY(sqlalchemy.String(length=1000))),
     sqlalchemy.Column("environment", sqlalchemy.String(length=100)),
     sqlalchemy.Column("memory", sqlalchemy.Integer),
     sqlalchemy.Column("cpu", sqlalchemy.Integer),
