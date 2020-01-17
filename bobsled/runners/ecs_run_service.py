@@ -45,11 +45,13 @@ class ECSRunService(RunService):
             env = self.environment.get_environment(task.environment)
             env_list = [{"name": k, "value": v} for k, v in env.values.items()]
 
+        if isinstance(task.entrypoint, str):
+            entrypoint = task.entrypoint.split()
         main_container = {
             "name": task.name,
             "image": task.image,
             "essential": True,
-            "entryPoint": task.entrypoint.split(),
+            "entryPoint": entrypoint,
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
