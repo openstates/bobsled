@@ -92,6 +92,8 @@ async def run_service():
         if utcnow > next_task_update:
             _log("updating tasks...")
             await bobsled.tasks.update_tasks()
+            tasks = await bobsled.tasks.get_tasks()
+            bobsled.run.initialize(tasks)
             next_task_update = utcnow + datetime.timedelta(minutes=UPDATE_TASKS_MINS)
             _log(f"updated tasks, will run again at {next_task_update}")
 
