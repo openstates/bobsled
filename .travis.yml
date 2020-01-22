@@ -1,8 +1,8 @@
 language: python
 dist: xenial
-sudo: false
 services:
   - docker
+  - postgresql
 python:
   - "3.7"
   - "3.8"
