@@ -1,23 +1,28 @@
-import os
 import pytest
 from ..storages import InMemoryStorage, DatabaseStorage
 from ..base import Run, Status, Task, Trigger
+from ..storages.database import Tasks, Runs, Users
 
 
-def db_storage():
-    try:
-        os.remove("test.db")
-    except OSError:
-        pass
-    db = DatabaseStorage("sqlite:///test.db")
+async def mem_storage():
+    return InMemoryStorage()
+
+
+async def db_storage():
+    db = DatabaseStorage("postgresql://localhost/bobsled_test")
+    await db.connect()
+    await db.database.execute(Runs.delete())
+    await db.database.execute(Tasks.delete())
+    await db.database.execute(Users.delete())
+    names = ["test-task", "stopped", "running", "running too", "one", "two", "three"]
+    await db.set_tasks([Task(name, "image") for name in names])
     return db
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_simple_add_then_get(cls):
-    p = cls()
-    await p.connect()
+async def test_simple_add_then_get(storage):
+    p = await storage()
     r = Run("test-task", Status.Running)
     await p.add_run(r)
     r2 = await p.get_run(r.uuid)
@@ -26,11 +31,10 @@ async def test_simple_add_then_get(cls):
     assert r.status == r2.status
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_update(cls):
-    p = cls()
-    await p.connect()
+async def test_update(storage):
+    p = await storage()
     r = Run("test-task", Status.Running)
     await p.add_run(r)
     r.status = Status.Success
@@ -41,20 +45,18 @@ async def test_update(cls):
     assert r2.exit_code == 0
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_bad_get(cls):
-    p = cls()
-    await p.connect()
+async def test_bad_get(storage):
+    p = await storage()
     r = await p.get_run("nonsense")
     assert r is None
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_get_runs(cls):
-    p = cls()
-    await p.connect()
+async def test_get_runs(storage):
+    p = await storage()
     await p.add_run(Run("stopped", Status.Success, start="2010-01-01"))
     await p.add_run(Run("running too", Status.Running, start="2015-01-01"))
     await p.add_run(Run("running", Status.Running, start="2019-01-01"))
@@ -69,11 +71,10 @@ async def test_get_runs(cls):
     assert [r.task for r in await p.get_runs()] == ["stopped", "running too", "running"]
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_get_runs_latest_n(cls):
-    p = cls()
-    await p.connect()
+async def test_get_runs_latest_n(storage):
+    p = await storage()
     await p.add_run(Run("one", Status.Success, start="2010-01-01"))
     await p.add_run(Run("two", Status.Running, start="2015-01-01"))
     await p.add_run(Run("three", Status.Running, start="2019-01-01"))
@@ -84,11 +85,10 @@ async def test_get_runs_latest_n(cls):
     assert latest_one[0].task == "three"
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_task_storage(cls):
-    s = cls()
-    await s.connect()
+async def test_task_storage(storage):
+    s = await storage()
     tasks = [
         Task(
             name="one",
@@ -113,11 +113,10 @@ async def test_task_storage(cls):
     assert task == tasks[0]
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_task_storage_updates(cls):
-    s = cls()
-    await s.connect()
+async def test_task_storage_updates(storage):
+    s = await storage()
     tasks = [Task(name="one", image="img1"), Task(name="two", image="img2")]
     await s.set_tasks(tasks)
 
@@ -131,11 +130,10 @@ async def test_task_storage_updates(cls):
     assert task == tasks[0]
 
 
-@pytest.mark.parametrize("cls", [InMemoryStorage, db_storage])
+@pytest.mark.parametrize("storage", [mem_storage, db_storage])
 @pytest.mark.asyncio
-async def test_user_storage(cls):
-    s = cls()
-    await s.connect()
+async def test_user_storage(storage):
+    s = await storage()
     # non-existent user
     check = await s.check_password("someone", "abc")
     assert not check

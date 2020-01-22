@@ -13,6 +13,8 @@ install:
   - docker pull jamesturk/bobsled-forever
   # - npm ci
   # - npm run build
+before_script:
+  - psql -c 'create database bobsled_test;' -U postgres
 env:
   - BOTO_CONFIG=/dev/null AWS_DEFAULT_REGION=us-east-1 BOBSLED_SECRET_KEY="secret-stuff-here" BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml"
 script: 
