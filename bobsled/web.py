@@ -86,6 +86,10 @@ async def manage_users(request):
     errors = []
     message = ""
     usernames = await bobsled.storage.get_usernames()
+
+    if usernames:
+        return RedirectResponse("/login")
+
     if request.method == "POST":
         form = await request.form()
         if form["password"] != form["confirm_password"]:
