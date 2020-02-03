@@ -119,7 +119,7 @@ class RunService:
             for run in runs:
                 await self.update_status(run.uuid)
         # sort runs old to new
-        runs.sort(key=lambda r: r.start)
+        runs.sort(key=lambda r: r.start, reverse=True)
         return runs
 
     async def stop_run(self, run_id):
