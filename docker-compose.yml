@@ -21,12 +21,14 @@ services:
     volumes:
       - .:/code
     ports:
-      - "8500:8000"
+      - "9000:9000"
     environment:
+      - BOBSLED_SECRET_KEY=something-secret
       - DATABASE_URL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION=us-east-1
+      - BOBSLED_TASKS_FILENAME=bobsled/tests/tasks/tasks.yml
     entrypoint: ["poetry", "run", "python", "-m", "bobsled.web"]
     depends_on:
       - db
@@ -36,10 +38,12 @@ services:
     volumes:
       - .:/code
     environment:
+      - BOBSLED_SECRET_KEY=something-secret
       - DATABASE_URL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION=us-east-1
+      - BOBSLED_TASKS_FILENAME=bobsled/tests/tasks/tasks.yml
     entrypoint: ["poetry", "run", "python", "-m", "bobsled.beat"]
     depends_on:
       - db
