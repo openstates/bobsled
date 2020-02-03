@@ -47,6 +47,9 @@ class InMemoryStorage:
     async def set_tasks(self, tasks):
         self.tasks = {task.name: task for task in tasks}
 
+    async def get_usernames(self):
+        return self.users.keys()
+
     async def set_password(self, username, password):
         self.users[username] = hash_password(password)
 

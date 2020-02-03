@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block body %}
+<section class="section">
+<div class="container">
+<div class="columns">
+  <div class="column is-half">
+    <h2 class="title is-2">Users</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Username</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for username in usernames %}
+        <tr>
+          <td>{{ username }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="column is-half">
+
+    <div class="card">
+      <header class="card-header">
+        <p class="card-header-title">
+          Create User
+        </p>
+      </header>
+
+
+      <div class="card-content">
+
+      <div class="content">
+      {% if message %}
+      <p class="has-text-success">{{ message }}</p>
+      {% endif %}
+      {% if errors %}
+        <ul class="has-text-danger">
+          {% for error in errors %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      </div>
+
+<form action="" method="POST">
+  <div class="field">
+    <label class="label">Username</label>
+      <div class="control">
+        <input class="input" name="username" />
+      </div>
+  </div>
+  <div class="field">
+    <label class="label">Password</label>
+      <div class="control">
+        <input class="input" name="password" type="password" />
+      </div>
+  </div>
+  <div class="field">
+    <label class="label">Confirm Password</label>
+      <div class="control">
+        <input class="input" name="confirm_password" type="password" />
+      </div>
+  </div>
+  <div class="control">
+    <button class="button is-link">Submit</button>
+  </div>
+</form>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+</section>
+{% endblock %}

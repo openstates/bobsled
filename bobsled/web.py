@@ -81,6 +81,36 @@ async def login(request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
+@app.route("/manage_users", methods=["GET", "POST"])
+async def manage_users(request):
+    errors = []
+    message = ""
+    usernames = await bobsled.storage.get_usernames()
+    if request.method == "POST":
+        form = await request.form()
+        if form["password"] != form["confirm_password"]:
+            errors.append("Passwords do not match.")
+        if not form["username"]:
+            errors.append("Username is required.")
+        if not form["password"]:
+            errors.append("Password is required.")
+        if form["username"] in usernames:
+            errors.append("Username is already taken.")
+        if not errors:
+            await bobsled.storage.set_password(form["username"], form["password"])
+            message = "Successfully created " + form["username"]
+
+    return templates.TemplateResponse(
+        "manage_users.html",
+        {
+            "request": request,
+            "errors": errors,
+            "message": message,
+            "usernames": usernames,
+        },
+    )
+
+
 @app.route("/")
 @app.route("/latest_runs")
 @app.route("/task/{task_name}")
