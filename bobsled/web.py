@@ -87,7 +87,7 @@ async def manage_users(request):
     message = ""
     usernames = await bobsled.storage.get_usernames()
 
-    if usernames:
+    if usernames and not request.user.is_authenticated:
         return RedirectResponse("/login")
 
     if request.method == "POST":
