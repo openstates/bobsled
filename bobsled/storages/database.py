@@ -174,3 +174,8 @@ class DatabaseStorage:
         row = await self.database.fetch_one(query=query)
         if row:
             return verify_password(password, row["password"])
+
+    async def get_users(self):
+        query = Users.select()
+        rows = await self.database.fetch_all(query=query)
+        return [r["username"] for r in rows]

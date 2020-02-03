@@ -85,7 +85,7 @@ async def login(request):
 async def manage_users(request):
     errors = []
     message = ""
-    usernames = await bobsled.storage.get_usernames()
+    usernames = await bobsled.storage.get_users()
 
     if usernames and not request.user.is_authenticated:
         return RedirectResponse("/login")
@@ -102,7 +102,7 @@ async def manage_users(request):
             errors.append("Username is already taken.")
         if not errors:
             await bobsled.storage.set_password(form["username"], form["password"])
-            usernames = await bobsled.storage.get_usernames()
+            usernames = await bobsled.storage.get_users()
             message = "Successfully created " + form["username"]
 
     return templates.TemplateResponse(

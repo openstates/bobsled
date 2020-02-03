@@ -150,3 +150,5 @@ async def test_user_storage(storage):
     # right password
     check = await s.check_password("someone", "xyz")
     assert check
+    # check usernames
+    assert await s.get_users() == ["someone"]

@@ -33,7 +33,6 @@ def test_manage_users_add_errors():
     with TestClient(app) as client:
         # required fields
         resp = client.post("/manage_users")
-        print(resp.url, resp.content, resp.status_code, bobsled.storage.users)
         assert resp.status_code == 200
         assert "Username is required." in resp.context["errors"]
         assert "Password is required." in resp.context["errors"]
