@@ -14,6 +14,7 @@ bobsled.yml
 environments.yml
 tasks.yml
 users.yml
+run-local.sh
 
 *.db
 

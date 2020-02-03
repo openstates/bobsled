@@ -24,11 +24,25 @@ services:
       - "9000:9000"
     environment:
       - BOBSLED_SECRET_KEY=something-secret
-      - DATABASE_URL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION=us-east-1
       - BOBSLED_TASKS_FILENAME=bobsled/tests/tasks/tasks.yml
+      - BOBSLED_GITHUB_API_KEY
+      - BOBSLED_ENVIRONMENT_PROVIDER
+      - BOBSLED_ENVIRONMENT_PARAMSTORE_PREFIX
+      - BOBSLED_TASKS_GITHUB_USER
+      - BOBSLED_TASKS_GITHUB_REPO
+      - BOBSLED_TASKS_DIRNAME
+      - BOBSLED_RUNNER
+      - BOBSLED_ECS_CLUSTER
+      - BOBSLED_SUBNET_ID
+      - BOBSLED_SECURITY_GROUP_ID
+      - BOBSLED_LOG_GROUP
+      - BOBSLED_ROLE_ARN
+      - BOBSLED_STORAGE
+      - BOBSLED_DATABASE_URI
+
     entrypoint: ["poetry", "run", "python", "-m", "bobsled.web"]
     depends_on:
       - db
@@ -39,11 +53,25 @@ services:
       - .:/code
     environment:
       - BOBSLED_SECRET_KEY=something-secret
-      - DATABASE_URL
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
       - AWS_DEFAULT_REGION=us-east-1
       - BOBSLED_TASKS_FILENAME=bobsled/tests/tasks/tasks.yml
+      - BOBSLED_GITHUB_API_KEY
+      - BOBSLED_ENVIRONMENT_PROVIDER
+      - BOBSLED_ENVIRONMENT_PARAMSTORE_PREFIX
+      - BOBSLED_TASKS_GITHUB_USER
+      - BOBSLED_TASKS_GITHUB_REPO
+      - BOBSLED_TASKS_DIRNAME
+      - BOBSLED_RUNNER
+      - BOBSLED_ECS_CLUSTER
+      - BOBSLED_SUBNET_ID
+      - BOBSLED_SECURITY_GROUP
+      - BOBSLED_LOG_GROUP
+      - BOBSLED_ROLE_ARN
+      - BOBSLED_STORAGE
+      - BOBSLED_DATABASE_URI
+
     entrypoint: ["poetry", "run", "python", "-m", "bobsled.beat"]
     depends_on:
       - db
