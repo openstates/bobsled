@@ -30,14 +30,14 @@ class YamlTaskProvider(TaskProvider):
         if self.github_user and self.github_repo:
             gh = github3.GitHub(token=self.github_api_key)
             repo = gh.repository(self.github_user, self.github_repo)
-            if self.filename:
-                contents = repo.file_contents(self.filename).decoded
-                data = yaml.safe_load(contents)
-            elif self.dirname:
+            if self.dirname:
                 data = {}
                 for fname, contents in repo.directory_contents(self.dirname):
                     contents.refresh()
                     data.update(yaml.safe_load(contents.decoded))
+            elif self.filename:
+                contents = repo.file_contents(self.filename).decoded
+                data = yaml.safe_load(contents)
         else:
             with open(self.filename) as f:
                 data = yaml.safe_load(f)
