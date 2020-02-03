@@ -92,16 +92,17 @@ async def manage_users(request):
 
     if request.method == "POST":
         form = await request.form()
-        if form["password"] != form["confirm_password"]:
-            errors.append("Passwords do not match.")
-        if not form["username"]:
+        if not form.get("username"):
             errors.append("Username is required.")
-        if not form["password"]:
+        if not form.get("password"):
             errors.append("Password is required.")
-        if form["username"] in usernames:
+        if form.get("password") != form.get("confirm_password"):
+            errors.append("Passwords do not match.")
+        if form.get("username") in usernames:
             errors.append("Username is already taken.")
         if not errors:
             await bobsled.storage.set_password(form["username"], form["password"])
+            usernames = await bobsled.storage.get_usernames()
             message = "Successfully created " + form["username"]
 
     return templates.TemplateResponse(
