@@ -1,3 +1,4 @@
+import os
 import pytest
 from ..storages import InMemoryStorage, DatabaseStorage
 from ..base import Run, Status, Task, Trigger
@@ -9,7 +10,12 @@ async def mem_storage():
 
 
 async def db_storage():
-    db = DatabaseStorage("postgresql://localhost/bobsled_test")
+    db = DatabaseStorage(
+        os.environ.get(
+            "BOBSLED_TEST_DATABASE",
+            "postgresql://bobsled:bobsled@localhost:5435/bobsled_test",
+        )
+    )
     await db.connect()
     await db.database.execute(Runs.delete())
     await db.database.execute(Tasks.delete())
