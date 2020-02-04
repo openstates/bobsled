@@ -31,9 +31,11 @@ class TaskPage extends React.Component {
   }
 
   render() {
-    var entrypoint_display = "--";
+    var entrypoint_display = "";
+    var next_tasks = "";
     if(Object.entries(this.state.task).length !== 0) {
       entrypoint_display = this.state.task.entrypoint.join(" ");
+      next_tasks = this.state.task.next_tasks.map(nt => <li key={nt}><a href={"/task/" + nt}>{nt}</a></li>);
     }
     return (
       <section className="section">
@@ -84,8 +86,16 @@ class TaskPage extends React.Component {
                     </td>
                   </tr>
                   <tr>
+                    <th>Next Tasks</th>
+                    <td>
+                      <ul>
+                        {next_tasks}
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
                     <th>Enabled</th>
-                    <td>{this.state.task.enabled ? "yes" : "no"}</td>
+                    <td className={this.state.task.enabled ? "success" : "error"}>{this.state.task.enabled ? "yes" : "no"}</td>
                   </tr>
                 </tbody>
               </table>
