@@ -101,7 +101,7 @@ async def manage_users(request):
         if form.get("username") in usernames:
             errors.append("Username is already taken.")
         if not errors:
-            await bobsled.storage.set_password(form["username"], form["password"])
+            await bobsled.storage.set_user(form["username"], form["password"], [])
             usernames = await bobsled.storage.get_users()
             message = "Successfully created " + form["username"]
 

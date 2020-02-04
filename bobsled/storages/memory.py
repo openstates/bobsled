@@ -50,10 +50,10 @@ class InMemoryStorage:
     async def get_users(self):
         return list(self.users.keys())
 
-    async def set_password(self, username, password):
-        self.users[username] = hash_password(password)
+    async def set_user(self, username, password, permissions):
+        self.users[username] = (hash_password(password), permissions)
 
     async def check_password(self, username, password):
-        phash = self.users.get(username)
+        phash, _ = self.users.get(username)
         if phash:
             return verify_password(password, phash)

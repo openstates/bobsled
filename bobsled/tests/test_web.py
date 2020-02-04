@@ -16,7 +16,7 @@ def test_manage_users_permissions():
         assert resp.status_code == 200
 
         # user in database, page redirects
-        bobsled.storage.users["sample"] = hash_password("password")
+        bobsled.storage.users["sample"] = (hash_password("password"), [])
         resp = client.get("/manage_users")
         assert resp.url == "http://testserver/login"
         assert resp.status_code == 200
@@ -45,7 +45,7 @@ def test_manage_users_add_errors():
         assert "Passwords do not match." in resp.context["errors"]
 
         # already taken
-        bobsled.storage.users["sample"] = hash_password("password")
+        bobsled.storage.users["sample"] = (hash_password("password"), [])
         resp = client.post(
             "/manage_users",
             {"username": "sample", "password": "abc", "confirm_password": "abc"},
