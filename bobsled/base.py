@@ -102,10 +102,24 @@ class RunService:
         await self.storage.add_run(run)
         return run
 
-    async def trigger_callbacks(self, run):
+    async def _save_and_followup(self, run):
+        await self.storage.save_run(run)
         if run.status == Status.Success:
+            # start other jobs and do on success callback
+            try:
+                cur_task = await self.storage.get_task(run.task)
+                for next_task in cur_task.next_tasks:
+                    next_task = await self.storage.get_task(next_task)
+                    await self.run_task(next_task)
+            except KeyError as e:
+                # in general we should probably handle this better, but it seems rare
+                # and is likely only occuring in test situations where the running task
+                # isn't registered
+                print("missing task", e)
+
             for callback in self.callbacks:
                 await callback.on_success(run, self.storage)
+
         elif run.status == Status.Error:
             for callback in self.callbacks:
                 await callback.on_error(run, self.storage)

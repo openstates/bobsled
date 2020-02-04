@@ -177,10 +177,7 @@ class ECSRunService(RunService):
                 run.exit_code = -400
                 run.logs = result["containers"][0]["reason"]
             run.status = Status.Error if run.exit_code else Status.Success
-
-            await self.storage.save_run(run)
-            await self.trigger_callbacks(run)
-
+            await self._save_and_followup(run)
         elif (
             run.run_info["timeout_at"]
             and datetime.datetime.utcnow().isoformat() > run.run_info["timeout_at"]
@@ -188,23 +185,20 @@ class ECSRunService(RunService):
             run.logs = self.get_logs(run)
             self.stop(run)
             run.status = Status.TimedOut
-            await self.storage.save_run(run)
-            await self.trigger_callbacks(run)
+            await self._save_and_followup(run)
 
         elif result["lastStatus"] == "RUNNING":
             if run.status != Status.Running:
                 run.status = Status.Running
                 run.logs = self.get_logs(run)
-                await self.storage.save_run(run)
-                await self.trigger_callbacks(run)
+                await self._save_and_followup(run)
             elif update_logs:
                 run.logs = self.get_logs(run)
                 await self.storage.save_run(run)
         elif result["lastStatus"] in ("PENDING", "PROVISIONING"):
             if run.status != Status.Pending:
                 run.status = Status.Pending
-                await self.storage.save_run(run)
-                await self.trigger_callbacks(run)
+                await self._save_and_followup(run)
 
         return run
 

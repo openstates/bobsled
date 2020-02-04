@@ -8,7 +8,9 @@ full-example:
   enabled: true
   triggers:
     - cron: 0 4 * * ?
-  next_tasks:
-    - hello-world
 forever:
   image: forever
+  # put next_tasks on forever to test parsing, but we don't actually want
+  # to trigger next_tasks in tests that use these
+  next_tasks:
+    - hello-world
