@@ -107,6 +107,7 @@ async def test_task_storage(storage):
             enabled=False,
             timeout_minutes=60,
             triggers=[Trigger(cron="@daily")],
+            next_tasks=["two"],
         ),
         Task(name="two", image="img2"),
     ]

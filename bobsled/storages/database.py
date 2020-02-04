@@ -20,6 +20,7 @@ Tasks = sqlalchemy.Table(
     sqlalchemy.Column("enabled", sqlalchemy.Boolean),
     sqlalchemy.Column("timeout_minutes", sqlalchemy.Integer),
     sqlalchemy.Column("triggers", sqlalchemy.JSON()),
+    sqlalchemy.Column("next_tasks", sqlalchemy.ARRAY(sqlalchemy.String(length=100))),
 )
 Runs = sqlalchemy.Table(
     "bobsled_run",

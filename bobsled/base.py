@@ -41,6 +41,7 @@ class Task:
     enabled: bool = True
     timeout_minutes: int = 0
     triggers: typing.List[Trigger] = []
+    next_tasks: typing.List[str] = []
 
     def __attrs_post_init__(self):
         if isinstance(self.entrypoint, str):
