@@ -159,6 +159,24 @@ async def test_timeout(Cls):
     assert await rs.cleanup() == 0
 
 
+@pytest.mark.parametrize("Cls", runners)
+@pytest.mark.asyncio
+async def test_next_tasks(Cls):
+    storage = InMemoryStorage()
+    task = Task("hello-world", image="hello-world", next_tasks=["next"])
+    task2 = Task("next", image="alpine", entrypoint=["echo", "2"])
+    # need to put both into storage so that next_tasks lookup works
+    await storage.set_tasks([task, task2])
+    rs = LocalRunService(storage, LocalEnvironmentProvider(), [])
+    run = await rs.run_task(task)
+
+    n_running = await _wait_to_finish(rs, run, 10)
+    assert n_running == 1
+
+    runs = await rs.get_runs()
+    assert len(runs) == 2
+
+
 @pytest.mark.asyncio
 async def test_callback_on_success():
     class Callback:

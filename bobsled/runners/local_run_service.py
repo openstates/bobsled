@@ -72,6 +72,17 @@ class LocalRunService(RunService):
             run.exit_code = resp["StatusCode"]
             await self.storage.save_run(run)
             await self.trigger_callbacks(run)
+            if run.status == Status.Success:
+                try:
+                    cur_task = await self.storage.get_task(run.task)
+                    for next_task in cur_task.next_tasks:
+                        next_task = await self.storage.get_task(next_task)
+                        await self.run_task(next_task)
+                except KeyError as e:
+                    # in general we should probably handle this better, but it seems rare
+                    # and is likely only occuring in test situations where the running task
+                    # isn't registered
+                    print("missing task", e)
             container.remove()
 
         elif run.status == Status.Running:

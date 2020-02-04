@@ -8,5 +8,7 @@ full-example:
   enabled: true
   triggers:
     - cron: 0 4 * * ?
+  next_tasks:
+    - hello-world
 forever:
   image: forever
