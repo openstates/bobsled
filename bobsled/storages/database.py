@@ -185,3 +185,9 @@ class DatabaseStorage:
         query = Users.select()
         rows = await self.database.fetch_all(query=query)
         return [User(r["username"], r["password"], r["permissions"]) for r in rows]
+
+    async def get_user(self, username):
+        query = Users.select().where(Users.c.username == username)
+        r = await self.database.fetch_one(query=query)
+        if r:
+            return User(r["username"], r["password"], r["permissions"])

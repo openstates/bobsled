@@ -157,3 +157,8 @@ async def test_user_storage(storage):
     assert users[0].username == "someone"
     assert "argon2" in users[0].password_hash
     assert users[0].permissions == ["admin"]
+    # check get_user
+    user = await s.get_user("someone")
+    assert user.username == "someone"
+    assert "argon2" in user.password_hash
+    assert user.permissions == ["admin"]
