@@ -1,3 +1,4 @@
+import glob
 import yaml
 import github3
 from ..base import Task, TaskProvider
@@ -38,6 +39,11 @@ class YamlTaskProvider(TaskProvider):
             elif self.filename:
                 contents = repo.file_contents(self.filename).decoded
                 data = yaml.safe_load(contents)
+        elif self.dirname:
+            data = {}
+            for filename in glob.glob(self.dirname + "/*"):
+                with open(filename) as f:
+                    data.append(yaml.safe_load(f))
         else:
             with open(self.filename) as f:
                 data = yaml.safe_load(f)
