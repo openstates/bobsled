@@ -58,3 +58,7 @@ class InMemoryStorage:
         if userdata:
             phash, _ = userdata
             return verify_password(password, phash)
+
+    async def get_permissions(self, username):
+        # second part of userdata
+        return self.users.get(username, (None, None))[1]

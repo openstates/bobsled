@@ -21,7 +21,14 @@ def test_manage_users_permissions():
         assert resp.url == "http://testserver/login"
         assert resp.status_code == 200
 
-        # logged in, page works again
+        # logged in, not admin, page still redirects
+        client.post("/login", {"username": "sample", "password": "password"})
+        resp = client.get("/manage_users")
+        assert resp.url == "http://testserver/login"
+        assert resp.status_code == 200
+
+        # logged in, as admin, page works again
+        bobsled.storage.users["sample"] = (hash_password("password"), ["admin"])
         client.post("/login", {"username": "sample", "password": "password"})
         resp = client.get("/manage_users")
         assert resp.url == "http://testserver/manage_users"
@@ -45,7 +52,7 @@ def test_manage_users_add_errors():
         assert "Passwords do not match." in resp.context["errors"]
 
         # already taken
-        bobsled.storage.users["sample"] = (hash_password("password"), [])
+        bobsled.storage.users["sample"] = (hash_password("password"), ["admin"])
         resp = client.post(
             "/manage_users",
             {"username": "sample", "password": "abc", "confirm_password": "abc"},
@@ -69,6 +76,7 @@ def test_manage_users_good():
                 "username": "sample",
                 "password": "password",
                 "confirm_password": "password",
+                "permissions": "admin",
             },
         )
         assert not resp.is_redirect
