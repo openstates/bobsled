@@ -31,6 +31,10 @@ class TaskPage extends React.Component {
   }
 
   render() {
+    var entrypoint_display = "--";
+    if(Object.entries(this.state.task).length !== 0) {
+      entrypoint_display = this.state.task.entrypoint.join(" ");
+    }
     return (
       <section className="section">
         <div className="container">
@@ -57,7 +61,7 @@ class TaskPage extends React.Component {
                   </tr>
                   <tr>
                     <th>Entrypoint</th>
-                    <td>{this.state.task.entrypoint}</td>
+                    <td>{entrypoint_display}</td>
                   </tr>
                   <tr>
                     <th>Environment</th>
