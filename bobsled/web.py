@@ -36,7 +36,10 @@ class JWTSessionAuthBackend(AuthenticationBackend):
         except jwt.InvalidSignatureError:
             return
 
-        return AuthCredentials(["authenticated"]), SimpleUser(data["username"])
+        return (
+            AuthCredentials(["authenticated"] + data["permissions"]),
+            SimpleUser(data["username"]),
+        )
 
 
 templates = Jinja2Templates(
@@ -62,6 +65,7 @@ async def login(request):
             form["username"], form["password"]
         )
         if logged_in:
+            permissions = await bobsled.storage.get_permissions(form["username"])
             resp = RedirectResponse("/", status_code=302)
             until = datetime.datetime.utcnow() + datetime.timedelta(
                 hours=KEY_VALID_HOURS
@@ -69,7 +73,7 @@ async def login(request):
             token = jwt.encode(
                 {
                     "username": form["username"],
-                    "permissions": "[]",
+                    "permissions": permissions,
                     "until": until.isoformat(),
                 },
                 key=bobsled.settings["secret_key"],
@@ -87,7 +91,7 @@ async def manage_users(request):
     message = ""
     usernames = await bobsled.storage.get_users()
 
-    if usernames and not request.user.is_authenticated:
+    if usernames and "admin" not in request.auth.scopes:
         return RedirectResponse("/login")
 
     if request.method == "POST":
@@ -100,8 +104,11 @@ async def manage_users(request):
             errors.append("Passwords do not match.")
         if form.get("username") in usernames:
             errors.append("Username is already taken.")
+        permissions = form.get("permissions", "").split(" ")
         if not errors:
-            await bobsled.storage.set_password(form["username"], form["password"])
+            await bobsled.storage.set_user(
+                form["username"], form["password"], permissions
+            )
             usernames = await bobsled.storage.get_users()
             message = "Successfully created " + form["username"]
 
@@ -178,6 +185,8 @@ async def task_overview(request):
 @requires(["authenticated"], redirect="login")
 async def run_task(request):
     task_name = request.path_params["task_name"]
+    if "admin" not in request.auth.scopes:
+        return JSONResponse({"error": "Insufficient permissions."})
     task = await bobsled.tasks.get_task(task_name)
     try:
         run = await bobsled.run.run_task(task)

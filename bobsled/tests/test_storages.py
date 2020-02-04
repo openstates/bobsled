@@ -145,7 +145,7 @@ async def test_user_storage(storage):
     check = await s.check_password("someone", "abc")
     assert not check
     # wrong password
-    await s.set_password("someone", "xyz")
+    await s.set_user("someone", "xyz", ["admin"])
     check = await s.check_password("someone", "abc")
     assert not check
     # right password

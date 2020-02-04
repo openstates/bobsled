@@ -41,6 +41,7 @@ Users = sqlalchemy.Table(
     metadata,
     sqlalchemy.Column("username", sqlalchemy.String(length=100)),
     sqlalchemy.Column("password", sqlalchemy.String(length=100)),
+    sqlalchemy.Column("permissions", sqlalchemy.ARRAY(sqlalchemy.String(length=100))),
 )
 
 
@@ -160,14 +161,18 @@ class DatabaseStorage:
         query = Tasks.delete().where(~Tasks.c.name.in_(seen))
         await self.database.execute(query)
 
-    async def set_password(self, username, password):
+    async def set_user(self, username, password, permissions):
         phash = hash_password(password)
         query = (
-            Users.update().where(Users.c.username == username).values(password=phash)
+            Users.update()
+            .where(Users.c.username == username)
+            .values(password=phash, permissions=permissions or [])
         )
         res = await self.database.execute(query=query)
         if not res:
-            query = Users.insert().values(username=username, password=phash)
+            query = Users.insert().values(
+                username=username, password=phash, permissions=permissions or []
+            )
             await self.database.execute(query=query)
 
     async def check_password(self, username, password):
