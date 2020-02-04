@@ -23,11 +23,6 @@ from .exceptions import AlreadyRunning
 from .core import bobsled
 
 
-class Permissions:
-    ADMIN = "admin"
-    RUN_TASKS = "run_tasks"
-
-
 class JWTSessionAuthBackend(AuthenticationBackend):
     async def authenticate(self, request):
         jwt_token = request.cookies.get("jwt_token")
@@ -190,6 +185,8 @@ async def task_overview(request):
 @requires(["authenticated"], redirect="login")
 async def run_task(request):
     task_name = request.path_params["task_name"]
+    if "admin" not in request.auth.scopes:
+        return JSONResponse({"error": "Insufficient permissions."})
     task = await bobsled.tasks.get_task(task_name)
     try:
         run = await bobsled.run.run_task(task)
