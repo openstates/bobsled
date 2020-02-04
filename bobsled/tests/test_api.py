@@ -1,13 +1,13 @@
 from starlette.testclient import TestClient
-
 from ..web import app, bobsled
 from ..utils import hash_password
+from ..base import User
 
 
 def setup():
     # have to get a working check_login, hack for MemoryStorage
-    bobsled.storage.users["sample"] = (hash_password("password"), [])
-    bobsled.storage.users["admin"] = (hash_password("password"), ["admin"])
+    bobsled.storage.users["sample"] = User("sample", hash_password("password"), [])
+    bobsled.storage.users["admin"] = User("admin", hash_password("password"), ["admin"])
 
 
 def test_index():

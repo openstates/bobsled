@@ -10,12 +10,14 @@
       <thead>
         <tr>
           <th>Username</th>
+          <th>Permissions</th>
         </tr>
       </thead>
       <tbody>
-        {% for username in usernames %}
+        {% for user in users %}
         <tr>
-          <td>{{ username }}</td>
+          <td>{{ user.username }}</td>
+          <td>{{ user.permissions }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -63,6 +65,12 @@
     <label class="label">Confirm Password</label>
       <div class="control">
         <input class="input" name="confirm_password" type="password" />
+      </div>
+  </div>
+  <div class="field">
+    <label class="label">Admin?</label>
+      <div class="control">
+        <input class="checkbox" name="admin" type="checkbox" />
       </div>
   </div>
   <div class="control">
