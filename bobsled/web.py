@@ -56,6 +56,13 @@ app.mount(
 )
 
 
+@app.route("/logout")
+async def logout(request):
+    r = RedirectResponse("/login", status_code=302)
+    r.delete_cookie("jwt_token")
+    return r
+
+
 @app.route("/login", methods=["GET", "POST"])
 async def login(request):
     KEY_VALID_HOURS = 24 * 30
@@ -65,7 +72,8 @@ async def login(request):
             form["username"], form["password"]
         )
         if logged_in:
-            permissions = await bobsled.storage.get_permissions(form["username"])
+            user = await bobsled.storage.get_user(form["username"])
+            permissions = user.permissions
             resp = RedirectResponse("/", status_code=302)
             until = datetime.datetime.utcnow() + datetime.timedelta(
                 hours=KEY_VALID_HOURS
@@ -89,9 +97,9 @@ async def login(request):
 async def manage_users(request):
     errors = []
     message = ""
-    usernames = await bobsled.storage.get_users()
+    users = await bobsled.storage.get_users()
 
-    if usernames and "admin" not in request.auth.scopes:
+    if users and "admin" not in request.auth.scopes:
         return RedirectResponse("/login")
 
     if request.method == "POST":
@@ -102,24 +110,23 @@ async def manage_users(request):
             errors.append("Password is required.")
         if form.get("password") != form.get("confirm_password"):
             errors.append("Passwords do not match.")
-        if form.get("username") in usernames:
+        if form.get("username") in [u.username for u in users]:
             errors.append("Username is already taken.")
-        permissions = form.get("permissions", "").split(" ")
+
+        permissions = []
+        if form.get("admin"):
+            permissions.append("admin")
+
         if not errors:
             await bobsled.storage.set_user(
                 form["username"], form["password"], permissions
             )
-            usernames = await bobsled.storage.get_users()
+            users = await bobsled.storage.get_users()
             message = "Successfully created " + form["username"]
 
     return templates.TemplateResponse(
         "manage_users.html",
-        {
-            "request": request,
-            "errors": errors,
-            "message": message,
-            "usernames": usernames,
-        },
+        {"request": request, "errors": errors, "message": message, "users": users},
     )
 
 

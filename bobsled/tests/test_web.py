@@ -15,6 +15,18 @@ def test_not_logged_in():
     assert response.url == "http://testserver/login"
 
 
+def test_login_logout():
+    bobsled.storage.users["sample"] = User("sample", hash_password("password"), [])
+    with TestClient(app) as client:
+        resp = client.post("/login", {"username": "sample", "password": "password"})
+        assert resp.status_code == 302
+        assert resp.cookies["jwt_token"]
+        resp = client.get("/logout")
+        assert resp.status_code == 200
+        assert resp.url.endswith("/login")
+        assert "jwt_token" not in resp.cookies
+
+
 def test_manage_users_permissions():
     # empty database, view should be accessible
     with TestClient(app) as client:
