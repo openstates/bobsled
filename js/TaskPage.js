@@ -41,7 +41,7 @@ class TaskPage extends React.Component {
           <h1 className="title is-2"> {this.state.task.name} </h1>
 
           <div className="columns">
-            <div className="column is-one-quarter">
+            <div className="column is-one-third">
               <a
                 className="button is-primary is-centered"
                 onClick={this.startRun}

@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
-import { local_websocket } from "./utils.js";
+import { local_websocket, formatTime } from "./utils.js";
 
 class Home extends React.Component {
   constructor(props) {
@@ -27,12 +27,14 @@ class Home extends React.Component {
 
   renderRunStatus(run) {
     if (!run) {
-      return "";
+      return <td></td>;
     } else {
       return (
+        <td className={run.status.toLowerCase()}>
         <Link to={"/run/" + run.uuid}>
-          {run.status} at {run.start.substr(0, 16)}
+          {run.status} - {formatTime(run.start)}
         </Link>
+        </td>
       );
     }
   }
@@ -46,7 +48,7 @@ class Home extends React.Component {
           </td>
           <td>{task.tags}</td>
           <td>{task.enabled ? "yes" : "no"}</td>
-          <td>{this.renderRunStatus(task.latest_run)}</td>
+          {this.renderRunStatus(task.latest_run)}
         </tr>
       );
     });

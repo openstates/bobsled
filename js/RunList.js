@@ -1,20 +1,30 @@
 import { Link } from "react-router-dom";
 import React from "react";
+import { formatTime } from "./utils.js";
+
+function statusCol(status) {
+  if(status === "Success") {
+    return <td class="success">Success</td>
+  } else if(status === "Error") {
+    return <td class="error">Error</td>
+  } else {
+    return <td>{ status }</td>
+  }
+}
 
 function RunList(props) {
   let rows = props.runs.map(run => (
     <tr key={run.uuid}>
       <td>
-        <Link to={"/run/" + run.uuid}>{run.uuid}</Link>
+        <Link to={"/run/" + run.uuid}>{formatTime(run.start)}</Link>
       </td>
       {props.hideTask === "true" ? null : (
         <td>
           <Link to={"/task/" + run.task}>{run.task}</Link>
         </td>
       )}
-      <td>{run.status}</td>
-      <td>{run.start.substr(0, 16)}</td>
-      <td>{run.end.substr(0, 16)}</td>
+      {statusCol(run.status)}
+      <td>{formatTime(run.end)}</td>
     </tr>
   ));
 
@@ -24,11 +34,10 @@ function RunList(props) {
       <table className="table">
         <thead>
           <tr>
-            <th>UUID</th>
+            <th>Start Time</th>
             {props.hideTask === "true" ? null : <th>Task</th>}
             <th>Status</th>
-            <th>Start</th>
-            <th>End</th>
+            <th>End Time</th>
           </tr>
         </thead>
         <tbody>{rows}</tbody>
