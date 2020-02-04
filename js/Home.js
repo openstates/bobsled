@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
-import { local_websocket, formatTime } from "./utils.js";
+import { local_websocket, formatTime, enabledColumn } from "./utils.js";
 
 class Home extends React.Component {
   constructor(props) {
@@ -47,7 +47,7 @@ class Home extends React.Component {
             <Link to={"/task/" + task.name}>{task.name}</Link>
           </td>
           <td>{task.tags}</td>
-          <td>{task.enabled ? "yes" : "no"}</td>
+          {enabledColumn(task.enabled)}
           {this.renderRunStatus(task.latest_run)}
         </tr>
       );

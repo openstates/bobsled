@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
+import { enabledColumn } from "./utils.js";
+
 
 class TaskPage extends React.Component {
   constructor(props) {
@@ -95,7 +97,7 @@ class TaskPage extends React.Component {
                   </tr>
                   <tr>
                     <th>Enabled</th>
-                    <td className={this.state.task.enabled ? "success" : "error"}>{this.state.task.enabled ? "yes" : "no"}</td>
+                    {enabledColumn(this.state.task.enabled)}
                   </tr>
                 </tbody>
               </table>
