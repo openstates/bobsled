@@ -166,7 +166,9 @@ async def latest_runs(request):
 async def task_overview(request):
     task_name = request.path_params["task_name"]
     task = await bobsled.tasks.get_task(task_name)
-    runs = await bobsled.run.get_runs(task_name=task_name, update_status=True)
+    runs = await bobsled.run.get_runs(
+        task_name=task_name, update_status=True, latest=40
+    )
     return JSONResponse(
         {"task": attr.asdict(task), "runs": [_run2dict(r) for r in runs]}
     )
