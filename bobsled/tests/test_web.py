@@ -8,6 +8,12 @@ def setup():
     bobsled.storage.users = {}
 
 
+def test_not_logged_in():
+    with TestClient(app) as client:
+        response = client.get("/api/index")
+    assert response.url == "http://testserver/login"
+
+
 def test_manage_users_permissions():
     # empty database, view should be accessible
     with TestClient(app) as client:

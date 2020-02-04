@@ -9,12 +9,6 @@ def setup():
     bobsled.storage.users["sample"] = (hash_password("password"), [])
 
 
-# def test_not_logged_in():
-#     with TestClient(app) as client:
-#         response = client.get("/api/index")
-#     assert response.status_code == 403
-
-
 def test_index():
     with TestClient(app) as client:
         client.post("/login", {"username": "sample", "password": "password"})
