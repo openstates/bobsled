@@ -2,7 +2,7 @@ import json
 import attr
 import sqlalchemy
 from databases import Database
-from ..base import Run, Status, Task, Trigger
+from ..base import Run, Status, Task, Trigger, User
 from ..utils import hash_password, verify_password
 
 
@@ -184,4 +184,4 @@ class DatabaseStorage:
     async def get_users(self):
         query = Users.select()
         rows = await self.database.fetch_all(query=query)
-        return [r["username"] for r in rows]
+        return [User(r["username"], r["password"], r["permissions"]) for r in rows]

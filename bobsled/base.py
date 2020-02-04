@@ -60,6 +60,13 @@ class Run:
     uuid: str = attr.Factory(lambda: uuid.uuid4().hex)
 
 
+@attr.s(auto_attribs=True)
+class User:
+    username: str
+    password_hash: str
+    permissions: typing.List[str] = []
+
+
 class EnvironmentProvider:
     def mask_variables(self, string):
         for env_name in self.get_environment_names():
