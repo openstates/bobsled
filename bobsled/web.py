@@ -222,9 +222,11 @@ async def stop_run(request):
 @app.websocket_route("/ws/beat")
 @requires(["authenticated"], redirect="login")
 async def beat_websocket(websocket):
+    hostname = os.environ.get("BOBSLED_BEAT_HOSTNAME", "beat")
+    port = os.environ.get("BOBSLED_BEAT_PORT", "1988")
     context = zmq.asyncio.Context.instance()
     socket = context.socket(zmq.SUB)
-    socket.connect("ipc:///tmp/bobsled-beat")
+    socket.connect(f"tcp://{hostname}:{port}")
     socket.subscribe(b"")
 
     await websocket.accept()

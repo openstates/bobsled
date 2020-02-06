@@ -12,6 +12,10 @@ The project makes it easy to run one-off and scheduled tasks in Docker, includin
 Required Settings:
   - BOBSLED_SECRET_KEY
 
+Beat Settings:
+  - BOBSLED_BEAT_HOSTNAME
+  - BOBSLED_BEAT_PORT
+
 Provider Settings:
   - BOBSLED_ENVIRONMENT_PROVIDER (*LocalEnvironmentProvider*, )
   - BOBSLED_STORAGE (*InMemoryStorage, DatabaseStorage)

@@ -46,6 +46,7 @@ services:
     entrypoint: ["poetry", "run", "python", "-m", "bobsled.web"]
     depends_on:
       - db
+      - beat
 
   beat:
     build: .

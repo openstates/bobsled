@@ -1,3 +1,4 @@
+import os
 import asyncio
 import datetime
 import zmq
@@ -53,7 +54,6 @@ def next_run_for_task(task):
 
 # TODO: make these configurable
 LOG_FILE = "/tmp/bobsled-beat.log"
-SOCKET_FILE = "/tmp/bobsled-beat"
 UPDATE_TASKS_MINS = 120
 
 
@@ -64,10 +64,11 @@ async def run_service():
     )
 
     lf = open(LOG_FILE, "w")
+    port = os.environ.get("BOBSLED_BEAT_PORT", "1988")
 
     context = zmq.Context()
     socket = context.socket(zmq.PUB)
-    socket.bind("ipc://" + SOCKET_FILE)
+    socket.bind(f"tcp://*:{port}")
 
     def _log(msg):
         socket.send_string(msg)
