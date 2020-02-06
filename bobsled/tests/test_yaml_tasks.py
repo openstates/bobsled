@@ -2,6 +2,7 @@ import os
 import pytest
 from ..storages import InMemoryStorage
 from ..tasks import YamlTaskProvider
+from ..base import Trigger
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
 GH_API_KEY = os.environ.get("GITHUB_API_KEY")
@@ -22,6 +23,7 @@ async def test_get_task():
     task = await tp.get_task("full-example")
     assert task.name == "full-example"
     assert task.tags == ["a", "b", "c"]
+    assert task.triggers == [Trigger(cron="0 4 * * ?")]
 
 
 @pytest.mark.asyncio

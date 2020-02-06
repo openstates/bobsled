@@ -1,7 +1,7 @@
 import glob
 import yaml
 import github3
-from ..base import Task, TaskProvider
+from ..base import Task, TaskProvider, Trigger
 
 
 class YamlTaskProvider(TaskProvider):
@@ -49,4 +49,6 @@ class YamlTaskProvider(TaskProvider):
                 data = yaml.safe_load(f)
 
         tasks = [Task(name=name, **taskdef) for name, taskdef in data.items()]
+        for task in tasks:
+            task.triggers = [Trigger(**t) for t in task.triggers]
         await self.storage.set_tasks(tasks)
