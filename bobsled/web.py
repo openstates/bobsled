@@ -37,7 +37,7 @@ class JWTSessionAuthBackend(AuthenticationBackend):
             return
 
         return (
-            AuthCredentials(["authenticated"] + data["permissions"]),
+            AuthCredentials(["authenticated"] + (data["permissions"] or [])),
             SimpleUser(data["username"]),
         )
 
