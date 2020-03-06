@@ -63,7 +63,6 @@ async def run_service():
         minutes=UPDATE_TASKS_MINS
     )
 
-    lf = open(LOG_FILE, "w")
     port = os.environ.get("BOBSLED_BEAT_PORT", "1988")
 
     context = zmq.Context()
@@ -72,7 +71,7 @@ async def run_service():
 
     def _log(msg):
         socket.send_string(msg)
-        print(msg, file=lf, flush=True)
+        print(msg)
 
     next_run_list = {}
     for task in await bobsled.tasks.get_tasks():
