@@ -11,10 +11,12 @@ from starlette.authentication import (
     AuthCredentials,
     requires,
 )
-from starlette.templating import Jinja2Templates
-from starlette.staticfiles import StaticFiles
-from starlette.responses import JSONResponse, RedirectResponse
+from starlette.middleware import Middleware
 from starlette.middleware.authentication import AuthenticationMiddleware
+from starlette.responses import JSONResponse, RedirectResponse
+from starlette.routing import Route, WebSocketRoute, Mount
+from starlette.staticfiles import StaticFiles
+from starlette.templating import Jinja2Templates
 import uvicorn
 import jwt
 
@@ -47,23 +49,12 @@ templates = Jinja2Templates(
 )
 
 
-app = Starlette(debug=True)
-app.add_middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())
-app.mount(
-    "/static",
-    StaticFiles(directory=os.path.join(os.path.dirname(__file__), "..", "static")),
-    name="static",
-)
-
-
-@app.route("/logout")
 async def logout(request):
     r = RedirectResponse("/login", status_code=302)
     r.delete_cookie("jwt_token")
     return r
 
 
-@app.route("/login", methods=["GET", "POST"])
 async def login(request):
     KEY_VALID_HOURS = 24 * 30
     if request.method == "POST":
@@ -93,7 +84,6 @@ async def login(request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-@app.route("/manage_users", methods=["GET", "POST"])
 async def manage_users(request):
     errors = []
     message = ""
@@ -130,10 +120,6 @@ async def manage_users(request):
     )
 
 
-@app.route("/")
-@app.route("/latest_runs")
-@app.route("/task/{task_name}")
-@app.route("/run/{run_id}")
 @requires(["authenticated"], redirect="login")
 async def index(request):
     return templates.TemplateResponse("base.html", {"request": request})
@@ -145,7 +131,6 @@ def _run2dict(run):
     return run
 
 
-@app.route("/api/index")
 @requires(["authenticated"], redirect="login")
 async def api_index(request):
     tasks = [attr.asdict(t) for t in await bobsled.tasks.get_tasks()]
@@ -167,7 +152,6 @@ async def api_index(request):
     )
 
 
-@app.route("/api/latest_runs")
 @requires(["authenticated"], redirect="login")
 async def latest_runs(request):
     return JSONResponse(
@@ -175,7 +159,6 @@ async def latest_runs(request):
     )
 
 
-@app.route("/api/task/{task_name}")
 @requires(["authenticated"], redirect="login")
 async def task_overview(request):
     task_name = request.path_params["task_name"]
@@ -188,7 +171,6 @@ async def task_overview(request):
     )
 
 
-@app.route("/api/task/{task_name}/run")
 @requires(["authenticated"], redirect="login")
 async def run_task(request):
     task_name = request.path_params["task_name"]
@@ -202,7 +184,6 @@ async def run_task(request):
     return JSONResponse(_run2dict(run))
 
 
-@app.route("/api/run/{run_id}")
 @requires(["authenticated"], redirect="login")
 async def run_detail(request):
     run_id = request.path_params["run_id"]
@@ -211,7 +192,6 @@ async def run_detail(request):
     return JSONResponse(rundata)
 
 
-@app.route("/api/run/{run_id}/stop")
 @requires(["authenticated"], redirect="login")
 async def stop_run(request):
     run_id = request.path_params["run_id"]
@@ -219,7 +199,6 @@ async def stop_run(request):
     return JSONResponse({})
 
 
-@app.websocket_route("/ws/beat")
 @requires(["authenticated"], redirect="login")
 async def beat_websocket(websocket):
     hostname = os.environ.get("BOBSLED_BEAT_HOSTNAME", "beat")
@@ -236,7 +215,6 @@ async def beat_websocket(websocket):
     await websocket.close()
 
 
-@app.websocket_route("/ws/logs/{run_id}")
 @requires(["authenticated"], redirect="login")
 async def websocket_endpoint(websocket):
     await websocket.accept()
@@ -251,9 +229,40 @@ async def websocket_endpoint(websocket):
     await websocket.close()
 
 
-@app.on_event("startup")
-async def init():
-    await bobsled.initialize()
+app = Starlette(
+    debug=True,
+    routes=[
+        # non-React HTML views
+        Route("/logout", logout),
+        Route("/login", login, methods=["GET", "POST"]),
+        Route("/manage_users", manage_users, methods=["GET", "POST"]),
+        # React
+        Route("/", index),
+        Route("/latest_runs", index),
+        Route("/task/{task_name}", index),
+        Route("/run/{run_id}", index),
+        # API
+        Route("/api/index", api_index),
+        Route("/api/latest_runs", latest_runs),
+        Route("/api/task/{task_name}", task_overview),
+        Route("/api/task/{task_name}/run", run_task),
+        Route("/api/run/{run_id}", run_detail),
+        Route("/api/run/{run_id}/stop", stop_run),
+        # websockets
+        WebSocketRoute("/ws/beat", beat_websocket),
+        WebSocketRoute("/ws/logs/{run_id}", websocket_endpoint),
+        # static files
+        Mount(
+            "/static",
+            StaticFiles(
+                directory=os.path.join(os.path.dirname(__file__), "..", "static")
+            ),
+            name="static",
+        ),
+    ],
+    middleware=[Middleware(AuthenticationMiddleware, backend=JWTSessionAuthBackend())],
+    on_startup=[bobsled.initialize],
+)
 
 
 if __name__ == "__main__":
