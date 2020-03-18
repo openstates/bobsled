@@ -27,22 +27,22 @@ def test_login_logout():
         assert "jwt_token" not in resp.cookies
 
 
-def test_manage_users_permissions():
+def test_admin_view_permissions():
     # empty database, view should be accessible
     with TestClient(app) as client:
-        resp = client.get("/manage_users")
-        assert resp.url == "http://testserver/manage_users"
+        resp = client.get("/admin")
+        assert resp.url == "http://testserver/admin"
         assert resp.status_code == 200
 
         # user in database, page redirects
         bobsled.storage.users["sample"] = User("sample", hash_password("password"), [])
-        resp = client.get("/manage_users")
+        resp = client.get("/admin")
         assert resp.url == "http://testserver/login"
         assert resp.status_code == 200
 
         # logged in, not admin, page still redirects
         client.post("/login", {"username": "sample", "password": "password"})
-        resp = client.get("/manage_users")
+        resp = client.get("/admin")
         assert resp.url == "http://testserver/login"
         assert resp.status_code == 200
 
@@ -51,24 +51,22 @@ def test_manage_users_permissions():
             "sample", hash_password("password"), ["admin"]
         )
         client.post("/login", {"username": "sample", "password": "password"})
-        resp = client.get("/manage_users")
-        assert resp.url == "http://testserver/manage_users"
+        resp = client.get("/admin")
+        assert resp.url == "http://testserver/admin"
         assert resp.status_code == 200
         assert len(resp.context["users"]) == 1
 
 
-def test_manage_users_add_errors():
+def test_admin_add_errors():
     with TestClient(app) as client:
         # required fields
-        resp = client.post("/manage_users")
+        resp = client.post("/admin")
         assert resp.status_code == 200
         assert "Username is required." in resp.context["errors"]
         assert "Password is required." in resp.context["errors"]
 
         # required fields
-        resp = client.post(
-            "/manage_users", {"password": "abc", "confirm_password": "xyz"}
-        )
+        resp = client.post("/admin", {"password": "abc", "confirm_password": "xyz"})
         assert "Username is required." in resp.context["errors"]
         assert "Passwords do not match." in resp.context["errors"]
 
@@ -77,7 +75,7 @@ def test_manage_users_add_errors():
             "sample", hash_password("password"), ["admin"]
         )
         resp = client.post(
-            "/manage_users",
+            "/admin",
             {"username": "sample", "password": "abc", "confirm_password": "abc"},
         )
         assert resp.is_redirect
@@ -85,16 +83,16 @@ def test_manage_users_add_errors():
         # oh right, we have to log in :)
         client.post("/login", {"username": "sample", "password": "password"})
         resp = client.post(
-            "/manage_users",
+            "/admin",
             {"username": "sample", "password": "abc", "confirm_password": "abc"},
         )
         assert "Username is already taken." in resp.context["errors"]
 
 
-def test_manage_users_good():
+def test_admin_add_users_good():
     with TestClient(app) as client:
         resp = client.post(
-            "/manage_users",
+            "/admin",
             {
                 "username": "sample",
                 "password": "password",
@@ -110,7 +108,7 @@ def test_manage_users_good():
         # to add a second user we need to login
         client.post("/login", {"username": "sample", "password": "password"})
         resp = client.post(
-            "/manage_users",
+            "/admin",
             {"username": "number2", "password": "abc", "confirm_password": "abc"},
         )
         assert resp.status_code == 200

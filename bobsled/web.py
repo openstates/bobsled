@@ -84,11 +84,12 @@ async def login(request):
     return templates.TemplateResponse("login.html", {"request": request})
 
 
-async def manage_users(request):
+async def admin_view(request):
     errors = []
     message = ""
     users = await bobsled.storage.get_users()
 
+    # if there are no users, let someone in to make one
     if users and "admin" not in request.auth.scopes:
         return RedirectResponse("/login")
 
@@ -115,7 +116,7 @@ async def manage_users(request):
             message = "Successfully created " + form["username"]
 
     return templates.TemplateResponse(
-        "manage_users.html",
+        "admin.html",
         {"request": request, "errors": errors, "message": message, "users": users},
     )
 
@@ -241,7 +242,7 @@ app = Starlette(
         # non-React HTML views
         Route("/logout", logout),
         Route("/login", login, methods=["GET", "POST"]),
-        Route("/manage_users", manage_users, methods=["GET", "POST"]),
+        Route("/admin", admin_view, methods=["GET", "POST"]),
         # React
         Route("/", index),
         Route("/latest_runs", index),
