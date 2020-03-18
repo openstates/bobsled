@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
 import { enabledColumn } from "./utils.js";
 
-
 class TaskPage extends React.Component {
   constructor(props) {
     super(props);
@@ -23,7 +22,7 @@ class TaskPage extends React.Component {
 
   startRun() {
     const outerThis = this;
-    fetch("/api/task/" + this.state.task_name + "/run", {"method": "POST"})
+    fetch("/api/task/" + this.state.task_name + "/run", { method: "POST" })
       .then(response => response.json())
       .then(function(data) {
         let runs = outerThis.state.runs;
@@ -35,9 +34,13 @@ class TaskPage extends React.Component {
   render() {
     var entrypoint_display = "";
     var next_tasks = "";
-    if(Object.entries(this.state.task).length !== 0) {
+    if (Object.entries(this.state.task).length !== 0) {
       entrypoint_display = this.state.task.entrypoint.join(" ");
-      next_tasks = this.state.task.next_tasks.map(nt => <li key={nt}><a href={"/task/" + nt}>{nt}</a></li>);
+      next_tasks = this.state.task.next_tasks.map(nt => (
+        <li key={nt}>
+          <a href={"/task/" + nt}>{nt}</a>
+        </li>
+      ));
     }
     return (
       <section className="section">
@@ -90,9 +93,7 @@ class TaskPage extends React.Component {
                   <tr>
                     <th>Next Tasks</th>
                     <td>
-                      <ul>
-                        {next_tasks}
-                      </ul>
+                      <ul>{next_tasks}</ul>
                     </td>
                   </tr>
                   <tr>

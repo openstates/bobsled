@@ -31,9 +31,9 @@ class Home extends React.Component {
     } else {
       return (
         <td className={run.status.toLowerCase()}>
-        <Link to={"/run/" + run.uuid}>
-          {run.status} - {formatTime(run.start)}
-        </Link>
+          <Link to={"/run/" + run.uuid}>
+            {run.status} - {formatTime(run.start)}
+          </Link>
         </td>
       );
     }
