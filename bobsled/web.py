@@ -126,9 +126,20 @@ async def index(request):
     return templates.TemplateResponse("base.html", {"request": request})
 
 
+def _parse_time(time):
+    return datetime.datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f")
+
+
 def _run2dict(run):
     run = attr.asdict(run)
     run["status"] = run["status"].name
+    if run["end"]:
+        tdelta = _parse_time(run["end"]) - _parse_time(run["start"])
+        hour, rem = divmod(tdelta.seconds, 3600)
+        minutes, seconds = divmod(rem, 60)
+        run["duration"] = f"{hour}:{minutes:02d}:{seconds:02d}"
+    else:
+        run["duration"] = ""
     return run
 
 

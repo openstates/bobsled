@@ -25,6 +25,7 @@ function RunList(props) {
       )}
       {statusCol(run.status)}
       <td>{formatTime(run.end)}</td>
+      <td>{run.duration}</td>
     </tr>
   ));
 
@@ -38,6 +39,7 @@ function RunList(props) {
             {props.hideTask === "true" ? null : <th>Task</th>}
             <th>Status</th>
             <th>End Time</th>
+            <th>Duration</th>
           </tr>
         </thead>
         <tbody>{rows}</tbody>
