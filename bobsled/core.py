@@ -37,11 +37,17 @@ class Bobsled:
 
     async def initialize(self):
         await self.storage.connect()
-        tasks = await bobsled.tasks.get_tasks()
+        tasks = await self.tasks.get_tasks()
         if not tasks:
-            await self.tasks.update_tasks()
-            tasks = await bobsled.tasks.get_tasks()
+            await self.refresh_tasks()
+        else:
+            self.run.initialize(tasks)
+
+    async def refresh_tasks(self):
+        await self.tasks.update_tasks()
+        tasks = await self.tasks.get_tasks()
         self.run.initialize(tasks)
+        return tasks
 
 
 bobsled = Bobsled()
