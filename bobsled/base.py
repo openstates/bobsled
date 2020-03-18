@@ -13,9 +13,10 @@ class Status(enum.Enum):
     Success = 4
     UserKilled = 5
     TimedOut = 6
+    Missing = 7
 
     def is_terminal(self):
-        return self.value in (3, 4, 5, 6)
+        return self.value in (3, 4, 5, 6, 7)
 
 
 @attr.s(auto_attribs=True)

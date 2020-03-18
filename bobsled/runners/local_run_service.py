@@ -59,11 +59,10 @@ class LocalRunService(RunService):
 
         container = self._get_container(run)
         if not container:
-            # TODO: handle this
-            print("missing container for", run)
-            return run
+            run.status = Status.Missing
+            await self.storage.save_run(run)
 
-        if container.status == "exited":
+        elif container.status == "exited":
             resp = container.wait()
             if resp["Error"] or resp["StatusCode"]:
                 run.status = Status.Error

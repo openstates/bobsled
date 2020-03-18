@@ -163,7 +163,7 @@ class ECSRunService(RunService):
             if resp["failures"][0]["reason"] == "MISSING":
                 run.exit_code = -999
                 run.end = datetime.datetime.utcnow().isoformat()
-                run.status = Status.Error
+                run.status = Status.Missing
                 run.logs = self.get_logs(run)
                 await self.storage.save_run(run)
                 return run
