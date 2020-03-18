@@ -199,6 +199,12 @@ async def stop_run(request):
     return JSONResponse({})
 
 
+@requires(["authenticated", "admin"], redirect="login")
+async def update_tasks(request):
+    tasks = [attr.asdict(t) for t in await bobsled.refresh_tasks()]
+    return JSONResponse({"tasks": tasks})
+
+
 @requires(["authenticated"], redirect="login")
 async def beat_websocket(websocket):
     hostname = os.environ.get("BOBSLED_BEAT_HOSTNAME", "beat")
@@ -248,6 +254,7 @@ app = Starlette(
         Route("/api/task/{task_name}/run", run_task),
         Route("/api/run/{run_id}", run_detail),
         Route("/api/run/{run_id}/stop", stop_run),
+        Route("/api/update_tasks", update_tasks, methods=["POST"]),
         # websockets
         WebSocketRoute("/ws/beat", beat_websocket),
         WebSocketRoute("/ws/logs/{run_id}", websocket_endpoint),
