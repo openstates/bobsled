@@ -265,7 +265,7 @@ app = Starlette(
         Route("/api/task/{task_name}", task_overview),
         Route("/api/task/{task_name}/run", run_task, methods=["POST"]),
         Route("/api/run/{run_id}", run_detail),
-        Route("/api/run/{run_id}/stop", stop_run),
+        Route("/api/run/{run_id}/stop", stop_run, methods=["POST"]),
         Route("/api/update_tasks", update_tasks, methods=["POST"]),
         # websockets
         WebSocketRoute("/ws/beat", beat_websocket),

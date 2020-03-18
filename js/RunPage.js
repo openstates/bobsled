@@ -12,7 +12,9 @@ class RunPage extends React.Component {
 
   stopRun() {
     const outerThis = this;
-    fetch("/api/run/" + this.props.match.params.run_id + "/stop")
+    fetch("/api/run/" + this.props.match.params.run_id + "/stop", {
+      method: "POST",
+    })
       .then(response => response.json())
       .then(function(data) {});
   }
