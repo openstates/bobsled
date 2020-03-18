@@ -23,7 +23,7 @@ class TaskPage extends React.Component {
 
   startRun() {
     const outerThis = this;
-    fetch("/api/task/" + this.state.task_name + "/run")
+    fetch("/api/task/" + this.state.task_name + "/run", {"method": "POST"})
       .then(response => response.json())
       .then(function(data) {
         let runs = outerThis.state.runs;

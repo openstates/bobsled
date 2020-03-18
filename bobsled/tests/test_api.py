@@ -30,7 +30,7 @@ def test_run_perms():
     # test these together because there's weirdness in running twice
     with TestClient(app) as client:
         client.post("/login", {"username": "sample", "password": "password"})
-        response = client.get("/api/task/hello-world/run")
+        response = client.post("/api/task/hello-world/run")
         assert response.json()["error"] == "Insufficient permissions."
 
 
@@ -38,7 +38,7 @@ def test_run_and_detail():
     # test these together because there's weirdness in running twice
     with TestClient(app) as client:
         client.post("/login", {"username": "admin", "password": "password"})
-        response = client.get("/api/task/hello-world/run")
+        response = client.post("/api/task/hello-world/run")
         uuid = response.json()["uuid"]
         detail = client.get(f"/api/run/{uuid}")
     assert detail.json()["uuid"] == uuid
@@ -47,7 +47,7 @@ def test_run_and_detail():
 def test_websocket():
     with TestClient(app) as client:
         client.post("/login", {"username": "admin", "password": "password"})
-        response = client.get("/api/task/full-example/run")
+        response = client.post("/api/task/full-example/run")
     uuid = response.json()["uuid"]
     with client.websocket_connect(f"/ws/logs/{uuid}") as websocket:
         data = websocket.receive_json()
