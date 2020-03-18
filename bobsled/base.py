@@ -105,7 +105,9 @@ class RunService:
             ).isoformat()
         run_info["timeout_at"] = timeout_at
 
-        run = Run(task.name, Status.Running, start=now.isoformat(), run_info=run_info)
+        run = Run(
+            task.name, self.STARTING_STATUS, start=now.isoformat(), run_info=run_info
+        )
         await self.storage.add_run(run)
         return run
 

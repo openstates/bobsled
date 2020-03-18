@@ -5,6 +5,9 @@ from ..base import RunService, Status
 
 
 class ECSRunService(RunService):
+
+    STARTING_STATUS = Status.Pending
+
     def __init__(
         self,
         storage,
