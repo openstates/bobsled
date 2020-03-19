@@ -1,21 +1,50 @@
 from starlette.testclient import TestClient
 from ..web import app, bobsled
 from ..utils import hash_password
-from ..base import User
+from ..base import User, Run, Status
 
 
 def setup():
     # have to get a working check_login, hack for MemoryStorage
     bobsled.storage.users["sample"] = User("sample", hash_password("password"), [])
     bobsled.storage.users["admin"] = User("admin", hash_password("password"), ["admin"])
+    bobsled.storage.runs = []
 
 
 def test_index():
+    bobsled.storage.runs = [
+        Run(
+            "hello-world",
+            Status.Success,
+            "2020-01-01T00:00:00.0",
+            "2020-01-01T01:00:00.0",
+        ),
+        Run(
+            "hello-world",
+            Status.Error,
+            "2020-01-02T00:00:00.0",
+            "2020-01-02T01:00:00.0",
+        ),
+        Run(
+            "hello-world",
+            Status.Success,
+            "2020-01-03T00:00:00.0",
+            "2020-01-03T01:00:00.0",
+        ),
+        Run("hello-world", Status.Running, "2020-01-04T00:00:00.0",),
+    ]
+
     with TestClient(app) as client:
         client.post("/login", {"username": "sample", "password": "password"})
         response = client.get("/api/index")
-    assert len(response.json()["tasks"]) == 3
-    assert len(response.json()["runs"]) == 0
+    tasks = response.json()["tasks"]
+    running = response.json()["runs"]
+    assert len(tasks) == 3
+    assert len(running) == 1
+
+    hello = [t for t in tasks if t["name"] == "hello-world"][0]
+    assert hello["latest_run"]["status"] == "Running"
+    assert hello["recent_statuses"] == ["Running", "Success", "Error", "Success"]
 
 
 def test_overview():

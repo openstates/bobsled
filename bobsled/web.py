@@ -147,13 +147,15 @@ def _run2dict(run):
 async def api_index(request):
     tasks = [attr.asdict(t) for t in await bobsled.tasks.get_tasks()]
     results = await asyncio.gather(
-        *[bobsled.run.get_runs(task_name=t["name"], latest=1) for t in tasks]
+        *[bobsled.run.get_runs(task_name=t["name"], latest=4) for t in tasks]
     )
     for task, latest_runs in zip(tasks, results):
         if latest_runs:
             task["latest_run"] = _run2dict(latest_runs[0])
+            task["recent_statuses"] = [r.status.name for r in latest_runs]
         else:
             task["latest_run"] = None
+            task["recent_statuses"] = []
     return JSONResponse(
         {
             "tasks": tasks,
