@@ -45,3 +45,8 @@ def test_monthly():
     assert next_cron(
         "0 0 1,15 * ?", datetime.datetime(2020, 1, 1, 0, 1)
     ) == datetime.datetime(2020, 1, 15, 0, 0)
+
+    # ensure that days of month don't matter
+    assert next_cron(
+        "0 0 1 * ?", datetime.datetime(2021, 2, 20, 0, 1)
+    ) == datetime.datetime(2021, 3, 1, 0, 0)
