@@ -22,11 +22,11 @@ def parse_cron_segment(segment, star_equals):
 def next_cron(cronstr, after=None):
     minute, hour, day, month, dow = cronstr.split()
 
+    days = parse_cron_segment(day, list(range(1, 32)))
     minutes = parse_cron_segment(minute, list(range(60)))
     hours = parse_cron_segment(hour, list(range(24)))
 
-    # TODO: handle things that don't run every day
-    assert day == "*"
+    # scheduling things that don't run every month not currently supported
     assert month == "*"
     assert dow == "?"
 
@@ -34,16 +34,19 @@ def next_cron(cronstr, after=None):
         after = datetime.datetime.utcnow()
     next_time = None
 
-    for hour in hours:
-        for minute in minutes:
-            next_time = after.replace(hour=hour, minute=minute, second=0, microsecond=0)
-            if next_time > after:
-                return next_time
+    for day in days:
+        for hour in hours:
+            for minute in minutes:
+                next_time = after.replace(
+                    day=day, hour=hour, minute=minute, second=0, microsecond=0
+                )
+                if next_time > after:
+                    return next_time
 
-    # no next time today, set to the first time but the next day
+    # no next time this month, set to the first time but the next month
     next_time = next_time.replace(
-        hour=hours[0], minute=minutes[0]
-    ) + datetime.timedelta(days=1)
+        day=days[0], hour=hours[0], minute=minutes[0], month=after.month + 1,
+    )
     return next_time
 
 

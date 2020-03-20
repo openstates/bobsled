@@ -33,3 +33,15 @@ def test_next_minute():
     assert next_cron(
         "0,2,4 * * * ?", datetime.datetime(2020, 1, 1, 0, 5)
     ) == datetime.datetime(2020, 1, 1, 1, 0)
+
+
+def test_monthly():
+    # run on the first of the month
+    assert next_cron(
+        "0 0 1 * ?", datetime.datetime(2020, 1, 1, 0, 1)
+    ) == datetime.datetime(2020, 2, 1, 0, 0)
+
+    # run on the first and fifteenth of the month
+    assert next_cron(
+        "0 0 1,15 * ?", datetime.datetime(2020, 1, 1, 0, 1)
+    ) == datetime.datetime(2020, 1, 15, 0, 0)
