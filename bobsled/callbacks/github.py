@@ -25,8 +25,7 @@ class GithubIssueCallback:
             issue.close()
 
     async def on_error(self, latest_run, storage):
-        ERR_COUNT = 3
-
+        task = await storage.get_task(name=latest_run.task)
         latest_runs = await storage.get_runs(task_name=latest_run.task, latest=5)
         count = 0
         for r in latest_runs:
@@ -35,7 +34,8 @@ class GithubIssueCallback:
             else:
                 break
 
-        if count >= ERR_COUNT:
+        # if the number of failures is > threshold, and threshold is nonzero
+        if count >= task.error_threshold > 0:
             self.make_issue(latest_run, count, r)
 
     def get_existing_issue(self, task_name):

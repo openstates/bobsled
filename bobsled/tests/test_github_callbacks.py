@@ -1,5 +1,5 @@
 import pytest
-from ..base import Run, Status
+from ..base import Run, Status, Task
 from ..storages import InMemoryStorage
 from ..callbacks.github import GithubIssueCallback
 
@@ -11,6 +11,9 @@ async def test_github_on_error(mocker):
     mocker.patch.object(gh, "make_issue")
 
     storage = InMemoryStorage()
+    storage.tasks["hello-world"] = Task(
+        "hello-world", image="hello-world", error_threshold=3
+    )
     a = Run("hello-world", Status.Error)
     b = Run("hello-world", Status.Error)
     c = Run("hello-world", Status.Error)
@@ -25,6 +28,14 @@ async def test_github_on_error(mocker):
     # 4 failures, GH call
     await storage.add_run(c)
     await storage.add_run(d)
+
+    # error threshold off, no error
+    storage.tasks["hello-world"].error_threshold = 0
+    await gh.on_error(d, storage)
+    gh.make_issue.assert_not_called()
+
+    # back on, now this triggers an error
+    storage.tasks["hello-world"].error_threshold = 3
     await gh.on_error(d, storage)
     gh.make_issue.assert_called_once_with(d, 4, d)
 
