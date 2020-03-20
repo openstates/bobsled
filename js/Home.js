@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
 import { local_websocket, formatTime, enabledColumn } from "./utils.js";
 
-const COLORS = {
-  Pending: "#aaa",        // gray
-  Running: '#add8e6',     // blue
-  Error: '#db4c40',       // red
-  Success: '#89bd9e',     // green
-  UserKilled: '#f0c987',  // yellow
-  TimedOut: '#8b1e3f',    // magenta
-  Missing: '#3c153b',     // purple
+const STATUS = {
+  Pending: {color: "#aaa", icon: "\u23F3"},        // gray, hourglass start
+  Running: {color: '#add8e6', icon: "\u2699"},     // blue, gear
+  Error: {color: '#db4c40', icon: "\u2716"},       // red, X
+  Success: {color: '#89bd9e', icon: "\u2714"},     // green, check
+  UserKilled: {color: '#f0c987', icon: "\u26a0"},  // yellow, warning
+  TimedOut: {color: '#8b1e3f', icon: "\u231b"},    // magenta, hourglass done
+  Missing: {color: '#3c153b', icon: "\u2754"},    // purple, question
 }
 
 class Home extends React.Component {
@@ -38,25 +38,22 @@ class Home extends React.Component {
   renderTaskStatus(task) {
     if (!task.latest_run) {
       return <>
-        <td></td><td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </>;
     } else {
-      const statusColors = task.recent_statuses.map(s => COLORS[s]);
-      var backgroundStr = `repeating-linear-gradient(90deg,
-          ${statusColors[1]}, ${statusColors[1]} 33%,
-          ${statusColors[2]} 33%, ${statusColors[2]} 66%,
-          ${statusColors[3]} 66%, ${statusColors[3]}`;
+      const statusColumns = task.recent_statuses.slice(1, 4).map((s, i) => <td key={i} style={{background: STATUS[s].color}}>{STATUS[s].icon}</td>);
       return <>
         <td 
-          style={{background: statusColors[0]}}
+          style={{background: STATUS[task.latest_run.status].color}}
         >
           <Link to={"/run/" + task.latest_run.uuid}>
             {task.latest_run.status} - {formatTime(task.latest_run.start)}
           </Link>
         </td>
-        <td style={{background: backgroundStr, "border-left-width": "1px"}}>
-          &nbsp;
-        </td>
+        { statusColumns } 
         </>;
     }
   }
@@ -83,7 +80,7 @@ class Home extends React.Component {
                 <th>Task</th>
                 <th>Enabled</th>
                 <th>Latest Run</th>
-                <th>Recently</th>
+                <th colSpan={3}>Recently</th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
