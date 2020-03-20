@@ -41,6 +41,7 @@ class Task:
     cpu: int = 256
     enabled: bool = True
     timeout_minutes: int = 0
+    error_threshold: int = 0
     triggers: typing.List[Trigger] = []
     next_tasks: typing.List[str] = []
 

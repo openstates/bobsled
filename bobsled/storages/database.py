@@ -19,6 +19,7 @@ Tasks = sqlalchemy.Table(
     sqlalchemy.Column("cpu", sqlalchemy.Integer),
     sqlalchemy.Column("enabled", sqlalchemy.Boolean),
     sqlalchemy.Column("timeout_minutes", sqlalchemy.Integer),
+    sqlalchemy.Column("error_threshold", sqlalchemy.Integer),
     sqlalchemy.Column("triggers", sqlalchemy.JSON()),
     sqlalchemy.Column("next_tasks", sqlalchemy.ARRAY(sqlalchemy.String(length=100))),
 )
