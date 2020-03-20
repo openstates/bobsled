@@ -11,6 +11,6 @@ export function formatTime(timeStr) {
 
 export function enabledColumn(enabled) {
   return (
-    <td className={enabled ? "success" : "error"}>{enabled ? "yes" : "no"}</td>
+    <td>{enabled ? "yes" : "no"}</td>
   );
 }

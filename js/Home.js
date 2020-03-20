@@ -3,6 +3,16 @@ import { Link } from "react-router-dom";
 import RunList from "./RunList.js";
 import { local_websocket, formatTime, enabledColumn } from "./utils.js";
 
+const COLORS = {
+  Pending: "#aaa",        // gray
+  Running: '#add8e6',     // blue
+  Error: '#db4c40',       // red
+  Success: '#89bd9e',     // green
+  UserKilled: '#f0c987',  // yellow
+  TimedOut: '#8b1e3f',    // magenta
+  Missing: '#3c153b',     // purple
+}
+
 class Home extends React.Component {
   constructor(props) {
     super(props);
@@ -25,17 +35,29 @@ class Home extends React.Component {
       .then(data => this.setState(data));
   }
 
-  renderRunStatus(run) {
-    if (!run) {
-      return <td></td>;
+  renderTaskStatus(task) {
+    if (!task.latest_run) {
+      return <>
+        <td></td><td></td>
+      </>;
     } else {
-      return (
-        <td className={run.status.toLowerCase()}>
-          <Link to={"/run/" + run.uuid}>
-            {run.status} - {formatTime(run.start)}
+      const statusColors = task.recent_statuses.map(s => COLORS[s]);
+      var backgroundStr = `repeating-linear-gradient(90deg,
+          ${statusColors[1]}, ${statusColors[1]} 33%,
+          ${statusColors[2]} 33%, ${statusColors[2]} 66%,
+          ${statusColors[3]} 66%, ${statusColors[3]}`;
+      return <>
+        <td 
+          style={{background: statusColors[0]}}
+        >
+          <Link to={"/run/" + task.latest_run.uuid}>
+            {task.latest_run.status} - {formatTime(task.latest_run.start)}
           </Link>
         </td>
-      );
+        <td style={{background: backgroundStr, "border-left-width": "1px"}}>
+          &nbsp;
+        </td>
+        </>;
     }
   }
 
@@ -46,9 +68,8 @@ class Home extends React.Component {
           <td>
             <Link to={"/task/" + task.name}>{task.name}</Link>
           </td>
-          <td>{task.tags}</td>
           {enabledColumn(task.enabled)}
-          {this.renderRunStatus(task.latest_run)}
+          {this.renderTaskStatus(task)}
         </tr>
       );
     });
@@ -60,9 +81,9 @@ class Home extends React.Component {
             <thead>
               <tr>
                 <th>Task</th>
-                <th>Tags</th>
                 <th>Enabled</th>
                 <th>Latest Run</th>
+                <th>Recently</th>
               </tr>
             </thead>
             <tbody>{rows}</tbody>
