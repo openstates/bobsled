@@ -50,3 +50,15 @@ def test_monthly():
     assert next_cron(
         "0 0 1 * ?", datetime.datetime(2021, 2, 20, 0, 1)
     ) == datetime.datetime(2021, 3, 1, 0, 0)
+
+
+def test_month_rollover():
+    # going from april to may, the initial bug
+    april30 = datetime.datetime(2020, 4, 30, 23, 0)
+    assert next_cron("0 4 * * ?", april30) == datetime.datetime(2020, 5, 1, 4, 0)
+
+    # going from feb to march, leap year check
+    feb28 = datetime.datetime(2020, 2, 28, 23, 0)
+    assert next_cron("0 4 * * ?", feb28) == datetime.datetime(2020, 2, 29, 4, 0)
+    feb29 = datetime.datetime(2020, 2, 29, 23, 0)
+    assert next_cron("0 4 * * ?", feb29) == datetime.datetime(2020, 3, 1, 4, 0)

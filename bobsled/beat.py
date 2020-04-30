@@ -37,9 +37,13 @@ def next_cron(cronstr, after=None):
     for day in days:
         for hour in hours:
             for minute in minutes:
-                next_time = after.replace(
-                    day=day, hour=hour, minute=minute, second=0, microsecond=0
-                )
+                try:
+                    next_time = after.replace(
+                        day=day, hour=hour, minute=minute, second=0, microsecond=0
+                    )
+                except ValueError:
+                    # if we made an invalid time due to month rollover, skip it
+                    continue
                 if next_time > after:
                     return next_time
 
