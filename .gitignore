@@ -8,7 +8,7 @@ bobsled.egg-info
 zappa_settings.json
 config.yaml
 node_modules
-static/bundles
+static/index.js*
 
 bobsled.yml
 environments.yml
