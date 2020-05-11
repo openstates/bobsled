@@ -1,6 +1,6 @@
 {
   "name": "bobsled",
-  "version": "0.7.0",
+  "version": "3.0.0",
   "description": "bobsled is a task runner designed for Open States",
   "scripts": {
     "start": "webpack --watch --config webpack.dev.js",
@@ -21,12 +21,10 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-react": "^7.0.0",
     "babel-loader": "^8.0.6",
-    "prettier": "^1.18.2",
-    "webpack": "^4.36.1",
-    "webpack-cli": "^3.3.6",
-    "webpack-merge": "^4.2.1"
+    "prettier": "^1.18.2"
   },
   "dependencies": {
+    "parcel": "^1.12.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.1"
