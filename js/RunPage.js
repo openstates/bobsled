@@ -15,19 +15,19 @@ class RunPage extends React.Component {
     fetch("/api/run/" + this.props.match.params.run_id + "/stop", {
       method: "POST",
     })
-      .then(response => response.json())
-      .then(function(data) {});
+      .then((response) => response.json())
+      .then(function (data) {});
   }
 
   componentDidMount() {
-    this.state.ws.onmessage = evt => {
+    this.state.ws.onmessage = (evt) => {
       const message = JSON.parse(evt.data);
       this.setState(message);
     };
 
     fetch("/api/run/" + this.props.match.params.run_id)
-      .then(response => response.json())
-      .then(data => this.setState(data));
+      .then((response) => response.json())
+      .then((data) => this.setState(data));
   }
 
   render() {
@@ -45,6 +45,8 @@ class RunPage extends React.Component {
           ) : (
             ""
           )}
+
+          <a className="button is-centered" href="#bottom">Latest Output</a>
 
           <table className="table">
             <tbody>
@@ -64,6 +66,7 @@ class RunPage extends React.Component {
           </table>
 
           <pre>{this.state.logs}</pre>
+          <a name="bottom"></a>
         </div>
       </section>
     );
