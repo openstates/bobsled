@@ -29,7 +29,7 @@ def test_index():
             "hello-world",
             Status.Success,
             "2020-01-03T00:00:00.0",
-            "2020-01-03T01:00:00.0",
+            "2020-01-04T01:00:00.0",
         ),
         Run("hello-world", Status.Running, "2020-01-04T00:00:00.0",),
     ]
@@ -48,11 +48,20 @@ def test_index():
 
 
 def test_overview():
+    bobsled.storage.runs = [
+        Run(
+            "hello-world",
+            Status.Success,
+            "2020-01-03T00:00:00.0",
+            "2020-01-04T01:02:03.0",
+        ),
+    ]
     with TestClient(app) as client:
         client.post("/login", {"username": "sample", "password": "password"})
         response = client.get("/api/task/hello-world")
     assert response.json()["task"]["image"] == "hello-world"
-    assert len(response.json()["runs"]) == 0
+    assert len(response.json()["runs"]) == 1
+    assert response.json()["runs"][0]["duration"] == "25:02:03"
 
 
 def test_run_perms():

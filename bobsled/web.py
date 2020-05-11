@@ -136,6 +136,7 @@ def _run2dict(run):
     if run["end"]:
         tdelta = _parse_time(run["end"]) - _parse_time(run["start"])
         hour, rem = divmod(tdelta.seconds, 3600)
+        hour += tdelta.days * 24
         minutes, seconds = divmod(rem, 60)
         run["duration"] = f"{hour}:{minutes:02d}:{seconds:02d}"
     else:
