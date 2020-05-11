@@ -46,7 +46,9 @@ class RunPage extends React.Component {
             ""
           )}
 
-          <a className="button is-centered" href="#bottom">Latest Output</a>
+          <a className="button is-centered" href="#bottom">
+            Latest Output
+          </a>
 
           <table className="table">
             <tbody>

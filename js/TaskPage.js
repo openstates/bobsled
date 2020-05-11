@@ -43,7 +43,11 @@ class TaskPage extends React.Component {
         </li>
       ));
       for (let trigger of this.state.task.triggers) {
-        triggers.push((<li key={trigger}><strong>cron:</strong> {trigger.cron}</li>));
+        triggers.push(
+          <li key={trigger}>
+            <strong>cron:</strong> {trigger.cron}
+          </li>
+        );
       }
     }
     return (
@@ -68,7 +72,9 @@ class TaskPage extends React.Component {
                   </tr>
                   <tr>
                     <th>Triggers</th>
-                    <td><ul>{triggers}</ul></td>
+                    <td>
+                      <ul>{triggers}</ul>
+                    </td>
                   </tr>
                   <tr>
                     <th>Entrypoint</th>

@@ -1,13 +1,18 @@
 default_language_version:
-    python: python3.7
+  python: python3.7
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.2.3  # Use the ref you want to point at
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
     hooks:
       - id: check-merge-conflict
       - id: debug-statements
       - id: flake8
--   repo: https://github.com/ambv/black
-    rev: stable
+        args: ["--ignore=E203,E501,W503"]
+  - repo: https://github.com/ambv/black
+    rev: 19.10b0
     hooks:
       - id: black
+  - repo: https://github.com/prettier/prettier
+    rev: "" # Use the sha or tag you want to point at
+    hooks:
+      - id: prettier

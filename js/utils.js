@@ -10,7 +10,5 @@ export function formatTime(timeStr) {
 }
 
 export function enabledColumn(enabled) {
-  return (
-    <td>{enabled ? "yes" : "no"}</td>
-  );
+  return <td>{enabled ? "yes" : "no"}</td>;
 }
