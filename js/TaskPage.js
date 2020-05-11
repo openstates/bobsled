@@ -16,15 +16,15 @@ class TaskPage extends React.Component {
 
   componentDidMount() {
     fetch("/api/task/" + this.state.task_name)
-      .then(response => response.json())
-      .then(data => this.setState(data));
+      .then((response) => response.json())
+      .then((data) => this.setState(data));
   }
 
   startRun() {
     const outerThis = this;
     fetch("/api/task/" + this.state.task_name + "/run", { method: "POST" })
-      .then(response => response.json())
-      .then(function(data) {
+      .then((response) => response.json())
+      .then(function (data) {
         let runs = outerThis.state.runs;
         runs.unshift(data);
         outerThis.setState({ runs: runs });
@@ -33,14 +33,18 @@ class TaskPage extends React.Component {
 
   render() {
     var entrypoint_display = "";
+    var triggers = [];
     var next_tasks = "";
     if (Object.entries(this.state.task).length !== 0) {
       entrypoint_display = this.state.task.entrypoint.join(" ");
-      next_tasks = this.state.task.next_tasks.map(nt => (
+      next_tasks = this.state.task.next_tasks.map((nt) => (
         <li key={nt}>
           <a href={"/task/" + nt}>{nt}</a>
         </li>
       ));
+      for (let trigger of this.state.task.triggers) {
+        triggers.push((<li key={trigger}><strong>cron:</strong> {trigger.cron}</li>));
+      }
     }
     return (
       <section className="section">
@@ -63,8 +67,8 @@ class TaskPage extends React.Component {
                     <td>{this.state.task.image}</td>
                   </tr>
                   <tr>
-                    <th>Tags</th>
-                    <td>{this.state.task.tags}</td>
+                    <th>Triggers</th>
+                    <td><ul>{triggers}</ul></td>
                   </tr>
                   <tr>
                     <th>Entrypoint</th>

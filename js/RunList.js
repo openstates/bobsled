@@ -4,9 +4,9 @@ import { formatTime } from "./utils.js";
 
 function statusCol(status) {
   if (status === "Success") {
-    return <td class="success">Success</td>;
+    return <td className="success">Success</td>;
   } else if (status === "Error") {
-    return <td class="error">Error</td>;
+    return <td className="error">Error</td>;
   } else {
     return <td>{status}</td>;
   }
