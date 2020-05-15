@@ -6,7 +6,7 @@ services:
 python:
   - "3.7"
   - "3.8"
-install: 
+install:
   - pip install poetry
   - poetry install
   - docker pull hello-world
@@ -16,8 +16,8 @@ install:
 before_script:
   - psql -c 'create database bobsled_test;' -U postgres
 env:
-  - BOTO_CONFIG=/dev/null AWS_DEFAULT_REGION=us-east-1 BOBSLED_SECRET_KEY="secret-stuff-here" BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml" BOBSLED_TEST_DATABASE=postgresql://localhost/bobsled_test
-script: 
+  - BOTO_CONFIG=/dev/null AWS_DEFAULT_REGION=us-east-1 BOBSLED_SECRET_KEY="secret-stuff-here" BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml" BOBSLED_TEST_DATABASE=postgresql://localhost/bobsled_test BOBSLED_ENVIRONMENT_FILENAME="bobsled/tests/environments.yml"
+script:
   - poetry run pytest
   - poetry run flake8
 notifications:
