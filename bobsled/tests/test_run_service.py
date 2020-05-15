@@ -83,6 +83,7 @@ async def test_run_environment(Cls):
     rs = Cls()
     if not rs:
         pytest.skip("ECS not configured")
+    await rs.environment.update_environments()
     task = Task("env-test", image="alpine", entrypoint="env", environment="two")
     rs.initialize([task])
     run = await rs.run_task(task)
