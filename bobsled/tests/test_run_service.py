@@ -8,16 +8,17 @@ from ..base import Task, Status
 from ..storages import InMemoryStorage
 from ..runners import LocalRunService, ECSRunService
 from ..tasks import YamlTaskProvider
-from ..environments import LocalEnvironmentProvider
+from ..yaml_environment import YamlEnvironmentProvider
 from ..exceptions import AlreadyRunning
 
-ENV = '{"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}'
+
+def env_provider():
+    filename = os.path.join(os.path.dirname(__file__), "environments.yml")
+    return YamlEnvironmentProvider(filename)
 
 
 def local_run_service():
-    return LocalRunService(
-        InMemoryStorage(), LocalEnvironmentProvider(BOBSLED_ENVIRONMENT_JSON=ENV)
-    )
+    return LocalRunService(InMemoryStorage(), env_provider())
 
 
 def ecs_run_service():
@@ -28,7 +29,7 @@ def ecs_run_service():
     if cluster_name and subnet_id and security_group_id:
         return ECSRunService(
             InMemoryStorage(),
-            LocalEnvironmentProvider(BOBSLED_ENVIRONMENT_JSON=ENV),
+            env_provider(),
             cluster_name=cluster_name,
             subnet_id=subnet_id,
             security_group_id=security_group_id,
@@ -167,7 +168,7 @@ async def test_next_tasks(Cls):
     task2 = Task("next", image="alpine", entrypoint=["echo", "2"])
     # need to put both into storage so that next_tasks lookup works
     await storage.set_tasks([task, task2])
-    rs = LocalRunService(storage, LocalEnvironmentProvider(), [])
+    rs = LocalRunService(storage, env_provider(), [])
     run = await rs.run_task(task)
 
     n_running = await _wait_to_finish(rs, run, 10)
@@ -184,7 +185,7 @@ async def test_callback_on_success():
 
     callback = Callback()
 
-    rs = LocalRunService(InMemoryStorage(), LocalEnvironmentProvider(), [callback])
+    rs = LocalRunService(InMemoryStorage(), env_provider(), [callback])
     task = Task("hello-world", image="hello-world")
     run = await rs.run_task(task)
 
@@ -200,7 +201,7 @@ async def test_callback_on_error():
         on_error = Mock(return_value=asyncio.sleep(0))
 
     callback = Callback()
-    rs = LocalRunService(InMemoryStorage(), LocalEnvironmentProvider(), [callback])
+    rs = LocalRunService(InMemoryStorage(), env_provider(), [callback])
     task = Task("failure", image="alpine", entrypoint="sh -c 'exit 1'")
     run = await rs.run_task(task)
 

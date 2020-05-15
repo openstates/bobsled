@@ -1,5 +1,7 @@
 import os
-from bobsled import storages, environments, tasks, runners, callbacks
+from bobsled import storages, runners, callbacks
+from bobsled.yaml_environment import YamlEnvironmentProvider
+from bobsled.tasks import YamlTaskProvider
 from bobsled.utils import get_env_config, load_args
 
 
@@ -9,14 +11,12 @@ class Bobsled:
         if self.settings["secret_key"] is None:
             raise ValueError("must set 'secret_key' setting")
 
-        EnvCls, env_args = get_env_config(
-            "BOBSLED_ENVIRONMENT_PROVIDER", "LocalEnvironmentProvider", environments
-        )
+        # env and task providers can't currently be overriden
+        env_args = load_args(YamlEnvironmentProvider)
+        task_args = load_args(YamlTaskProvider)
+        # storage and run are overridable
         StorageCls, storage_args = get_env_config(
             "BOBSLED_STORAGE", "InMemoryStorage", storages
-        )
-        TaskCls, task_args = get_env_config(
-            "BOBSLED_TASK_PROVIDER", "YamlTaskProvider", tasks
         )
         RunCls, run_args = get_env_config("BOBSLED_RUNNER", "LocalRunService", runners)
 
@@ -26,8 +26,8 @@ class Bobsled:
             callback_classes.append(CallbackCls(**load_args(CallbackCls)))
 
         self.storage = StorageCls(**storage_args)
-        self.env = EnvCls(**env_args)
-        self.tasks = TaskCls(storage=self.storage, **task_args)
+        self.env = YamlEnvironmentProvider(**env_args)
+        self.tasks = YamlTaskProvider(storage=self.storage, **task_args)
         self.run = RunCls(
             storage=self.storage,
             environment=self.env,
