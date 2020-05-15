@@ -1,6 +1,6 @@
 import yaml
 import boto3
-from ..base import Environment, EnvironmentProvider
+from .base import Environment, EnvironmentProvider
 
 """
 Format of environment file:
