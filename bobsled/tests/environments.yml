@@ -1,5 +1,8 @@
 one:
-  number: 123
-  word: hello
+  - variable: number
+    string: 123
+  - variable: word
+    string: hello
 two:
-  foo: "INJECTION"
+  - variable: foo
+    string: INJECTION

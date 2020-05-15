@@ -1,79 +1,49 @@
 import os
-import moto
-import boto3
 import pytest
-from ..environments import (
-    LocalEnvironmentProvider,
-    YamlEnvironmentProvider,
-    ParameterStoreEnvironmentProvider,
-)
+from unittest import mock
+from ..environments import NewYamlEnvironmentProvider
 from ..base import Environment
 
 
-ENV = '{"one": {"number": 123, "word": "hello"}, "two": {"foo": "INJECTION"}}'
-local_env = LocalEnvironmentProvider(ENV)
-ENV_FILE = os.path.join(os.path.dirname(__file__), "environments.yml")
-yaml_env = YamlEnvironmentProvider(ENV_FILE)
+@pytest.fixture
+def simpleenv():
+    filename = os.path.join(os.path.dirname(__file__), "environments.yml")
+    return NewYamlEnvironmentProvider(filename)
 
 
-@pytest.mark.parametrize("env", [local_env, yaml_env])
-def test_get_environment_names(env):
-    assert len(env.get_environment_names()) == 2
+@pytest.mark.asyncio
+async def test_get_environment_names(simpleenv):
+    await simpleenv.update_environments()
+    assert set(simpleenv.get_environment_names()) == {"one", "two"}
 
 
-@pytest.mark.parametrize("env", [local_env, yaml_env])
-def test_get_environment(env):
-    assert env.get_environment("one") == Environment(
+@pytest.mark.asyncio
+async def test_get_environment(simpleenv):
+    await simpleenv.update_environments()
+    assert simpleenv.get_environment("one") == Environment(
         "one", {"number": 123, "word": "hello"}
     )
 
 
-@pytest.mark.parametrize("env", [local_env, yaml_env])
-def test_mask_variables(env):
-    assert env.mask_variables("hello this is a test") == "**ONE/WORD** this is a test"
-
-
-def _populate_paramstore():
-    ssm = boto3.client("ssm")
-    ssm.put_parameter(Name="/bobsledtest/one/number", Value="123", Type="SecureString")
-    ssm.put_parameter(Name="/bobsledtest/one/word", Value="hello", Type="SecureString")
-    ssm.put_parameter(Name="/bobsledtest/two/foo", Value="bar", Type="SecureString")
-
-
-@moto.mock_ssm
-def test_get_environment_names_ssm():
-    _populate_paramstore()
-    env = ParameterStoreEnvironmentProvider("/bobsledtest")
-    assert len(env.get_environment_names()) == 2
-
-
-@moto.mock_ssm
-def test_get_environment_ssm():
-    _populate_paramstore()
-    env = ParameterStoreEnvironmentProvider("/bobsledtest")
-    assert env.get_environment("one") == Environment(
-        "one", {"number": "123", "word": "hello"}
+@pytest.mark.asyncio
+async def test_mask_variables(simpleenv):
+    await simpleenv.update_environments()
+    assert (
+        simpleenv.mask_variables("hello this is a test")
+        == "**ONE/WORD** this is a test"
     )
 
 
-@moto.mock_ssm
-def test_get_environment_changes_ssm():
-    _populate_paramstore()
-    env = ParameterStoreEnvironmentProvider("/bobsledtest")
-    assert env.get_environment("one") == Environment(
-        "one", {"number": "123", "word": "hello"}
+@pytest.mark.asyncio
+async def test_get_environment_paramstore():
+    filename = os.path.join(os.path.dirname(__file__), "paramstore_env.yml")
+    psenv = NewYamlEnvironmentProvider(filename)
+    # patch paramstore loader so we don't have to do a bunch of moto stuff that
+    # doesn't really work well with async
+    with mock.patch(
+        "bobsled.environments.newyaml.paramstore_loader", new=lambda x: "ps-" + x
+    ):
+        await psenv.update_environments()
+    assert psenv.get_environment("one") == Environment(
+        "one", {"number": "ps-/bobsledtest/number", "word": "ps-/bobsledtest/word"}
     )
-    ssm = boto3.client("ssm")
-    ssm.put_parameter(
-        Name="/bobsledtest/one/number", Value="456", Type="SecureString", Overwrite=True
-    )
-    assert env.get_environment("one") == Environment(
-        "one", {"number": "456", "word": "hello"}
-    )
-
-
-@moto.mock_ssm
-def test_mask_variables_ssm():
-    _populate_paramstore()
-    env = ParameterStoreEnvironmentProvider("/bobsledtest")
-    assert env.mask_variables("hello this is a test") == "**ONE/WORD** this is a test"

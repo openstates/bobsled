@@ -16,7 +16,7 @@ Format of environment file:
 
 def paramstore_loader(varname):
     ssm = boto3.client("ssm")
-    resp = ssm.get_parameters_by_path(Name=varname, WithDecryption=True)
+    resp = ssm.get_parameter(Name=varname, WithDecryption=True)
     return resp["Parameter"]["Value"]
 
 
