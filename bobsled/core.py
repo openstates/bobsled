@@ -39,6 +39,7 @@ class Bobsled:
     async def initialize(self):
         await self.storage.connect()
         tasks = await self.tasks.get_tasks()
+        await self.env.update_environments()
         if not tasks:
             await self.refresh_config()
         else:
