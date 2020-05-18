@@ -89,7 +89,7 @@ def test_websocket():
     uuid = response.json()["uuid"]
     with client.websocket_connect(f"/ws/logs/{uuid}") as websocket:
         data = websocket.receive_json()
-        assert data["logs"] == "'hello alpine'\n"
+        assert data["logs"] == "'**ONE/WORD** alpine'\n"
 
 
 def test_update_tasks():
@@ -103,6 +103,6 @@ def test_update_tasks():
         # change yaml file so that update_tasks has to do work
         bobsled.tasks.filename = "bobsled/tests/tasks/tasks2.yml"
 
-        resp = client.post("/api/update_tasks")
+        resp = client.post("/api/update_config")
         assert resp.status_code == 200
         assert {"hello-world2"} == {t["name"] for t in resp.json()["tasks"]}
