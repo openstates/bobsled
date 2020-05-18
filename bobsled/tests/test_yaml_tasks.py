@@ -33,8 +33,8 @@ async def test_get_tasks_github():
     tp = YamlTaskProvider(
         storage=InMemoryStorage(),
         BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml",
-        BOBSLED_TASKS_GITHUB_USER="jamesturk",
-        BOBSLED_TASKS_GITHUB_REPO="bobsled",
+        BOBSLED_CONFIG_GITHUB_USER="jamesturk",
+        BOBSLED_CONFIG_GITHUB_REPO="bobsled",
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
     await tp.update_tasks()
@@ -49,8 +49,8 @@ async def test_get_tasks_github_dir():
     tp = YamlTaskProvider(
         storage=InMemoryStorage(),
         BOBSLED_TASKS_DIRNAME="bobsled/tests/tasks/",
-        BOBSLED_TASKS_GITHUB_USER="jamesturk",
-        BOBSLED_TASKS_GITHUB_REPO="bobsled",
+        BOBSLED_CONFIG_GITHUB_USER="jamesturk",
+        BOBSLED_CONFIG_GITHUB_REPO="bobsled",
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
     tasks = await tp.update_tasks()
