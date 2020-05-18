@@ -7,7 +7,7 @@ import boto3
 from ..base import Task, Status
 from ..storages import InMemoryStorage
 from ..runners import LocalRunService, ECSRunService
-from ..tasks import YamlTaskProvider
+from ..yaml_tasks import YamlTaskProvider
 from ..yaml_environment import YamlEnvironmentProvider
 from ..exceptions import AlreadyRunning
 

@@ -1,6 +1,6 @@
 import os
 import pytest
-from .. import storages, tasks
+from .. import storages
 from bobsled.utils import get_env_config
 
 
@@ -10,14 +10,6 @@ def test_get_env_config_basic():
     Cls, args = get_env_config("FAKE_TEST_KEY", None, storages)
     assert Cls is storages.DatabaseStorage
     assert args == {"BOBSLED_DATABASE_URI": "test://"}
-
-
-def test_get_env_config_defaults():
-    os.environ["FAKE_TEST_KEY"] = "YamlTaskProvider"
-    os.environ["BOBSLED_TASKS_FILENAME"] = "foo"
-    Cls, args = get_env_config("FAKE_TEST_KEY", None, tasks)
-    assert Cls is tasks.YamlTaskProvider
-    assert args == {"BOBSLED_TASKS_FILENAME": "foo"}
 
 
 def test_get_env_config_missing():

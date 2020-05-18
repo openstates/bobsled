@@ -1,7 +1,7 @@
 import os
 from bobsled import storages, runners, callbacks
 from bobsled.yaml_environment import YamlEnvironmentProvider
-from bobsled.tasks import YamlTaskProvider
+from bobsled.yaml_tasks import YamlTaskProvider
 from bobsled.utils import get_env_config, load_args
 
 

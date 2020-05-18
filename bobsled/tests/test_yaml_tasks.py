@@ -1,7 +1,7 @@
 import os
 import pytest
 from ..storages import InMemoryStorage
-from ..tasks import YamlTaskProvider
+from ..yaml_tasks import YamlTaskProvider
 from ..base import Trigger
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
