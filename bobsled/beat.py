@@ -61,13 +61,13 @@ def next_run_for_task(task):
 
 # TODO: make these configurable
 LOG_FILE = "/tmp/bobsled-beat.log"
-UPDATE_TASKS_MINS = 120
+UPDATE_CONFIG_MINS = 120
 
 
 async def run_service():
     await bobsled.initialize()
     next_task_update = datetime.datetime.utcnow() + datetime.timedelta(
-        minutes=UPDATE_TASKS_MINS
+        minutes=UPDATE_CONFIG_MINS
     )
 
     port = os.environ.get("BOBSLED_BEAT_PORT", "1988")
@@ -97,9 +97,9 @@ async def run_service():
         _log(f"{utcnow}: pending={len(pending)} running={len(running)}")
 
         if utcnow > next_task_update:
-            _log("updating tasks...")
-            await bobsled.refresh_tasks()
-            next_task_update = utcnow + datetime.timedelta(minutes=UPDATE_TASKS_MINS)
+            _log("updating config...")
+            await bobsled.refresh_config()
+            next_task_update = utcnow + datetime.timedelta(minutes=UPDATE_CONFIG_MINS)
             _log(f"updated tasks, will run again at {next_task_update}")
 
         # parallel updates from all running tasks

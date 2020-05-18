@@ -216,7 +216,7 @@ async def stop_run(request):
 
 @requires(["authenticated", "admin"], redirect="login")
 async def update_config(request):
-    tasks = [attr.asdict(t) for t in await bobsled.refresh_tasks()]
+    tasks = [attr.asdict(t) for t in await bobsled.refresh_config()]
     return JSONResponse({"tasks": tasks})
 
 

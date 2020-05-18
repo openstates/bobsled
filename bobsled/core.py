@@ -1,4 +1,5 @@
 import os
+import asyncio
 from bobsled import storages, runners, callbacks
 from bobsled.yaml_environment import YamlEnvironmentProvider
 from bobsled.yaml_tasks import YamlTaskProvider
@@ -39,12 +40,14 @@ class Bobsled:
         await self.storage.connect()
         tasks = await self.tasks.get_tasks()
         if not tasks:
-            await self.refresh_tasks()
+            await self.refresh_config()
         else:
             self.run.initialize(tasks)
 
-    async def refresh_tasks(self):
-        await self.tasks.update_tasks()
+    async def refresh_config(self):
+        await asyncio.gather(
+            self.tasks.update_tasks(), self.environment.update_environments()
+        )
         tasks = await self.tasks.get_tasks()
         self.run.initialize(tasks)
         return tasks
