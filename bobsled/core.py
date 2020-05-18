@@ -45,9 +45,7 @@ class Bobsled:
             self.run.initialize(tasks)
 
     async def refresh_config(self):
-        await asyncio.gather(
-            self.tasks.update_tasks(), self.environment.update_environments()
-        )
+        await asyncio.gather(self.tasks.update_tasks(), self.env.update_environments())
         tasks = await self.tasks.get_tasks()
         self.run.initialize(tasks)
         return tasks
