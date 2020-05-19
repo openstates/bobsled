@@ -210,7 +210,7 @@ class ECSRunService(RunService):
 
     def get_logs(self, run):
         return self.environment.mask_variables(
-            "\n".join(l["message"] for l in self.iter_logs(run))
+            "\n".join(line["message"] for line in self.iter_logs(run))
         )
 
     def iter_logs(self, run):
