@@ -214,11 +214,12 @@ async def test_callback_on_error():
 
 def test_ecs_initialize():
     ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
-    tasks = YamlTaskProvider(storage=InMemoryStorage(), BOBSLED_TASKS_FILENAME=ENV_FILE)
+    storage = InMemoryStorage()
+    YamlTaskProvider(storage=storage, BOBSLED_TASKS_FILENAME=ENV_FILE)
     ers = ecs_run_service()
     if not ers:
         pytest.skip("No ECS Configuration")
-    ers.initialize(tasks.get_tasks())
+    ers.initialize(storage.get_tasks())
 
     # check that there's a registered cron?
     events = boto3.client("events")

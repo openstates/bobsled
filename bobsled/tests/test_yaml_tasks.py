@@ -2,48 +2,37 @@ import os
 import pytest
 from ..storages import InMemoryStorage
 from ..yaml_tasks import YamlTaskProvider
-from ..base import Trigger
 
 ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
 GH_API_KEY = os.environ.get("GITHUB_API_KEY")
 
 
 @pytest.mark.asyncio
-async def test_get_tasks():
-    tp = YamlTaskProvider(storage=InMemoryStorage(), BOBSLED_TASKS_FILENAME=ENV_FILE)
-    await tp.update_tasks()
-    tasks = await tp.get_tasks()
+async def test_basic_tasks():
+    storage = InMemoryStorage()
+    tp = YamlTaskProvider(storage=storage, BOBSLED_TASKS_FILENAME=ENV_FILE)
+    tasks = await tp.update_tasks()
     assert len(tasks) == 3
 
 
 @pytest.mark.asyncio
-async def test_get_task():
-    tp = YamlTaskProvider(storage=InMemoryStorage(), BOBSLED_TASKS_FILENAME=ENV_FILE)
-    await tp.update_tasks()
-    task = await tp.get_task("full-example")
-    assert task.name == "full-example"
-    assert task.tags == ["a", "b", "c"]
-    assert task.triggers == [Trigger(cron="0 4 * * ?")]
-
-
-@pytest.mark.asyncio
-async def test_get_tasks_github():
+async def test_load_github_tasks():
     if not GH_API_KEY:
         pytest.skip("no GitHub API Key")
+    storage = InMemoryStorage()
     tp = YamlTaskProvider(
-        storage=InMemoryStorage(),
+        storage=storage,
         BOBSLED_TASKS_FILENAME="bobsled/tests/tasks/tasks.yml",
         BOBSLED_CONFIG_GITHUB_USER="stateautomata",
         BOBSLED_CONFIG_GITHUB_REPO="bobsled",
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
-    await tp.update_tasks()
-    tasks = await tp.get_tasks()
+    tasks = await tp.update_tasks()
     assert len(tasks) == 3
 
 
 @pytest.mark.asyncio
-async def test_get_tasks_github_dir():
+async def test_load_github_dir():
     if not GH_API_KEY:
         pytest.skip("no GitHub API Key")
     tp = YamlTaskProvider(
@@ -54,5 +43,4 @@ async def test_get_tasks_github_dir():
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
     tasks = await tp.update_tasks()
-    tasks = await tp.get_tasks()
     assert len(tasks) == 4

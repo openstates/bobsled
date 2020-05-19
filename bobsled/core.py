@@ -38,7 +38,7 @@ class Bobsled:
 
     async def initialize(self):
         await self.storage.connect()
-        tasks = await self.tasks.get_tasks()
+        tasks = await self.storage.get_tasks()
         await self.env.update_environments()
         if not tasks:
             await self.refresh_config()
@@ -47,7 +47,7 @@ class Bobsled:
 
     async def refresh_config(self):
         await asyncio.gather(self.tasks.update_tasks(), self.env.update_environments())
-        tasks = await self.tasks.get_tasks()
+        tasks = await self.storage.get_tasks()
         self.run.initialize(tasks)
         return tasks
 

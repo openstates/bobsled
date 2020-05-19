@@ -146,7 +146,7 @@ def _run2dict(run):
 
 @requires(["authenticated"], redirect="login")
 async def api_index(request):
-    tasks = [attr.asdict(t) for t in await bobsled.tasks.get_tasks()]
+    tasks = [attr.asdict(t) for t in await bobsled.storage.get_tasks()]
     results = await asyncio.gather(
         *[bobsled.run.get_runs(task_name=t["name"], latest=4) for t in tasks]
     )
@@ -177,7 +177,7 @@ async def latest_runs(request):
 @requires(["authenticated"], redirect="login")
 async def task_overview(request):
     task_name = request.path_params["task_name"]
-    task = await bobsled.tasks.get_task(task_name)
+    task = await bobsled.storage.get_task(task_name)
     runs = await bobsled.run.get_runs(
         task_name=task_name, update_status=True, latest=40
     )
@@ -191,7 +191,7 @@ async def run_task(request):
     task_name = request.path_params["task_name"]
     if "admin" not in request.auth.scopes:
         return JSONResponse({"error": "Insufficient permissions."})
-    task = await bobsled.tasks.get_task(task_name)
+    task = await bobsled.storage.get_task(task_name)
     try:
         run = await bobsled.run.run_task(task)
     except AlreadyRunning:
