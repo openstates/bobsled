@@ -17,4 +17,4 @@ users.yml
 run-local.sh
 
 *.db
-
+docs/_build
