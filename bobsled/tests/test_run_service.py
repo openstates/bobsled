@@ -7,14 +7,14 @@ import boto3
 from ..base import Task, Status
 from ..storages import InMemoryStorage
 from ..runners import LocalRunService, ECSRunService
-from ..yaml_tasks import YamlTaskProvider
-from ..yaml_environment import YamlEnvironmentProvider
+from ..tasks import TaskProvider
+from ..environment import EnvironmentProvider
 from ..exceptions import AlreadyRunning
 
 
 def env_provider():
     filename = os.path.join(os.path.dirname(__file__), "environments.yml")
-    return YamlEnvironmentProvider(filename)
+    return EnvironmentProvider(filename)
 
 
 def local_run_service():
@@ -215,7 +215,7 @@ async def test_callback_on_error():
 def test_ecs_initialize():
     ENV_FILE = os.path.join(os.path.dirname(__file__), "tasks/tasks.yml")
     storage = InMemoryStorage()
-    YamlTaskProvider(storage=storage, BOBSLED_TASKS_FILENAME=ENV_FILE)
+    TaskProvider(storage=storage, BOBSLED_TASKS_FILENAME=ENV_FILE)
     ers = ecs_run_service()
     if not ers:
         pytest.skip("No ECS Configuration")

@@ -30,7 +30,7 @@ DatabaseStorage Settings:
 
 - BOBSLED_DATABASE_URI
 
-YamlTaskProvider Settings:
+TaskProvider Settings:
 
 - BOBSLED_TASKS_FILENAME
 - BOBSLED_TASKS_DIRNAME
@@ -46,7 +46,7 @@ ECSRunService Settings:
 - BOBSLED_LOG_GROUP
 - BOBSLED_ROLE_ARN
 
-YamlEnvironmentProvider Settings:
+EnvironmentProvider Settings:
 
 - BOBSLED_ENVIRONMENT_FILENAME
 - BOBSLED_ENVIRONMENT_DIRNAME

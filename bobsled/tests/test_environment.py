@@ -1,14 +1,14 @@
 import os
 import pytest
 from unittest import mock
-from ..yaml_environment import YamlEnvironmentProvider
+from ..environment import EnvironmentProvider
 from ..base import Environment
 
 
 @pytest.fixture
 def simpleenv():
     filename = os.path.join(os.path.dirname(__file__), "environments.yml")
-    return YamlEnvironmentProvider(filename)
+    return EnvironmentProvider(filename)
 
 
 @pytest.mark.asyncio
@@ -37,12 +37,10 @@ async def test_mask_variables(simpleenv):
 @pytest.mark.asyncio
 async def test_get_environment_paramstore():
     filename = os.path.join(os.path.dirname(__file__), "paramstore_env.yml")
-    psenv = YamlEnvironmentProvider(filename)
+    psenv = EnvironmentProvider(filename)
     # patch paramstore loader so we don't have to do a bunch of moto stuff that
     # doesn't really work well with async
-    with mock.patch(
-        "bobsled.yaml_environment.paramstore_loader", new=lambda x: "ps-" + x
-    ):
+    with mock.patch("bobsled.environment.paramstore_loader", new=lambda x: "ps-" + x):
         await psenv.update_environments()
     assert psenv.get_environment("one") == Environment(
         "one", {"number": "ps-/bobsledtest/number", "word": "ps-/bobsledtest/word"}

@@ -20,7 +20,7 @@ def paramstore_loader(varname):
     return resp["Parameter"]["Value"]
 
 
-class YamlEnvironmentProvider:
+class EnvironmentProvider:
     def __init__(
         self,
         BOBSLED_ENVIRONMENT_FILENAME=None,

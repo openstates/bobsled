@@ -2,7 +2,7 @@ from .base import Task, TaskProvider, Trigger
 from .utils import load_github_or_local_yaml
 
 
-class YamlTaskProvider(TaskProvider):
+class TaskProvider(TaskProvider):
     def __init__(
         self,
         *,
