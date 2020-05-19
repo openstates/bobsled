@@ -11,7 +11,8 @@ GH_API_KEY = os.environ.get("GITHUB_API_KEY")
 async def test_basic_tasks():
     storage = InMemoryStorage()
     tp = TaskProvider(storage=storage, BOBSLED_TASKS_FILENAME=ENV_FILE)
-    tasks = await tp.update_tasks()
+    await tp.update_tasks()
+    tasks = await storage.get_tasks()
     assert len(tasks) == 3
 
 
@@ -27,7 +28,8 @@ async def test_load_github_tasks():
         BOBSLED_CONFIG_GITHUB_REPO="bobsled",
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
-    tasks = await tp.update_tasks()
+    await tp.update_tasks()
+    tasks = await storage.get_tasks()
     assert len(tasks) == 3
 
 
@@ -35,12 +37,14 @@ async def test_load_github_tasks():
 async def test_load_github_dir():
     if not GH_API_KEY:
         pytest.skip("no GitHub API Key")
+    storage = InMemoryStorage()
     tp = TaskProvider(
-        storage=InMemoryStorage(),
+        storage=storage,
         BOBSLED_TASKS_DIRNAME="bobsled/tests/tasks/",
         BOBSLED_CONFIG_GITHUB_USER="stateautomata",
         BOBSLED_CONFIG_GITHUB_REPO="bobsled",
         BOBSLED_GITHUB_API_KEY=GH_API_KEY,
     )
-    tasks = await tp.update_tasks()
+    await tp.update_tasks()
+    tasks = await storage.get_tasks()
     assert len(tasks) == 4
