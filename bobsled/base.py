@@ -69,28 +69,6 @@ class User:
     permissions: typing.List[str] = []
 
 
-class EnvironmentProvider:
-    def mask_variables(self, string):
-        for env_name in self.get_environment_names():
-            env = self.get_environment(env_name)
-            for var, value in env.values.items():
-                string = string.replace(
-                    str(value), f"**{env_name.upper()}/{var.upper()}**"
-                )
-        return string
-
-
-class TaskProvider:
-    async def update_tasks(self):
-        raise NotImplementedError
-
-    async def get_tasks(self):
-        return await self.storage.get_tasks()
-
-    async def get_task(self, name):
-        return await self.storage.get_task(name)
-
-
 class RunService:
     async def run_task(self, task):
         running = await self.get_runs(

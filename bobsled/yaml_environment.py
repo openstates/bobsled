@@ -1,5 +1,5 @@
 import boto3
-from .base import Environment, EnvironmentProvider
+from .base import Environment
 from .utils import load_github_or_local_yaml
 
 """
@@ -20,7 +20,7 @@ def paramstore_loader(varname):
     return resp["Parameter"]["Value"]
 
 
-class YamlEnvironmentProvider(EnvironmentProvider):
+class YamlEnvironmentProvider:
     def __init__(
         self,
         BOBSLED_ENVIRONMENT_FILENAME=None,
@@ -40,6 +40,15 @@ class YamlEnvironmentProvider(EnvironmentProvider):
             raise EnvironmentError(
                 "must provide either BOBSLED_ENVIRONMENT_FILENAME or BOBSLED_ENVIRONMENT_DIRNAME"
             )
+
+    def mask_variables(self, string):
+        for env_name in self.get_environment_names():
+            env = self.get_environment(env_name)
+            for var, value in env.values.items():
+                string = string.replace(
+                    str(value), f"**{env_name.upper()}/{var.upper()}**"
+                )
+        return string
 
     def get_environment_names(self):
         return list(self.environments.keys())
