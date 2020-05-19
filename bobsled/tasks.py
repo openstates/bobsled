@@ -1,8 +1,8 @@
-from .base import Task, TaskProvider, Trigger
+from .base import Task, Trigger
 from .utils import load_github_or_local_yaml
 
 
-class TaskProvider(TaskProvider):
+class TaskProvider:
     def __init__(
         self,
         *,
