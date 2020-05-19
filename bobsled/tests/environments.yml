@@ -3,6 +3,7 @@ one:
     string: 123
   - variable: word
     string: hello
+    masked: false
 two:
   - variable: foo
     string: INJECTION

@@ -23,6 +23,7 @@ class Status(enum.Enum):
 class Environment:
     name: str
     values: typing.Dict[str, str]
+    unmasked: typing.List[str]
 
 
 @attr.s(auto_attribs=True)

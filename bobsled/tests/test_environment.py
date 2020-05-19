@@ -21,7 +21,7 @@ async def test_get_environment_names(simpleenv):
 async def test_get_environment(simpleenv):
     await simpleenv.update_environments()
     assert simpleenv.get_environment("one") == Environment(
-        "one", {"number": 123, "word": "hello"}
+        "one", {"number": 123, "word": "hello"}, ["word"]
     )
 
 
@@ -29,8 +29,8 @@ async def test_get_environment(simpleenv):
 async def test_mask_variables(simpleenv):
     await simpleenv.update_environments()
     assert (
-        simpleenv.mask_variables("hello this is a test")
-        == "**ONE/WORD** this is a test"
+        simpleenv.mask_variables("hello this is a test, but 123 is masked")
+        == "hello this is a test, but **ONE/NUMBER** is masked"
     )
 
 
@@ -43,5 +43,5 @@ async def test_get_environment_paramstore():
     with mock.patch("bobsled.environment.paramstore_loader", new=lambda x: "ps-" + x):
         await psenv.update_environments()
     assert psenv.get_environment("one") == Environment(
-        "one", {"number": "ps-/bobsledtest/number", "word": "ps-/bobsledtest/word"}
+        "one", {"number": "ps-/bobsledtest/number", "word": "ps-/bobsledtest/word"}, []
     )

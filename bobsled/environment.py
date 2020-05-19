@@ -45,9 +45,10 @@ class EnvironmentProvider:
         for env_name in self.get_environment_names():
             env = self.get_environment(env_name)
             for var, value in env.values.items():
-                string = string.replace(
-                    str(value), f"**{env_name.upper()}/{var.upper()}**"
-                )
+                if var not in env.unmasked:
+                    string = string.replace(
+                        str(value), f"**{env_name.upper()}/{var.upper()}**"
+                    )
         return string
 
     def get_environment_names(self):
@@ -67,6 +68,7 @@ class EnvironmentProvider:
 
         for name, envdef in data.items():
             values = {}
+            unmasked = []
             for env_var in envdef:
                 if "string" in env_var:
                     values[env_var["variable"]] = env_var["string"]
@@ -78,4 +80,6 @@ class EnvironmentProvider:
                     raise ValueError(
                         f"{name}.{env_var['variable']} must include 'string' or 'paramstore'"
                     )
-            self.environments[name] = Environment(name, values)
+                if not env_var.get("masked", True):
+                    unmasked.append(env_var["variable"])
+            self.environments[name] = Environment(name, values, unmasked)
