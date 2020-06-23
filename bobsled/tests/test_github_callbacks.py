@@ -55,7 +55,8 @@ async def test_github_on_success(mocker):
 
 def test_make_issue(mocker):
     mocker.patch("github3.login")
-    gh = GithubIssueCallback(None, None, None)
+    # first element is the required tag, others are added too
+    gh = GithubIssueCallback(None, None, None, "automatic,other")
     mocker.patch.object(gh.repo_obj, "create_issue")
 
     run = Run(
@@ -94,5 +95,5 @@ Logs:
 99
 ```
         """,
-        labels=["automatic", "ready"],
+        labels=["automatic", "other"],
     )

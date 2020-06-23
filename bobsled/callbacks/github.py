@@ -8,10 +8,12 @@ class GithubIssueCallback:
         BOBSLED_GITHUB_API_KEY,
         BOBSLED_GITHUB_ISSUE_USER,
         BOBSLED_GITHUB_ISSUE_REPO,
+        BOBSLED_GITHUB_ISSUE_TAGS="automatic",
     ):
         self.api_key = BOBSLED_GITHUB_API_KEY
         self.user = BOBSLED_GITHUB_ISSUE_USER
         self.repo = BOBSLED_GITHUB_ISSUE_REPO
+        self.tags = [t.strip() for t in BOBSLED_GITHUB_ISSUE_TAGS.split(",")]
 
         gh = github3.login(token=self.api_key)
         self.repo_obj = gh.repository(self.user, self.repo)
@@ -39,7 +41,7 @@ class GithubIssueCallback:
             self.make_issue(latest_run, count, r)
 
     def get_existing_issue(self, task_name):
-        existing_issues = self.repo_obj.issues(labels="automatic", state="open")
+        existing_issues = self.repo_obj.issues(labels=self.tags[0], state="open")
         for issue in existing_issues:
             if issue.title.startswith(task_name):
                 return issue
@@ -57,4 +59,4 @@ Logs:
 ```
         """
         title = f"{latest_run.task} failing since at least {failure.start[:10]}"
-        self.repo_obj.create_issue(title=title, body=body, labels=["automatic"])
+        self.repo_obj.create_issue(title=title, body=body, labels=self.tags)
