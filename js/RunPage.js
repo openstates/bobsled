@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { local_websocket } from "./utils.js";
 
 class RunPage extends React.Component {
@@ -35,7 +36,8 @@ class RunPage extends React.Component {
       <section className="section">
         <div className="container">
           <h1 className="title is-2">
-            {this.state.task}: {this.state.uuid}
+            <Link to={"/task/" + this.state.task}>{this.state.task}</Link>:{" "}
+            {this.state.uuid}
           </h1>
 
           {this.state.status == "Running" ? (
