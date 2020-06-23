@@ -57,6 +57,4 @@ Logs:
 ```
         """
         title = f"{latest_run.task} failing since at least {failure.start[:10]}"
-        self.repo_obj.create_issue(
-            title=title, body=body, labels=["automatic", "ready"]
-        )
+        self.repo_obj.create_issue(title=title, body=body, labels=["automatic"])
