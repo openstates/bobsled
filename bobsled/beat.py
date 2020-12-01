@@ -48,8 +48,14 @@ def next_cron(cronstr, after=None):
                     return next_time
 
     # no next time this month, set to the first time but the next month
+    if after.month == 12:
+        month = 1
+        year = after.year + 1
+    else:
+        month = after.month + 1
+        year = after.year
     next_time = next_time.replace(
-        day=days[0], hour=hours[0], minute=minutes[0], month=after.month + 1,
+        day=days[0], hour=hours[0], minute=minutes[0], month=month, year=year,
     )
     return next_time
 

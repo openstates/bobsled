@@ -62,3 +62,9 @@ def test_month_rollover():
     assert next_cron("0 4 * * ?", feb28) == datetime.datetime(2020, 2, 29, 4, 0)
     feb29 = datetime.datetime(2020, 2, 29, 23, 0)
     assert next_cron("0 4 * * ?", feb29) == datetime.datetime(2020, 3, 1, 4, 0)
+
+
+def test_dec_jan_rollover():
+    # going from dec to january
+    dec = datetime.datetime(2020, 12, 31, 23, 0)
+    assert next_cron("0 4 * * ?", dec) == datetime.datetime(2021, 1, 1, 4, 0)
