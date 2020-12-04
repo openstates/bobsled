@@ -57,5 +57,5 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
           BOBSLED_SECRET_KEY: "secret-stuff-here"
           BOBSLED_TASKS_FILENAME: "bobsled/tests/tasks/tasks.yml"
-          BOBSLED_TEST_DATABASE: "postgresql://localhost/bobsled_test"
+          BOBSLED_TEST_DATABASE: "postgresql://test:test@localhost/test"
           BOBSLED_ENVIRONMENT_FILENAME: "bobsled/tests/environments.yml"
