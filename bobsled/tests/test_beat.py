@@ -23,6 +23,16 @@ def test_hour_range():
     assert next_cron("0 11-13 * * ?", ninepm) == datetime.datetime(2020, 1, 2, 11, 0)
 
 
+def test_recurring_hours():
+    assert next_cron("0 */2 * * ?", midnight) == datetime.datetime(2020, 1, 1, 2, 0)
+    assert next_cron("0 */2 * * ?", noon) == datetime.datetime(2020, 1, 1, 14, 0)
+    assert next_cron("0 */2 * * ?", ninepm) == datetime.datetime(2020, 1, 1, 22, 0)
+
+    assert next_cron("0 */6 * * ?", midnight) == datetime.datetime(2020, 1, 1, 6, 0)
+    assert next_cron("0 */6 * * ?", noon) == datetime.datetime(2020, 1, 1, 18, 0)
+    assert next_cron("0 */6 * * ?", ninepm) == datetime.datetime(2020, 1, 2, 0, 0)
+
+
 def test_next_minute():
     assert next_cron(
         "0,2,4 * * * ?", datetime.datetime(2020, 1, 1, 0, 1)

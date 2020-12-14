@@ -15,8 +15,13 @@ def parse_cron_segment(segment, star_equals):
     elif "-" in segment:
         start, end = segment.split("-")
         return list(range(int(start), int(end) + 1))
+    elif segment.startswith("*/"):
+        n = int(segment[2:])
+        return list(range(0, 24, n))
     elif segment.isdigit():
         return [int(segment)]
+    else:
+        raise ValueError(segment)
 
 
 def next_cron(cronstr, after=None):
