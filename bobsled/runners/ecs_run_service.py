@@ -178,7 +178,11 @@ class ECSRunService(RunService):
                 run.exit_code = result["containers"][0]["exitCode"]
             except KeyError:
                 run.exit_code = -400
-                run.logs = result["containers"][0]["reason"]
+                run.logs = result["containers"][0].get("reason")
+                if not run.logs:
+                    run.logs = "No exit code or reason: " + repr(
+                        result["containers"][0]
+                    )
             run.status = Status.Error if run.exit_code else Status.Success
             await self._save_and_followup(run)
         elif (
