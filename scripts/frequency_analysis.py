@@ -17,10 +17,9 @@ def recommend_frequency_for_task(runs):
         total_duration += duration
         if duration > longest_duration:
             longest_duration = duration
-    average = total_duration / len(runs)
-    if longest_duration.seconds <= 60*10:
+    if longest_duration.seconds <= 60 * 10:
         return '0 */2 * * ?'
-    elif longest_duration.seconds <= 60*60:
+    elif longest_duration.seconds <= 60 * 60:
         return '0 */6 * * ?'
     else:
         return 'daily'
