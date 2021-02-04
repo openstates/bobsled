@@ -40,9 +40,13 @@ async def analyze_frequency():
             else:
                 # a recent run failed, made a note of that
                 recommendation = 'n/a - at least one recent task failed'
+            if len(task['triggers']) > 0:
+                current_schedule = task['triggers'][0]['cron']
+            else:
+                current_schedule = 'n/a'
             recommendations.append({
                 'task': task['name'],
-                'current_schedule': task['triggers'][0]['cron'],
+                'current_schedule': current_schedule,
                 'recommended': recommendation
             })
 
