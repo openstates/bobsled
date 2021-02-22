@@ -139,6 +139,7 @@ class ECSRunService(RunService):
             taskDefinition=task.name,
             startedBy="bobsled",
             launchType="FARGATE",
+            platformVersion="1.4.0",
             networkConfiguration={
                 "awsvpcConfiguration": {
                     "subnets": [self.subnet_id],
