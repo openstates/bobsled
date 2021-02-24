@@ -30,39 +30,46 @@ def next_cron(cronstr, after=None):
     days = parse_cron_segment(day, list(range(1, 32)))
     minutes = parse_cron_segment(minute, list(range(60)))
     hours = parse_cron_segment(hour, list(range(24)))
+    if dow != "?":
+        dow = parse_cron_segment(dow, list(range(7)))
 
     # scheduling things that don't run every month not currently supported
     assert month == "*"
-    assert dow == "?"
 
     if not after:
         after = datetime.datetime.utcnow()
     next_time = None
 
-    for day in days:
-        for hour in hours:
-            for minute in minutes:
-                try:
-                    next_time = after.replace(
-                        day=day, hour=hour, minute=minute, second=0, microsecond=0
-                    )
-                except ValueError:
-                    # if we made an invalid time due to month rollover, skip it
-                    continue
-                if next_time > after:
-                    return next_time
+    for month in range(12):
+        for day in days:
+            for hour in hours:
+                for minute in minutes:
+                    try:
+                        next_time = after.replace(
+                            month=month,
+                            day=day,
+                            hour=hour,
+                            minute=minute,
+                            second=0,
+                            microsecond=0,
+                        )
+                        # skip wrong days of the week
+                        if dow != "?" and next_time.weekday() not in dow:
+                            continue
+                    except ValueError:
+                        # if we made an invalid time due to month rollover, skip it
+                        continue
+                    if next_time > after:
+                        return next_time
 
     # no next time this month, set to the first time but the next month
     if after.month == 12:
         month = 1
         year = after.year + 1
-    else:
-        month = after.month + 1
-        year = after.year
-    next_time = next_time.replace(
-        day=days[0], hour=hours[0], minute=minutes[0], month=month, year=year,
-    )
-    return next_time
+        next_time = next_time.replace(
+            day=days[0], hour=hours[0], minute=minutes[0], month=month, year=year,
+        )
+        return next_time
 
 
 def next_run_for_task(task):

@@ -78,3 +78,15 @@ def test_dec_jan_rollover():
     # going from dec to january
     dec = datetime.datetime(2020, 12, 31, 23, 0)
     assert next_cron("0 4 * * ?", dec) == datetime.datetime(2021, 1, 1, 4, 0)
+
+
+def test_dow():
+    wed = datetime.datetime(2021, 2, 24)  # a wednesday
+    assert next_cron("0 4 * * 0", wed) == datetime.datetime(
+        2021, 3, 1, 4, 0
+    )  # the next monday
+
+    wed = datetime.datetime(2021, 2, 24)  # a wednesday
+    assert next_cron("0 4 * * 1,5", wed).weekday() == 5  # saturday
+    wed = datetime.datetime(2021, 2, 28)  # a sunday
+    assert next_cron("0 4 * * 1,5", wed).weekday() == 1  # tuesday
