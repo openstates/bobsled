@@ -80,6 +80,12 @@ def test_dec_jan_rollover():
     assert next_cron("0 4 * * ?", dec) == datetime.datetime(2021, 1, 1, 4, 0)
 
 
+def test_nov_dec_rollover():
+    # going from dec to january
+    nov = datetime.datetime(2020, 11, 30, 23, 0)
+    assert next_cron("0 4 * * ?", nov) == datetime.datetime(2020, 12, 1, 4, 0)
+
+
 def test_dow():
     wed = datetime.datetime(2021, 2, 24)  # a wednesday
     assert next_cron("0 4 * * 0", wed) == datetime.datetime(

@@ -40,7 +40,7 @@ def next_cron(cronstr, after=None):
         after = datetime.datetime.utcnow()
     next_time = None
 
-    for month in range(12):
+    for month in range(1, 13):
         for day in days:
             for hour in hours:
                 for minute in minutes:
