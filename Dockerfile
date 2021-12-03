@@ -16,7 +16,7 @@ RUN BUILD_DEPS=" \
 ADD . /code/
 WORKDIR /code/
 
-RUN wget https://deb.nodesource.com/setup_10.x -O nodesource.sh \
+RUN wget https://deb.nodesource.com/setup_lts.x -O nodesource.sh \
     && bash nodesource.sh \
     && apt install -y nodejs \
     && npm ci \
